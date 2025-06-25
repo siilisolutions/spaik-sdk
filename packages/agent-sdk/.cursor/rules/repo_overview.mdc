@@ -1,0 +1,84 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Agent SDK - Repository Overview
+
+This is a Python-based Agent SDK for building various kinds of agentic + AI solutions. The main goal is to provide good DX (Developer Experience) and make it fast and easy to build POCs that are also of good quality and can easily transition to production.
+
+## Core Purpose & Philosophy
+
+- **Helper SDK** for building agentic + AI solutions
+- **Fast POC Development** that scales to production quality
+- **Good DX** with clean abstractions and patterns
+- **Multi-LLM Support** with unified interface
+- **Streaming & Interactive** capabilities built-in
+
+## Project Structure & Key Components
+
+### Entry Points
+- **[main.py](mdc:main.py)** - Main application entry point, demonstrates DemoAgent and MinimalAgent usage
+- **[setup.sh](mdc:setup.sh)** - Development environment setup script
+
+### Core Architecture Modules
+
+#### **Agent System** (`app/agent/`)
+- **[app/agent/base_agent.py](mdc:app/agent/base_agent.py)** - BaseAgent class providing foundation for all agents
+- **[app/demo_agents/](mdc:app/demo_agents)** - Example agent implementations (DemoAgent, MinimalAgent)
+
+#### **LLM Integration** (`app/models/`)
+Multi-provider LLM support with factory pattern:
+- **Supported Providers**: Anthropic (Claude), OpenAI (GPT), Google (Gemini), Azure AI Foundry
+- **[app/models/llm_types.py](mdc:app/models/llm_types.py)** - Model enums and provider types
+- **[app/models/llm_config.py](mdc:app/models/llm_config.py)** - LLM configuration dataclass
+- **[app/models/factories/](mdc:app/models/factories)** - Model factory implementations per provider
+- **[app/models/providers/](mdc:app/models/providers)** - Provider-specific API integrations
+
+#### **LangChain Service Layer** (`app/llm/`)
+- **[app/llm/langchain_service.py](mdc:app/llm/langchain_service.py)** - Core service wrapping LangChain functionality
+- **[app/llm/message_handler.py](mdc:app/llm/message_handler.py)** - Conversation history and message processing
+- **[app/llm/streaming/](mdc:app/llm/streaming)** - Streaming response handling components
+
+#### **Thread Management** (`app/thread/`)
+- **[app/thread/thread_container.py](mdc:app/thread/thread_container.py)** - Core conversation state management
+- **[app/thread/models.py](mdc:app/thread/models.py)** - Message, block, and event data models
+- **[app/thread/adapters/](mdc:app/thread/adapters)** - Different interaction interfaces (sync, CLI)
+
+#### **Tool System** (`app/tools/`)
+- **[app/tools/tool_provider.py](mdc:app/tools/tool_provider.py)** - Abstract base for creating agent tools
+- Supports LangChain BaseTool integration with Pydantic schemas
+
+#### **Configuration & Infrastructure**
+- **[config/env.py](mdc:config/env.py)** - Environment variable management
+- **[app/prompt/prompt_loader.py](mdc:app/prompt/prompt_loader.py)** - Static prompt loading from markdown
+- **[app/tracing/agent_trace.py](mdc:app/tracing/agent_trace.py)** - Execution tracing for debugging
+- **[app/utils/init_logger.py](mdc:app/utils/init_logger.py)** - Logging utilities
+
+## Key Technologies & Dependencies
+
+- **Python 3.10+** with modern async/await patterns
+- **LangChain** - Primary framework for LLM orchestration
+- **LangGraph** - For stateful, multi-actor applications
+- **FastAPI** - Web framework for API endpoints
+- **Pydantic** - Data validation and settings management
+- **uv** - Fast Python package manager and runner
+- **ruff** - Fast Python linter and formatter
+
+## Architectural Patterns
+
+1. **Agent-Based Architecture** - BaseAgent foundation with concrete implementations
+2. **Factory Pattern** - For LLM provider instantiation
+3. **Provider Pattern** - Unified interface across different LLM APIs
+4. **Event-Driven** - ThreadContainer publishes events for real-time updates
+5. **Streaming-First** - Built-in support for streaming responses
+6. **Tool Integration** - LangChain tool ecosystem integration
+7. **Modular Design** - Clear separation of concerns across modules
+
+## Development Standards
+
+- **Absolute imports** - No relative imports
+- **Type annotations** - Always use types
+- **Minimal comments** - Code should be self-documenting
+- **Empty `__init__.py`** - Unless otherwise specified
+- **uv + ruff** - Package management and linting

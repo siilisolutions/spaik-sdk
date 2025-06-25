@@ -1,0 +1,117 @@
+[project]
+name = "siili-ai-sdk"
+version = "0.1.0"
+description = "SDK for building various kinds of agentic + AI solutions"
+requires-python = ">=3.10"
+dependencies = [
+    "azure-storage-blob",
+    "dotenv>=0.9.9",
+    "fastapi>=0.115.12",
+    "PyJWT>=2.8.0",
+    "requests>=2.31.0",
+    "cryptography>=41.0.0", # Required for JWT RSA operations
+    "langchain>=0.3.23",
+    "langchain-anthropic>=0.3.14",
+    "langchain-core>=0.3.55",
+    "langchain-google-genai>=2.0.8",
+    "langchain-openai>=0.3.14",
+    "langgraph>=0.3.31",
+    "pandas>=2.0.3",
+    "pandas-stubs",
+    "uvicorn>=0.33.0",
+    # Test dependencies
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.1",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.25.0",
+    "pytest-mock>=3.11.1",
+    "restrictedpython>=8.0",
+    "rich>=14.0.0",
+    "aioconsole>=0.8.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "mypy",
+    "black"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["siili_ai_sdk"]
+include = ["py.typed"]
+
+[tool.ruff]
+line-length = 140
+fix = true
+
+[tool.ruff.lint]
+# Enable common linters: pyflakes, pycodestyle errors/warnings, isort
+select = ["E", "F", "W", "I"]
+ignore = ["W293"] # Ignore blank line contains whitespace
+
+[tool.ruff.format]
+quote-style = "double" 
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"
+# Exclude problematic files
+norecursedirs = ["__pycache__", "*.egg-info"]
+# Better test discovery and output
+addopts = [
+    "--strict-markers",
+    "--strict-config", 
+    "--verbose",
+    "--tb=short",
+    "--cov=siili_ai_sdk",
+    "--cov-report=term-missing",
+    "--ignore=__init__.py",
+    "--ignore=setup.py"
+]
+# Custom markers for different test types
+markers = [
+    "unit: marks tests as unit tests (fast, isolated)",
+    "integration: marks tests as integration tests (slower, may use external services)",
+    "slow: marks tests as slow running",
+    "async: marks tests as async tests",
+    "timeout: marks tests with custom timeout duration"
+]
+# Async test configuration
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.mypy]
+python_version = "3.10"
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+check_untyped_defs = true
+no_implicit_reexport = true
+
+[[tool.mypy.overrides]]
+module = "azure.storage.blob.*"
+ignore_missing_imports = true 
+
+[[tool.mypy.overrides]]
+module = "pytest.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "jwt.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "requests.*"
+ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "pytest-timeout>=2.4.0",
+]

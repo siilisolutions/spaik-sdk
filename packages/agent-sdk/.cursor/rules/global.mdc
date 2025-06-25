@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# General
+
+this project is a helper SDK for building various kinds of agentic + ai solutions
+
+main goal is to give good DX and make it fast and easy to build POCs that also are of good quality
+and something you can easily get to production as well
+
+
+# style stuff:
+
+- use absolute imports
+- comments are a code smell, avoid docstrings too if not adding anything
+- empty __init__.py unless otherwise specified
+- no star imports
+- always use types
+- use uv and ruff

@@ -1,0 +1,54 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Testing Structure
+
+## Unit Tests
+- Location: `tests/unit/{folder path to file being tested}/test_{filename}.py`
+- Example: For `siili_ai_sdk/agent/base_agent.py` → `tests/unit/siili_ai_sdk/agent/test_base_agent.py`
+- Use `@pytest.mark.unit` decorator
+- Mock external dependencies
+
+## Integration Tests  
+- Location: `tests/integration/` (freeform structure)
+- Use `@pytest.mark.integration` decorator
+- Test complete workflows and component interactions
+
+## Test Configuration
+- Main config in [pyproject.toml](mdc:pyproject.toml) under `[tool.pytest.ini_options]`
+- Shared fixtures in [tests/conftest.py](mdc:tests/conftest.py)
+- Test utilities in [tests/utils.py](mdc:tests/utils.py)
+
+## Running Tests
+- Use [Makefile](mdc:Makefile) commands: `make test`, `make test-unit`, `make test-integration`
+- Or directly: `uv run pytest`
+
+
+## Philosophy
+- test the public interface, not the implementation and how its coded
+- don't add stupid do-nothing tests that just check completely trivial aspects
+
+Example offender:
+```
+def test_valid_config_creation(self):
+        """Test creating a valid LLMConfig."""
+        config = LLMConfig(
+            model=LLMModel.CLAUDE_3_HAIKU,
+            provider_type=ProviderType.ANTHROPIC,
+            reasoning=True,
+            tool_usage=False
+        )
+        
+        assert config.model == LLMModel.CLAUDE_3_HAIKU
+        assert config.provider_type == ProviderType.ANTHROPIC
+        assert config.reasoning is True
+        assert config.tool_usage is False
+```    
+
+The above is 100% pollution in the codebase and gives us absolutely no guarantees of things working.
+
+Focus on corner cases and things that might actually break. Do NOT aim for 100% coverage or any such nonsense. 
+
+We want to test things that might actually break and test them well (not just the happy paths)

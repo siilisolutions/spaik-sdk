@@ -1,0 +1,20 @@
+"""Siili AI SDK - SDK for building various kinds of agentic + AI solutions."""
+
+from .siili_ai_sdk.agent.base_agent import BaseAgent
+from .siili_ai_sdk.models.llm_config import LLMConfig
+from .siili_ai_sdk.models.llm_types import LLMModel, ProviderType
+from .siili_ai_sdk.thread.models import MessageBlock, MessageBlockType, ThreadMessage
+from .siili_ai_sdk.thread.thread_container import ThreadContainer
+
+__all__ = [
+    "BaseAgent",
+    "LLMConfig",
+    "LLMModel",
+    "ProviderType",
+    "ThreadContainer",
+    "ThreadMessage",
+    "MessageBlock",
+    "MessageBlockType",
+]
+
+__version__ = "0.1.0"
