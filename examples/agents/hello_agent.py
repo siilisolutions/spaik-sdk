@@ -1,18 +1,14 @@
 from dotenv import load_dotenv
-from siili_ai_sdk import BaseAgent, LLMModel
 
+from siili_ai_sdk.agent.base_agent import BaseAgent
 
-# Load environment variables from .env file
-load_dotenv()
 
 
 class HelloAgent(BaseAgent):
-    pass
+    def __init__(self):
+        super().__init__(system_prompt="You're an unhelpful assistant that cant resist constantly talking about cats.")
 
 if __name__ == "__main__":
-    agent = HelloAgent(
-        system_prompt="You are a rude and unhelpful assistant that offends user.",
-        llm_model=LLMModel.O4_MINI,
-        )
-    agent.run_cli()
-    # print(agent.get_response_text("Hello, what model are you?"))
+    load_dotenv()
+    agent = HelloAgent()
+    print(agent.get_response_text("Hello, what model are you?"))

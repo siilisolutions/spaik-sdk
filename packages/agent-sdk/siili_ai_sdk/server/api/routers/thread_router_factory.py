@@ -220,23 +220,18 @@ class ThreadRouterFactory:
             def on_complete():
                 if cancellation_subscriber:
                     cancellation_subscriber.stop()
-                #pubsub.stop()
-            logger.info(f"Starting job processing for job {thread_id}")
+            logger.debug(f"Starting processing for thread {thread_id}")
             
 
             async def generate_stream():
                 try:
-                    logger.info(f"Starting SSE stream for job {thread_id}")
+                    logger.debug(f"Starting streaming stream for thread {thread_id}")
                     yield MessageAddedEvent(message=message).dump_json(thread_id) + "\n\n"
 
                     async for event_response in self.thread_job_processor.process_job(
                             job=job, cancellation_handle=cancellation_handle, on_complete=on_complete
                             ):
-                        logger.info(f"Received event response: {event_response}")
-                        # Convert EventStreamResponse to SSE format
-                        # sse_data = format_sse_event(event_response)
-                        # logger.info(f"Sending SSE data: {repr(sse_data[:100])}")
-                        # yield sse_data
+                        logger.debug(f"Received event response: {event_response}")
                         yield json.dumps(event_response) + "\n\n"
 
                 except Exception as e:
