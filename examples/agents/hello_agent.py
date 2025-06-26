@@ -11,4 +11,4 @@ class HelloAgent(BaseAgent):
 if __name__ == "__main__":
     load_dotenv()
     agent = HelloAgent()
-    print(agent.get_response_text("Hello, what model are you?"))
+    print(agent.get_response_text("Hello"))
