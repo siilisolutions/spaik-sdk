@@ -1,5 +1,4 @@
-import { Id } from '../../stores/messageTypes';
-import { useThread } from '../../stores/threadStore';
+import { Id, useThread } from '@siili-ai-sdk/hooks';
 import { ThreadHeader } from './ThreadHeader';
 import { MessagesList } from './MessagesList';
 import { MessageInput } from './MessageInput';

@@ -1,4 +1,4 @@
-import { Thread, Message } from '../../stores/messageTypes';
+import { Thread, Message } from '@siili-ai-sdk/hooks';
 import { MessageRenderer } from '../MessageRenderer/MessageRenderer';
 
 interface Props {

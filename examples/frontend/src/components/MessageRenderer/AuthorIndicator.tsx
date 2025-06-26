@@ -1,4 +1,4 @@
-import { Message } from '../../stores/messageTypes';
+import { Message } from '@siili-ai-sdk/hooks';
 
 interface Props {
     message: Message;

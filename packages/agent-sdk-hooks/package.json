@@ -1,7 +1,7 @@
 {
-    "name": "@agent-sdk/hooks",
-    "version": "0.1.0",
-    "description": "React hooks for agent-sdk with state management and type guarding",
+    "name": "@siili-ai-sdk/hooks",
+    "version": "0.0.1",
+    "description": "React hooks for Siili AI SDK",
     "type": "module",
     "main": "dist/index.js",
     "module": "dist/index.js",

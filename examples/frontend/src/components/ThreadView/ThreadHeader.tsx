@@ -1,4 +1,4 @@
-import { Thread } from "../../stores/messageTypes";
+import { Thread } from '@siili-ai-sdk/hooks';
 
 interface Props {
     thread: Thread;

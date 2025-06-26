@@ -1,7 +1,5 @@
-import { Id } from '../../stores/messageTypes';
 
 interface Props {
-    threadId: Id;
     title: string;
     messageCount: number;
     lastActivity: number;

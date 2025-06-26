@@ -1,4 +1,4 @@
-import { MessageBlock } from '../../stores/messageTypes';
+import { MessageBlock } from '@siili-ai-sdk/hooks';
 import { getBlockTypeStyle } from './blockStyles';
 import { BlockTypeHeader } from './BlockTypeHeader';
 import { ToolNameDisplay } from './ToolNameDisplay';

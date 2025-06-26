@@ -1,11 +1,11 @@
 import { ThreadList } from './components/ThreadList/ThreadList';
 import { ThreadView } from './components/ThreadView/ThreadView';
-import { useThreadSelection } from './stores/threadListStore';
+import { useThreadSelection } from '@siili-ai-sdk/hooks';
 import { NoThreadSelected } from './components/ThreadView/EmptyStates';
+
 
 export function App() {
     const { selectedThreadId } = useThreadSelection();
-
     return (
         <div style={{
             display: 'flex',
