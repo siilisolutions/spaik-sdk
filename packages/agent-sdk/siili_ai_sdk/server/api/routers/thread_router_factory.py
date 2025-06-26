@@ -1,4 +1,5 @@
 import asyncio
+import json
 import time
 import uuid
 from collections.abc import Callable
@@ -7,7 +8,6 @@ from typing import Awaitable, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 
-from siili_ai_sdk.server.api.streaming.format_sse_event import format_sse_event
 from siili_ai_sdk.server.api.streaming.streaming_negotiator import StreamingNegotiator
 from siili_ai_sdk.server.authorization.base_authorizer import BaseAuthorizer
 from siili_ai_sdk.server.authorization.base_user import BaseUser
@@ -15,7 +15,6 @@ from siili_ai_sdk.server.authorization.dummy_authorizer import DummyAuthorizer
 from siili_ai_sdk.server.job_processor.thread_job_processor import ThreadJobProcessor
 from siili_ai_sdk.server.pubsub.cancellation_publisher import CancellationPublisher
 from siili_ai_sdk.server.pubsub.cancellation_subscriber import CancellationSubscriber
-from siili_ai_sdk.server.pubsub.impl.local_thread_event_pubsub import LocalThreadEventPubsub
 from siili_ai_sdk.server.queue.agent_job_queue import AgentJob, AgentJobQueue, JobType
 from siili_ai_sdk.server.services.thread_converters import ThreadConverters
 from siili_ai_sdk.server.services.thread_models import (
@@ -27,7 +26,7 @@ from siili_ai_sdk.server.services.thread_models import (
 )
 from siili_ai_sdk.server.services.thread_service import ThreadService
 from siili_ai_sdk.server.storage.thread_filter import ThreadFilter
-from siili_ai_sdk.thread.models import MessageBlock, MessageBlockType, ThreadMessage
+from siili_ai_sdk.thread.models import MessageAddedEvent, MessageBlock, MessageBlockType, ThreadMessage
 from siili_ai_sdk.thread.thread_container import ThreadContainer
 from siili_ai_sdk.utils.init_logger import init_logger
 
@@ -201,7 +200,63 @@ class ThreadRouterFactory:
             await self.service.update_thread(thread)
             return message
 
-        @router.post("{thread_id}/messages", response_model=MessageResponse)
+        @router.post("/{thread_id}/messages/stream")
+        async def create_message_stream(thread_id: str, request: CreateMessageRequest, user: BaseUser = Depends(get_current_user)):
+            """Create a new message and stream the response immediately"""
+
+            if not self.thread_job_processor:
+                raise HTTPException(status_code=501, detail="Thread job processor not supported")
+            message = await _create_message(thread_id, request, user)
+
+            
+
+
+            job = AgentJob(job_type=JobType.THREAD_MESSAGE, id=thread_id)
+            cancellation_subscriber = (
+                await self.cancellation_subscriber_provider(thread_id) if self.cancellation_subscriber_provider else None
+            )
+            cancellation_handle = cancellation_subscriber.get_cancellation_handle() if cancellation_subscriber else None
+
+            def on_complete():
+                if cancellation_subscriber:
+                    cancellation_subscriber.stop()
+                #pubsub.stop()
+            logger.info(f"Starting job processing for job {thread_id}")
+            
+
+            async def generate_stream():
+                try:
+                    logger.info(f"Starting SSE stream for job {thread_id}")
+                    yield MessageAddedEvent(message=message).dump_json(thread_id) + "\n\n"
+
+                    async for event_response in self.thread_job_processor.process_job(
+                            job=job, cancellation_handle=cancellation_handle, on_complete=on_complete
+                            ):
+                        logger.info(f"Received event response: {event_response}")
+                        # Convert EventStreamResponse to SSE format
+                        # sse_data = format_sse_event(event_response)
+                        # logger.info(f"Sending SSE data: {repr(sse_data[:100])}")
+                        # yield sse_data
+                        yield json.dumps(event_response) + "\n\n"
+
+                except Exception as e:
+                    logger.error(f"Error in SSE stream: {e}")
+                    yield f'data: {{"error": "{str(e)}"}}\n\n'
+
+            logger.info(f"StreamingResponse for job {thread_id}")
+            return StreamingResponse(
+                generate_stream(),
+                media_type="text/plain; charset=utf-8", # devtools are not happy with the proper mime type
+                headers={
+                    "Cache-Control": "no-cache",
+                    # "Connection": "keep-alive",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Headers": "Cache-Control",
+                    "X-Accel-Buffering": "no",  # Disable nginx buffering
+                },
+            )
+        
+        @router.post("/{thread_id}/messages", response_model=MessageResponse)
         async def create_message(thread_id: str, request: CreateMessageRequest, user: BaseUser = Depends(get_current_user)):
             """Create a new message"""
             if not self.job_queue:
@@ -213,56 +268,5 @@ class ThreadRouterFactory:
             await self.job_queue.push(job)
             return ThreadConverters.message_model_to_response(message)
 
-        @router.post("{thread_id}/messages/stream", response_model=MessageResponse)
-        async def create_message_stream(thread_id: str, request: CreateMessageRequest, user: BaseUser = Depends(get_current_user)):
-            """Create a new message and stream the response immediately"""
-
-            if not self.thread_job_processor:
-                raise HTTPException(status_code=501, detail="Thread job processor not supported")
-            await create_message(thread_id, request, user)
-
-            job = AgentJob(job_type=JobType.THREAD_MESSAGE, id=thread_id)
-            pubsub = LocalThreadEventPubsub()
-            cancellation_subscriber = (
-                await self.cancellation_subscriber_provider(thread_id) if self.cancellation_subscriber_provider else None
-            )
-            cancellation_handle = cancellation_subscriber.get_cancellation_handle() if cancellation_subscriber else None
-
-            def on_complete():
-                if cancellation_subscriber:
-                    cancellation_subscriber.stop()
-                pubsub.stop()
-
-            asyncio.create_task(
-                self.thread_job_processor.process_job(
-                    job=job, thread_event_publisher=pubsub.get_publisher(), cancellation_handle=cancellation_handle, on_complete=on_complete
-                )
-            )
-
-            async def generate_stream():
-                try:
-                    logger.debug(f"Starting SSE stream for job {thread_id}")
-
-                    async for event_response in pubsub.events():
-                        # Convert EventStreamResponse to SSE format
-                        sse_data = format_sse_event(event_response)
-                        logger.debug(f"Sending SSE data: {repr(sse_data[:100])}")
-                        yield sse_data
-
-                except Exception as e:
-                    logger.error(f"Error in SSE stream: {e}")
-                    yield f'data: {{"error": "{str(e)}"}}\n\n'
-
-            return StreamingResponse(
-                generate_stream(),
-                media_type="text/event-stream",
-                headers={
-                    "Cache-Control": "no-cache",
-                    "Connection": "keep-alive",
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Headers": "Cache-Control",
-                    "X-Accel-Buffering": "no",  # Disable nginx buffering
-                },
-            )
 
         return router

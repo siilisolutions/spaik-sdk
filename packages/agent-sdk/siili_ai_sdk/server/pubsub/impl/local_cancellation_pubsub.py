@@ -15,8 +15,8 @@ class LocalCancellationPubsub:
 
 class LocalCancellationSubscriber(CancellationSubscriber):
     def __init__(self, id: str, publisher: "LocalCancellationPublisher"):
-        super().__init__(id)
         self.publisher = publisher
+        super().__init__(id)
 
     def _subscribe_to_cancellation(self) -> None:
         self.publisher.subscribe(self)

@@ -1,7 +1,7 @@
 import { BaseApiClient, BaseApiClientConfig } from './BaseApiClient';
-import { Id, IdSchema, MessageBlockSchema } from '../stores/messageTypes';
+import { Id, IdSchema, MessageBlockSchema, Thread, ThreadSchema } from '../stores/messageTypes';
 import { z } from 'zod';
-import { nullToUndefined } from '../utils/nullToUndefined';
+import { EventProcessor } from '../event/EventProcessor';
 
 export class ThreadsApiClient extends BaseApiClient {
     constructor(config: BaseApiClientConfig) {
@@ -9,91 +9,48 @@ export class ThreadsApiClient extends BaseApiClient {
     }
 
     // Thread endpoints
-    async createThread(request: CreateThreadRequest): Promise<ThreadResponse> {
-        try {
-            const validatedRequest = CreateThreadRequestSchema.parse(request);
-            const response = await this.post<ThreadResponse>('/threads', validatedRequest);
-            const cleanedData = nullToUndefined(response.data);
-            const validatedResponse = ThreadResponseSchema.parse(cleanedData);
-            return validatedResponse;
-        } catch (error) {
-            throw new Error(`Failed to create thread: ${error}`);
-        }
+    async createThread(request: CreateThreadRequest): Promise<Thread> {
+        return this.post('/threads', ThreadSchema, request);
     }
 
-    async getThread(threadId: Id): Promise<ThreadResponse> {
-        try {
-            const validatedThreadId = IdSchema.parse(threadId);
-            const response = await this.get<ThreadResponse>(`/threads/${validatedThreadId}`);
-            const cleanedData = nullToUndefined(response.data);
-            const validatedResponse = ThreadResponseSchema.parse(cleanedData);
-            return validatedResponse;
-        } catch (error) {
-            throw new Error(`Failed to get thread: ${error}`);
-        }
+    async getThread(threadId: Id): Promise<Thread> {
+        return this.get(`/threads/${threadId}`, ThreadSchema);
     }
 
     async deleteThread(threadId: Id): Promise<DeleteResponse> {
-        try {
-            const validatedThreadId = IdSchema.parse(threadId);
-            const response = await this.delete<DeleteResponse>(`/threads/${validatedThreadId}`);
-            const cleanedData = nullToUndefined(response.data);
-            const validatedResponse = DeleteResponseSchema.parse(cleanedData);
-            return validatedResponse;
-        } catch (error) {
-            throw new Error(`Failed to delete thread: ${error}`);
-        }
+        return this.delete(`/threads/${threadId}`, DeleteResponseSchema);
     }
 
-    async listThreads(filters?: ListThreadsFilters): Promise<ListThreadsResponse> {
+    async listThreads(filters: ListThreadsFilters = {}): Promise<ListThreadsResponse> {
         try {
-            const validatedFilters = filters ? ListThreadsFiltersSchema.parse(filters) : {};
             const params = new URLSearchParams();
 
-            if (validatedFilters.author_id) params.append('author_id', validatedFilters.author_id);
-            if (validatedFilters.thread_type) params.append('thread_type', validatedFilters.thread_type);
-            if (validatedFilters.title_contains) params.append('title_contains', validatedFilters.title_contains);
-            if (validatedFilters.min_messages) params.append('min_messages', validatedFilters.min_messages.toString());
-            if (validatedFilters.max_messages) params.append('max_messages', validatedFilters.max_messages.toString());
-            if (validatedFilters.hours_ago) params.append('hours_ago', validatedFilters.hours_ago.toString());
+            if (filters.author_id) params.append('author_id', filters.author_id);
+            if (filters.thread_type) params.append('thread_type', filters.thread_type);
+            if (filters.title_contains) params.append('title_contains', filters.title_contains);
+            if (filters.min_messages) params.append('min_messages', filters.min_messages.toString());
+            if (filters.max_messages) params.append('max_messages', filters.max_messages.toString());
+            if (filters.hours_ago) params.append('hours_ago', filters.hours_ago.toString());
 
             const url = `/threads${params.toString() ? `?${params.toString()}` : ''}`;
-            const response = await this.get<ListThreadsResponse>(url);
-            const cleanedData = nullToUndefined(response.data);
-            const validatedResponse = ListThreadsResponseSchema.parse(cleanedData);
-            return validatedResponse;
+            return this.get(url, ListThreadsResponseSchema);
         } catch (error) {
             throw new Error(`Failed to list threads: ${error}`);
         }
     }
 
-    // Message endpoints
-    async getThreadMessages(threadId: Id): Promise<ThreadMessage[]> {
-        try {
-            const validatedThreadId = IdSchema.parse(threadId);
-            const response = await this.get<ThreadMessage[]>(`/threads/${validatedThreadId}/messages`);
-            const cleanedData = nullToUndefined(response.data);
-            const validatedResponse = z.array(ThreadMessageSchema).parse(cleanedData);
-            return validatedResponse;
-        } catch (error) {
-            throw new Error(`Failed to get thread messages: ${error}`);
-        }
+    async sendMessageWithStream(
+        threadId: Id,
+        request: CreateMessageRequest,
+        signal?: AbortSignal
+    ): Promise<void> {
+        const url = `/threads/${threadId}/messages/stream`;
+        const eventProcessor = new EventProcessor(threadId);
+        await this.postStream(url, request, (chunk) => {
+            eventProcessor.handleRawEvent(chunk);
+        }, signal);
     }
 
-    async getMessage(threadId: Id, messageId: Id): Promise<ThreadMessage> {
-        try {
-            const validatedThreadId = IdSchema.parse(threadId);
-            const validatedMessageId = IdSchema.parse(messageId);
-            const response = await this.get<ThreadMessage>(`/threads/${validatedThreadId}/messages/${validatedMessageId}`);
-            const cleanedData = nullToUndefined(response.data);
-            const validatedResponse = ThreadMessageSchema.parse(cleanedData);
-            return validatedResponse;
-        } catch (error) {
-            throw new Error(`Failed to get message: ${error}`);
-        }
-    }
-
-    // Message creation/update/delete methods removed - use launch job instead
 }
 
 export function createThreadsApiClient(config: BaseApiClientConfig): ThreadsApiClient {
@@ -102,16 +59,9 @@ export function createThreadsApiClient(config: BaseApiClientConfig): ThreadsApiC
 
 // Schemas
 export const CreateThreadRequestSchema = z.object({
-    job_id: z.string().optional(),
+    metadata: z.record(z.string(), z.any()).optional(),
 });
 
-export const ThreadResponseSchema = z.object({
-    thread_id: IdSchema,
-    job_id: z.string(),
-    version: z.number(),
-    last_activity_time: z.number(),
-    message_count: z.number(),
-});
 
 export const DeleteResponseSchema = z.object({
     message: z.string(),
@@ -151,9 +101,13 @@ export const ThreadMessageSchema = z.object({
     blocks: z.array(MessageBlockSchema),
 });
 
+export const CreateMessageRequestSchema = z.object({
+    content: z.string(),
+});
+
 // Type exports
 export type CreateThreadRequest = z.infer<typeof CreateThreadRequestSchema>;
-export type ThreadResponse = z.infer<typeof ThreadResponseSchema>;
+export type CreateMessageRequest = z.infer<typeof CreateMessageRequestSchema>;
 export type DeleteResponse = z.infer<typeof DeleteResponseSchema>;
 export type ListThreadsFilters = z.infer<typeof ListThreadsFiltersSchema>;
 export type ThreadSummary = z.infer<typeof ThreadSummarySchema>;

@@ -21,6 +21,8 @@ class MessageBlockResponse(BaseModel):
     tool_call_id: Optional[str] = None
     tool_call_args: Optional[Dict[str, Any]] = None
     tool_name: Optional[str] = None
+    tool_call_response: Optional[str] = None
+    tool_call_error: Optional[str] = None
 
 
 class UpdateMessageRequest(BaseModel):
@@ -47,11 +49,8 @@ class CreateThreadRequest(BaseModel):
 
 
 class ThreadResponse(BaseModel):
-    thread_id: str
-    job_id: str
-    version: int
-    last_activity_time: int
-    message_count: int
+    id: str
+    messages: List[MessageResponse]
 
 
 class ThreadMetadataResponse(BaseModel):
