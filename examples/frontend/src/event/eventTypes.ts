@@ -1,5 +1,5 @@
 import z from "zod";
-import { IdSchema, MessageBlockSchema } from "../stores/messageTypes";
+import { IdSchema, MessageBlockSchema, MessageSchema } from "../stores/messageTypes";
 
 export const BaseEventSchema = z.object({
     id: IdSchema,
@@ -33,10 +33,28 @@ export const MessageFullyAddedEventSchema = z.object({
     }),
 }).passthrough();
 
+export const BlockFullyAddedEventSchema = z.object({
+    thread_id: IdSchema,
+    event_type: z.literal('BlockFullyAdded'),
+    data: z.object({
+        message_id: IdSchema,
+        block_id: IdSchema,
+    }),
+}).passthrough();
+
+
+export const MessageAddedEventSchema = z.object({
+    thread_id: IdSchema,
+    event_type: z.literal('MessageAdded'),
+    data: MessageSchema,
+}).passthrough();
+
+
+
 export const ToolResponseReceivedEventSchema = z.object({
     event_type: z.literal('ToolResponseReceived'),
     data: z.object({
-        response: z.unknown(),
+        response: z.string(),
         block_id: IdSchema,
         tool_call_id: IdSchema,
     }),
@@ -47,6 +65,8 @@ export const EventSchema = z.discriminatedUnion('event_type', [
     StreamingUpdatedEventSchema,
     BlockAddedEventSchema,
     MessageFullyAddedEventSchema,
+    BlockFullyAddedEventSchema,
+    MessageAddedEventSchema,
     ToolResponseReceivedEventSchema,
 ]);
 
@@ -55,5 +75,6 @@ export type BaseEvent = z.infer<typeof EventSchema>;
 export type StreamingUpdatedEvent = z.infer<typeof StreamingUpdatedEventSchema>;
 export type BlockAddedEvent = z.infer<typeof BlockAddedEventSchema>;
 export type MessageFullyAddedEvent = z.infer<typeof MessageFullyAddedEventSchema>;
+export type MessageAddedEvent = z.infer<typeof MessageAddedEventSchema>;
 export type ToolResponseReceivedEvent = z.infer<typeof ToolResponseReceivedEventSchema>;
 

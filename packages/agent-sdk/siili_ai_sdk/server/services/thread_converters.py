@@ -40,6 +40,8 @@ class ThreadConverters:
             tool_call_id=block.tool_call_id,
             tool_call_args=block.tool_call_args,
             tool_name=block.tool_name,
+            tool_call_response=block.tool_call_response,
+            tool_call_error=block.tool_call_error,
         )
 
     @staticmethod
@@ -63,11 +65,8 @@ class ThreadConverters:
     def thread_model_to_response(thread: ThreadContainer) -> ThreadResponse:
         """Convert ThreadContainer to ThreadResponse"""
         return ThreadResponse(
-            thread_id=thread.thread_id,
-            job_id=thread.job_id,
-            version=thread.get_version(),
-            last_activity_time=thread.get_last_activity_time(),
-            message_count=len(thread.messages),
+            id=thread.thread_id,
+            messages=[ThreadConverters.message_model_to_response(msg) for msg in thread.messages],
         )
 
     @staticmethod

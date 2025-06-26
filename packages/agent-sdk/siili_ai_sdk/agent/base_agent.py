@@ -16,6 +16,7 @@ from siili_ai_sdk.prompt.prompt_loader import PromptLoader
 from siili_ai_sdk.prompt.prompt_loader_mode import PromptLoaderMode
 from siili_ai_sdk.recording.conditional_recorder import ConditionalRecorder
 from siili_ai_sdk.thread.adapters.cli.live_cli import LiveCLI
+from siili_ai_sdk.thread.adapters.event_adapter import EventAdapter
 from siili_ai_sdk.thread.adapters.sync_adapter import SyncAdapter
 from siili_ai_sdk.thread.models import BlockFullyAddedEvent, ThreadEvent, ThreadMessage
 from siili_ai_sdk.thread.thread_container import ThreadContainer
@@ -53,9 +54,8 @@ class BaseAgent(ABC):
         self.thread_container = thread_container or ThreadContainer(self.system_prompt)
         self.tools = tools or self._create_tools(tool_providers)
         self.llm_config = llm_config or self.create_llm_config(llm_model, reasoning)
-        if recorder is not None:
-            self.recorder = recorder.get_recorder()
-            self.playback = recorder.get_playback()
+        self.recorder = recorder.get_recorder() if recorder is not None else None
+        self.playback = recorder.get_playback() if recorder is not None else None
         self.thread_container.subscribe(self._on_thread_event)
         self.cancellation_handle = cancellation_handle
 
@@ -63,7 +63,15 @@ class BaseAgent(ABC):
         self.trace.add_input(user_input)
         langchain_service = self._create_langchain_service()
         return langchain_service.execute_stream_tokens(user_input, self.tools)
-
+    
+    async def get_event_stream(self, user_input: Optional[str] = None) -> AsyncGenerator[ThreadEvent, None]:
+        event_adapter = EventAdapter(self.thread_container)
+        async for _event in self.get_response_stream(user_input):
+            new_events = event_adapter.flush()
+            for new_event in new_events:
+                yield new_event
+        event_adapter.cleanup()
+    
     def get_response(self, user_input: Optional[str] = None) -> ThreadMessage:
         return asyncio.run(self.get_response_async(user_input))
 

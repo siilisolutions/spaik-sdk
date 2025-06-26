@@ -15,6 +15,8 @@ export const MessageBlockSchema = z.object({
     tool_call_id: z.string().optional(),
     tool_call_args: z.record(z.string(), z.any()).optional(),
     tool_name: z.string().optional(),
+    tool_call_response: z.string().optional(),
+    tool_call_error: z.string().optional(),
 });
 
 // Message schema (align with backend ThreadMessage)
@@ -36,7 +38,7 @@ export const ToolCallResponseSchema = z.object({
 
 export const ThreadSchema = z.object({
     id: IdSchema,
-    messages: z.array(IdSchema),
+    messages: z.array(MessageSchema),
 });
 
 // Type exports

@@ -1,3 +1,4 @@
+import copy
 import time
 import uuid
 from typing import Callable, Dict, List, Optional
@@ -8,6 +9,7 @@ from siili_ai_sdk.llm.converters import convert_thread_message_to_langchain
 from siili_ai_sdk.thread.models import (
     BlockAddedEvent,
     BlockFullyAddedEvent,
+    MessageAddedEvent,
     MessageBlock,
     MessageBlockType,
     MessageFullyAddedEvent,
@@ -85,6 +87,7 @@ class ThreadContainer:
     def add_message(self, msg: ThreadMessage) -> None:
         """Add a new message to the thread"""
         self.messages.append(msg)
+        self._emit_event(MessageAddedEvent(message=copy.deepcopy(msg)))
         self._increment_version()
 
     def add_message_block(self, message_id: str, block: MessageBlock) -> None:
@@ -94,7 +97,7 @@ class ThreadContainer:
                 message.blocks.append(block)
 
                 # Emit block added event
-                self._emit_event(BlockAddedEvent(message_id=message_id, block_id=block.id, block=block))
+                self._emit_event(BlockAddedEvent(message_id=message_id, block_id=block.id, block=copy.deepcopy(block)))
 
                 # If it's a tool block, emit tool call started
                 if block.type == MessageBlockType.TOOL_USE and block.tool_call_id:
@@ -116,6 +119,9 @@ class ThreadContainer:
         for message in self.messages:
             for block in message.blocks:
                 if block.tool_call_id == response.id:
+                    block.streaming = False
+                    block.tool_call_response = response.response
+                    block.tool_call_error = response.error
                     block_id = block.id
                     break
             if block_id:
@@ -187,7 +193,7 @@ class ThreadContainer:
                         completed_blocks.append(block.id)
 
                         # Emit block fully added event for each completed block
-                        self._emit_event(BlockFullyAddedEvent(block_id=block.id, message_id=message_id, block=block))
+                        self._emit_event(BlockFullyAddedEvent(block_id=block.id, message_id=message_id, block=copy.deepcopy(block)))
                 break
 
         if completed_blocks:
@@ -210,7 +216,7 @@ class ThreadContainer:
                     block.content = self.streaming_content[block.id]
                     logger.info(f"🔧 Block {block.id} content: {block.content}")
                 completed_blocks.append(block.id)
-                self._emit_event(BlockFullyAddedEvent(block_id=block.id, message_id=message.id, block=block))
+                self._emit_event(BlockFullyAddedEvent(block_id=block.id, message_id=message.id, block=copy.deepcopy(block)))
             self.finalize_streaming_blocks(message.id, completed_blocks)
         if completed_blocks:
             self._increment_version()
@@ -223,7 +229,7 @@ class ThreadContainer:
         """Mark the message as fully added and emit the event"""
         latest_message = self.get_latest_ai_message()
         if latest_message:
-            self._emit_event(MessageFullyAddedEvent(message=latest_message))
+            self._emit_event(MessageFullyAddedEvent(message=copy.deepcopy(latest_message)))
 
     def is_streaming_active(self) -> bool:
         """Check if any blocks are currently streaming"""

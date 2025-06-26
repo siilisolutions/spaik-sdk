@@ -166,3 +166,39 @@ class TestBaseAgent:
         logger.info(f"thread_container: {agent.thread_container.streaming_content}")
         assert len(response.blocks) == 1
         assert len(response.blocks[0].content or "") > 10
+
+    @pytest.mark.asyncio
+    async def test_mystery_streaming_issue(self):
+        agent = ConcreteTestAgent(
+            recording_name="test_mystery_streaming_issue",
+        )
+        events=[]
+        counts={}
+        async for event in agent.get_event_stream("derp'"):
+            events.append(event)
+            counts[event.get_event_type()] = counts.get(event.get_event_type(), 0) + 1
+        logger.info(f"counts: {counts}")
+        assert counts["MessageAdded"] == 1
+        assert counts["BlockAdded"] == 4
+        assert counts["BlockFullyAdded"] == 4
+        assert counts["ToolCallStarted"] == 2
+        assert counts["ToolResponseReceived"] == 2
+
+        # weird stuff going on on second run
+
+        events=[]
+        counts={}
+        async for event in agent.get_event_stream("derp'"):
+            events.append(event)
+            if event.get_event_type() == "MessageAdded":
+                logger.info(f"message: {event.message}")
+            counts[event.get_event_type()] = counts.get(event.get_event_type(), 0) + 1
+        logger.info(f"counts: {counts}")
+        assert counts["MessageAdded"] == 1
+        assert counts["BlockAdded"] == 5
+        assert counts["BlockFullyAdded"] == 5
+        assert counts["ToolCallStarted"] == 2
+        assert counts["ToolResponseReceived"] == 2
+
+        
+
