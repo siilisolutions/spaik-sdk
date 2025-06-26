@@ -1,6 +1,4 @@
-
-import { useThreadList, useThreadSelection } from '../../stores/threadListStore';
-import { useThreadActions } from '../../stores/threadStore';
+import { useThreadList, useThreadSelection, useThreadActions } from '@siili-ai-sdk/hooks';
 import { ThreadListItem } from './ThreadListItem';
 
 const styles = `
@@ -113,7 +111,6 @@ export function ThreadList() {
                             {threadSummaries.map((threadSummary) => (
                                 <ThreadListItem
                                     key={threadSummary.thread_id}
-                                    threadId={threadSummary.thread_id}
                                     title={threadSummary.title}
                                     messageCount={threadSummary.message_count}
                                     lastActivity={threadSummary.last_activity_time}

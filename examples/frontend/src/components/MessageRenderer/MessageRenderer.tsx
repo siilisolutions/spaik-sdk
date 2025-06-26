@@ -1,4 +1,4 @@
-import { Message } from '../../stores/messageTypes';
+import { Message } from '@siili-ai-sdk/hooks';
 import { MessageContent } from './MessageContent';
 import { MessageHeader } from './MessageHeader';
 

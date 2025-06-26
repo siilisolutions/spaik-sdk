@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Id } from '../../stores/messageTypes';
-import { useThreadActions } from '../../stores/threadStore';
+import { useThreadActions } from '@siili-ai-sdk/hooks';
 
 interface Props {
-    threadId: Id;
+    threadId: string;
 }
 
 export function MessageInput({ threadId }: Props) {

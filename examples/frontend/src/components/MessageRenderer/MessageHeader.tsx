@@ -1,4 +1,4 @@
-import { Message } from '../../stores/messageTypes';
+import { Message } from '@siili-ai-sdk/hooks';
 import { AuthorIndicator } from './AuthorIndicator';
 import { MessageTimestamp } from './MessageTimestamp';
 
