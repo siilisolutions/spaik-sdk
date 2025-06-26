@@ -1,50 +1,63 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from siili_agent_sdk import BaseAgent, LLMConfig, ProviderType, LLMModel
+from typing import List
+import uvicorn
+from dotenv import load_dotenv
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Agent SDK Backend", version="0.1.0")
+from siili_ai_sdk.agent.base_agent import BaseAgent
+from siili_ai_sdk.tools.tool_provider import ToolProvider, tool, BaseTool
+from siili_ai_sdk.server.api.routers.api_builder import ApiBuilder
+from siili_ai_sdk.models.model_registry import ModelRegistry
 
+load_dotenv()
 
-class ChatRequest(BaseModel):
-    message: str
+# FastAPI app
+app = FastAPI(title="Agent SDK Backend Example", version="0.0.1")
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-class ChatResponse(BaseModel):
-    response: str
+class DemoTool(ToolProvider):
+    def get_tools(self) -> List[BaseTool]:
+        @tool
+        def get_secret_greeting() -> str:
+            """Returns the users secret greeting."""
+            return "kikkelis kokkelis"
 
+        @tool
+        def get_user_name() -> str:
+            """Returns the users name."""
+            return "Seppo Hovi"
 
-class SimpleAgent(BaseAgent):
-    def __init__(self):
-        config = LLMConfig(
-            provider=ProviderType.OPENAI_DIRECT,
-            model=LLMModel.O3_MINI_LATEST,
-            temperature=0.7,
-        )
-        super().__init__(config)
+        return [get_secret_greeting, get_user_name]
+
+class DemoAgent(BaseAgent):
+    def get_tool_providers(self) -> List[ToolProvider]:
+        return [DemoTool()]
+
+class MinimalAgent(BaseAgent):
+    pass
+
+@app.on_event("startup")
+async def startup_event():
+
+    agent = DemoAgent(llm_model=ModelRegistry.CLAUDE_4_SONNET)
     
-    async def process_message(self, message: str) -> str:
-        # TODO: Implement actual agent logic
-        return f"Agent response to: {message}"
+    api_builder = ApiBuilder.local(agent=agent)
+    thread_router = api_builder.build_thread_router()
+    app.include_router(thread_router)
 
 
-# Global agent instance
-agent = SimpleAgent()
-
-
-@app.get("/")
-async def health_check():
-    return {"status": "healthy", "service": "agent-backend"}
-
-
-@app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
-    try:
-        response = await agent.process_message(request.message)
-        return ChatResponse(response=response)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def run_server():
+    """Run the uvicorn server"""
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
 
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    run_server() 
