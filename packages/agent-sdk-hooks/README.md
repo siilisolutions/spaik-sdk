@@ -2,14 +2,33 @@
 
 A React hooks library for building AI agent chat interfaces with real-time streaming capabilities. Built with Zustand for state management and Zod for type safety.
 
-## Features
+## TLDR
 
-- 🧵 **Thread-based conversations** - Organize chats into manageable threads
-- ⚡ **Real-time streaming** - Messages stream in as the AI responds 
-- 🔧 **Tool integration** - Support for AI tool calls and responses
-- 📝 **Structured messages** - Messages with blocks (text, reasoning, tool usage, errors)
-- 🎯 **Type-safe** - Full TypeScript support with Zod validation
-- 🏪 **Zustand state** - Efficient state management with automatic updates
+This library provides React hooks to easily integrate AI chat interfaces with siili-ai-sdk based backends. Just wrap your app in the provider, use the hooks to manage threads and messages, and get real-time streaming chat with minimal setup.
+
+```tsx
+// 1. Setup provider
+<AgentSdkClientProvider apiClient={apiClient}>
+  <YourChatApp />
+</AgentSdkClientProvider>
+
+// 2. Use hooks in components
+const { threadSummaries } = useThreadList();
+const { thread } = useThread(selectedThreadId);
+const { sendMessage } = useThreadActions();
+```
+
+## Purpose
+
+This library wraps and streamlines integration with siili-ai-sdk based backends, handling API connections out of the box even in complex serverless environments. It abstracts away the complexity of:
+
+- WebSocket connections and reconnection logic
+- Real-time message streaming
+- Thread and message state management  
+- Error handling and retry logic
+- Type-safe API interactions
+
+Perfect for building production-ready AI chat applications without dealing with the underlying infrastructure complexity.
 
 ## Installation
 
@@ -231,7 +250,3 @@ yarn lint --fix
 # Run tests
 yarn test
 ```
-
-## License
-
-MIT 

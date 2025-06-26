@@ -1,10 +1,52 @@
-v 0.01 - extremely unstable. Do not use in production or internally yet.
+# Agent SDK
 
+**Build AI agent POCs that scale to production in minutes, not months.**
 
+The Agent SDK is designed around one core principle: making it *ridiculously fast* to build agentic AI solutions that work in production. Not just demos, not just prototypes - actual production-grade systems that deliver business value.
 
-# Agent SDK Monorepo
+## The Problem
 
-A Python SDK for building various kinds of agentic + AI solutions with TypeScript React hooks for frontend integration.
+Building AI agents is easy. Building AI agents that work reliably in production is hard. Really hard.
+
+You've got model provider differences, streaming complexities, tool orchestration nightmares, state management, persistence, authentication, error handling, testing... The list goes on. Most of these problems are invisible until you try to put your POC in front of real users.
+
+## The Solution
+
+Hide all that complexity behind a clean, convention-over-configuration API. Give you production-ready infrastructure out of the box, but let you customize everything when you need to.
+
+**Hello World:**
+```python
+from siili_ai_sdk.agent.base_agent import BaseAgent
+
+class HelloAgent(BaseAgent):
+    pass
+
+agent = HelloAgent(system_prompt="You are a helpful assistant")
+print(agent.get_response_text("Hello!"))
+```
+
+**Production-ready in one more step:**
+```python
+# Add FastAPI server + streaming + persistence + auth
+api_builder = ApiBuilder.local(agent=agent)
+app.include_router(api_builder.build_thread_router())
+```
+
+## What It Actually Does
+
+### Backend (Python SDK)
+- **Multi-LLM Support**: Seamlessly switch between OpenAI, Anthropic, Google, Azure
+- **Response Harmonization**: Tool calls, reasoning, streaming - all work identically across providers
+- **Production Infrastructure**: FastAPI servers, persistence, auth, error handling built-in
+- **Streaming Made Easy**: Real-time responses with proper cancellation support
+- **Serverless-First**: Works perfectly in cloud functions and serverless environments
+- **Testing & Debugging**: Record/playback LLM responses, built-in tracing, CLI tools
+
+### Frontend (React Hooks)
+- **Drop-in Chat UI**: Complete state management for chat interfaces
+- **Real-time Streaming**: WebSocket reconnection, error handling, all handled
+- **Type Safety**: Full TypeScript support with Zod validation
+- **Production Ready**: Built for complex serverless deployments
 
 ## Structure
 
@@ -14,7 +56,7 @@ agent-sdk/
 │   ├── agent-sdk/          # Core Python SDK
 │   └── agent-sdk-hooks/    # React hooks for frontend integration
 └── examples/
-    ├── agents/             # Python agent examples
+    ├── agents/             # Simple Python examples
     ├── backend/            # FastAPI backend examples
     └── frontend/           # React frontend examples
 ```
@@ -28,63 +70,59 @@ agent-sdk/
 - yarn (Node.js package manager)
 
 ### Setup
+```bash
+# Python dependencies
+cd examples/backend && uv sync
 
-1. **Install Python dependencies for examples:**
-   ```bash
-   # Agent examples
-   cd examples/agents
-   uv sync
+# TypeScript dependencies  
+yarn install:all
+```
 
-   # Backend examples  
-   cd examples/backend
-   uv sync
-   ```
+### Run Full Stack Example
+```bash
+# Terminal 1: Backend
+cd examples/backend
+uv run uvicorn main:app --reload
 
-2. **Install TypeScript dependencies:**
-   ```bash
-   # Install all JS/TS dependencies
-   yarn install:all
-   ```
+# Terminal 2: Frontend
+cd examples/frontend  
+yarn dev
+```
 
-### Development
+Visit `http://localhost:5173` for a full-featured chat interface.
 
-- **Run Python agent examples:**
-  ```bash
-  cd examples/agents
-  uv run python hello_agent.py
-  ```
+## Key Features
 
-- **Run FastAPI backend:**
-  ```bash
-  cd examples/backend
-  uv run uvicorn main:app --reload
-  ```
+### Convention Over Configuration
+- Zero setup for local development
+- Sane defaults for everything
+- Easy to override when you need control
 
-- **Run React frontend:**
-  ```bash
-  cd examples/frontend
-  yarn dev
-  ```
+### Model Provider Abstraction
+- Identical API across all providers
+- Easy model switching and A/B testing
+- Handles provider-specific quirks automatically
 
-## Packages
+### Production-Ready Infrastructure
+- Built-in persistence layer
+- Authentication and authorization
+- Rate limiting and error handling
+- Serverless-friendly architecture
 
-### `packages/agent-sdk`
-Core Python SDK for building AI agents with LLM integration, streaming, and tool support.
+### Developer Experience
+- Excellent TypeScript/Python typing
+- Built-in debugging and tracing tools
+- CLI helpers for local testing
+- Comprehensive test automation support
 
-### `packages/agent-sdk-hooks`
-React hooks library with Zustand state management and Zod type validation for connecting frontends to agent backends.
+## Documentation
 
-## Examples
+- **[Python SDK](packages/agent-sdk/README.md)** - Core agent functionality
+- **[React Hooks](packages/agent-sdk-hooks/README.md)** - Frontend integration
+- **[Examples](examples/)** - Working examples for all use cases
 
-### `examples/agents`
-Simple Python examples showing how to use the agent SDK.
+## Development Status
 
-### `examples/backend`
-FastAPI backend examples that expose agent APIs.
+**v0.01** - Extremely unstable. Do not use in production or internally yet.
 
-### `examples/frontend`
-React frontend examples using the agent hooks library.
-
----
-
-**Note:** This is a development setup. All packages are configured for local development with file:// dependencies. 
+This is pre-alpha software under active development. APIs will change frequently without notice. 
