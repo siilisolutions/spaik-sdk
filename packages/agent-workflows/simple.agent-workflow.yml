@@ -12,10 +12,18 @@ jobs:
           repo: "git@gitlab.siilicloud.com:siili-ai-labs/siili-ai-sdk.git"
           ref: "main"         # optional
           files:
-            - "yarn.lock"
+            - "templates/agent"
             # add more paths or globs if needed
-          dest: "."
-      - uses: agents/general
-        with: 
-          prompt: "say hello"
+          dest: "testicle"
+      # - uses: agents/general
+      #   with: 
+      #     prompt: "say hello"
+      # - uses: terminal/run
+      #   with:
+      #     cmd: ["echo", "Running a quick command..."]
+      # - uses: terminal/script
+      #   with:
+      #     path: "testicle/templates/agent/hello_agent.py"
+      #     interpreter: "python3"
+      #     args: ["--demo"]
       

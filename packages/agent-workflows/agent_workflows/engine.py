@@ -20,10 +20,12 @@ class WorkflowExecutionError(Exception):
 class WorkflowEngine:
     """Executes workflows with parallel job support"""
     
-    def __init__(self, workspace: Optional[Path] = None):
+    def __init__(self, workspace: Optional[Path] = None, step_overrides: Optional[Dict[str, Dict[str, Any]]] = None):
         self.workspace = workspace or Path.cwd()
         self.history_dir = self.workspace / '.agent-workflows' / 'history'
         self.history_dir.mkdir(parents=True, exist_ok=True)
+        # Step-level overrides keyed by plugin path, e.g. {"git/download": {"dest": "..."}}
+        self.step_overrides: Dict[str, Dict[str, Any]] = step_overrides or {}
     
     async def run(self, workflow_path: Path) -> Dict[str, Any]:
         """Execute a workflow and return run metadata"""
@@ -161,7 +163,10 @@ class WorkflowEngine:
                            job_name: str, step_index: int):
         """Execute a single step"""
         plugin_path = step['uses']
-        step_with = step.get('with', {})
+        # Start from step's with-config, then apply CLI-provided overrides for this plugin
+        step_with = dict(step.get('with', {}))
+        if plugin_path in self.step_overrides:
+            step_with.update(self.step_overrides[plugin_path])
         
         self._log(f"  📦 [{job_name}] Step {step_index}: {plugin_path}")
         
@@ -193,7 +198,7 @@ class WorkflowEngine:
         print(f"[{timestamp}] {message}")
 
 
-async def run_workflow(workflow_path: Path, workspace: Optional[Path] = None) -> Dict[str, Any]:
+async def run_workflow(workflow_path: Path, workspace: Optional[Path] = None, step_overrides: Optional[Dict[str, Dict[str, Any]]] = None) -> Dict[str, Any]:
     """Convenience function to run a workflow"""
-    engine = WorkflowEngine(workspace)
+    engine = WorkflowEngine(workspace, step_overrides)
     return await engine.run(workflow_path)

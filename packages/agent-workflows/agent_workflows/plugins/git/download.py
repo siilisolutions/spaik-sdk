@@ -11,6 +11,8 @@ with:
 
 Behavior:
 - If files are provided, only those files (or glob matches) are copied from the repo checkout.
+  - For files, only the filename is placed under `dest` (the repo's directory path is not preserved).
+  - For directories, the directory's CONTENTS are copied under `dest` (the top-level directory name is not included), while preserving the sub-structure inside that directory.
 - If files are omitted, the entire repository contents (excluding .git) are copied into dest.
 """
 
@@ -92,16 +94,33 @@ def _glob_many(base: Path, patterns: Iterable[str]) -> List[Path]:
 def _copy_selected_files(repo_dir: Path, dest_dir: Path, files: List[Path]) -> List[str]:
     copied: List[str] = []
     for src in files:
-        # Compute destination path relative to repo root
+        # Compute paths relative to repo
         rel = src.relative_to(repo_dir)
-        dst = dest_dir / rel
+
         if src.is_dir():
-            shutil.copytree(src, dst, dirs_exist_ok=True)
-            copied.append(str(rel) + "/")
+            # When a directory is selected, drop the top-level directory name
+            # and place its contents directly under dest, preserving internal structure
+            for item in src.rglob("*"):
+                if ".git" in item.parts:
+                    continue
+                if item.is_dir():
+                    # Ensure directories exist to preserve internal structure
+                    relative_in_dir = item.relative_to(src)
+                    target_dir = dest_dir / relative_in_dir
+                    target_dir.mkdir(parents=True, exist_ok=True)
+                    continue
+                # Files
+                relative_in_dir = item.relative_to(src)
+                dst_file = dest_dir / relative_in_dir
+                _ensure_parent_dir(dst_file)
+                shutil.copy2(item, dst_file)
+            copied.append(str(rel) + "/ (flattened)")
         elif src.is_file():
-            _ensure_parent_dir(dst)
-            shutil.copy2(src, dst)
-            copied.append(str(rel))
+            # Flatten file destination: drop repo subdirectories, keep only basename
+            dst_file = dest_dir / src.name
+            _ensure_parent_dir(dst_file)
+            shutil.copy2(src, dst_file)
+            copied.append(src.name)
     return copied
 
 
