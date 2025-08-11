@@ -45,6 +45,8 @@ def validate_workflow(data: Dict[str, Any]) -> Dict[str, Any]:
     return {
         'name': data.get('name', 'unnamed-workflow'),
         'env': data.get('env', {}),
+        # Optional variables block for template interpolation
+        'vars': data.get('vars', {}),
         'jobs': jobs
     }
 

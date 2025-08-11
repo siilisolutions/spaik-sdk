@@ -8,6 +8,7 @@ with:
   timeout: <int>              # optional - seconds before killing (0 = none)
   continue_on_error: <bool>   # optional - don't fail step on nonzero exit
   make_executable: <bool>     # optional - chmod +x before run (default: true)
+  cwd: <str>                  # optional - working directory override
 """
 
 from __future__ import annotations
@@ -58,7 +59,10 @@ async def execute(ctx: Dict[str, Any]) -> None:
     if not isinstance(path_str, str) or not path_str:
         raise ValueError("'with.path' is required and must be a string")
 
-    script_path = (workspace / path_str).resolve()
+    cwd_override = step_with.get("cwd")
+    base_dir = (workspace / cwd_override).resolve() if isinstance(cwd_override, str) and cwd_override else workspace
+
+    script_path = (base_dir / path_str).resolve()
     if not script_path.exists():
         raise FileNotFoundError(f"Script not found: {script_path}")
 
@@ -100,7 +104,8 @@ async def execute(ctx: Dict[str, Any]) -> None:
         argv = [str(script_path), *[str(a) for a in args]]
 
     logger("🧨 Running script")
-    exit_code = await _run(argv, cwd=script_path.parent, env=base_env, timeout_seconds=timeout_seconds, logger=logger)
+    working_dir = script_path.parent if not isinstance(cwd_override, str) or not cwd_override else base_dir
+    exit_code = await _run(argv, cwd=working_dir, env=base_env, timeout_seconds=timeout_seconds, logger=logger)
     if exit_code != 0 and not continue_on_error:
         raise RuntimeError(f"Script failed with exit code {exit_code}")
     logger("✅ Script finished")
