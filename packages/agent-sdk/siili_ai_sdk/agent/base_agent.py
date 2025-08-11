@@ -92,7 +92,7 @@ class BaseAgent(ABC):
 
     def get_structured_response(self, prompt: str, output_schema: Type[T]) -> T:
         self.trace.add_structured_response_input(prompt, output_schema)
-        llm_config = self.create_llm_config().as_structured_response_config()
+        llm_config = self.llm_config.as_structured_response_config()
         langchain_service = self._create_langchain_service(llm_config)
         ret = langchain_service.get_structured_response(prompt, output_schema)
         self.trace.add_structured_response_output(ret)
