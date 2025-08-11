@@ -20,17 +20,21 @@ def cli():
 @click.option('--file', '-f', default='.agent-workflow.yml', help='Workflow file to run')
 @click.option('--workspace', '-w', type=click.Path(exists=True, file_okay=False), 
               help='Workspace directory')
-def run(file: str, workspace: str):
+@click.option('--set', 'set_kv', multiple=True, metavar='KEY=VALUE',
+              help='Override step with-values globally, e.g. git/download.dest=out')
+@click.option('--dest', type=str, default=None, help='Convenience: set git/download.dest')
+def run(file: str, workspace: str, set_kv: tuple[str], dest: str):
     """Run a workflow"""
     workflow_path = Path(file)
     workspace_path = Path(workspace) if workspace else None
+    step_overrides = _parse_overrides(set_kv, dest)
     
     if not workflow_path.exists():
         click.echo(f"❌ Workflow file not found: {workflow_path}", err=True)
         sys.exit(1)
     
     try:
-        result = asyncio.run(run_workflow(workflow_path, workspace_path))
+        result = asyncio.run(run_workflow(workflow_path, workspace_path, step_overrides))
         
         if result['status'] == 'success':
             click.echo(f"✅ Workflow '{result['workflow_name']}' completed successfully")
@@ -142,6 +146,41 @@ def validate(workflow_file: str):
 def main():
     """Main entry point"""
     cli()
+
+
+def _parse_overrides(set_kv: tuple[str], dest: str | None) -> dict:
+    """Parse CLI overrides into { plugin: { key: value } } mapping.
+
+    Syntax:
+      --set git/download.dest=foo
+      --set agents/general.prompt="hello"
+      --dest out  (shorthand for git/download.dest)
+    """
+    overrides: dict[str, dict[str, str]] = {}
+
+    def assign(plugin: str, key: str, value: str):
+        if plugin not in overrides:
+            overrides[plugin] = {}
+        overrides[plugin][key] = value
+
+    # explicit KEY=VALUE entries
+    for pair in set_kv:
+        if '=' not in pair:
+            continue
+        left, value = pair.split('=', 1)
+        # left should be plugin.key
+        if '.' not in left:
+            # if no plugin provided, assume global to all plugins? we skip to avoid ambiguity
+            continue
+        plugin, key = left.split('.', 1)
+        plugin = plugin.strip()
+        key = key.strip()
+        assign(plugin, key, value)
+
+    if dest:
+        assign('git/download', 'dest', dest)
+
+    return overrides
 
 
 if __name__ == '__main__':

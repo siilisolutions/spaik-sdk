@@ -35,4 +35,4 @@ ignore = ["W293"]
 quote-style = "double" 
 
 [tool.uv.sources]
-siili-ai-sdk = { path = "../../packages/agent-sdk", editable = true }
+siili-ai-sdk = { git = "ssh://git@gitlab.siilicloud.com/siili-ai-labs/siili-ai-sdk.git", subdirectory = "packages/agent-sdk" }
