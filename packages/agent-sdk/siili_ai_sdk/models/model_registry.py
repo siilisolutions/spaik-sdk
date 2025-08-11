@@ -13,13 +13,18 @@ class ModelRegistry:
     CLAUDE_3_7_SONNET = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-3-7-sonnet-latest", prompt_caching=True)
     CLAUDE_4_SONNET = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-sonnet-4-20250514", prompt_caching=True)
     CLAUDE_4_OPUS = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-4-20250514", prompt_caching=True)
+    CLAUDE_4_1_OPUS = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-4-1-20250805", prompt_caching=True)
     CLAUDE_4_SONNET_MAY_2025 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-sonnet-4-20250514", prompt_caching=True)
     CLAUDE_4_OPUS_MAY_2025 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-4-20250514", prompt_caching=True)
+    
 
     # OpenAI models
     GPT_4_1 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1", reasoning=False, prompt_caching=True)
     O4_MINI = LLMModel(family=LLMFamilies.OPENAI, name="o4-mini")
     O4_MINI_APRIL_2025 = LLMModel(family=LLMFamilies.OPENAI, name="o4-mini-2025-04-16")
+    GPT_5 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5", reasoning=True, prompt_caching=True)
+    GPT_5_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-mini", reasoning=True, prompt_caching=True)
+    GPT_5_NANO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-nano", reasoning=True, prompt_caching=True)
 
     # Google models
     GEMINI_2_5_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash-preview-05-20", prompt_caching=True)
@@ -69,6 +74,9 @@ class ModelRegistry:
             "sonnet": cls.CLAUDE_4_SONNET,
             "sonnet 3.7": cls.CLAUDE_3_7_SONNET,
             "opus": cls.CLAUDE_4_OPUS,
+            "opus 4.1": cls.CLAUDE_4_1_OPUS,
+            "claude 4.1 opus": cls.CLAUDE_4_1_OPUS,
+            "claude opus 4.1": cls.CLAUDE_4_1_OPUS,
             "claude": cls.CLAUDE_4_SONNET,
             "claude 3.7 sonnet": cls.CLAUDE_3_7_SONNET,
             "claude 4 sonnet": cls.CLAUDE_4_SONNET,
@@ -76,6 +84,10 @@ class ModelRegistry:
             "o4 mini": cls.O4_MINI,
             "o4 mini 2025-04-16": cls.O4_MINI_APRIL_2025,
             "gpt 4.1": cls.GPT_4_1,
+            "gpt 5": cls.GPT_5,
+            "gpt5": cls.GPT_5,
+            "gpt 5 mini": cls.GPT_5_MINI,
+            "gpt 5 nano": cls.GPT_5_NANO,
             "gemini 2.5 flash": cls.GEMINI_2_5_FLASH,
             "gemini 2.5 pro": cls.GEMINI_2_5_PRO,
         }

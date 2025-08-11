@@ -116,6 +116,8 @@ class TestBaseAgent:
             ModelRegistry.GPT_4_1,
             ModelRegistry.O4_MINI,
             ModelRegistry.GEMINI_2_5_FLASH,
+            ModelRegistry.CLAUDE_4_1_OPUS,
+            ModelRegistry.GPT_5,
         ],
     )
     def test_get_response_with_tool_call(self, model):
