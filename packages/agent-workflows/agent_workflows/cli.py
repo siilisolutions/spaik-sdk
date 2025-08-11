@@ -16,25 +16,30 @@ def cli():
     pass
 
 
-@cli.command()
+@cli.command(context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
 @click.option('--file', '-f', default='.agent-workflow.yml', help='Workflow file to run')
 @click.option('--workspace', '-w', type=click.Path(exists=True, file_okay=False), 
               help='Workspace directory')
-@click.option('--set', 'set_kv', multiple=True, metavar='KEY=VALUE',
+@click.option('--set', 'set_kv', multiple=True, metavar='PLUGIN.KEY=VALUE',
               help='Override step with-values globally, e.g. git/download.dest=out')
+@click.option('--var', 'vars_kv', multiple=True, metavar='KEY=VALUE',
+              help='Set/override workflow variables available to interpolation (e.g. myvar=foo)')
 @click.option('--dest', type=str, default=None, help='Convenience: set git/download.dest')
-def run(file: str, workspace: str, set_kv: tuple[str], dest: str):
+@click.pass_context
+def run(ctx: click.Context, file: str, workspace: str, set_kv: tuple[str], vars_kv: tuple[str], dest: str):
     """Run a workflow"""
     workflow_path = Path(file)
     workspace_path = Path(workspace) if workspace else None
     step_overrides = _parse_overrides(set_kv, dest)
+    # Support both --var KEY=VALUE and free-form --key value pairs
+    vars_overrides = {**_parse_vars(vars_kv), **_parse_extra_vars(ctx.args)}
     
     if not workflow_path.exists():
         click.echo(f"❌ Workflow file not found: {workflow_path}", err=True)
         sys.exit(1)
     
     try:
-        result = asyncio.run(run_workflow(workflow_path, workspace_path, step_overrides))
+        result = asyncio.run(run_workflow(workflow_path, workspace_path, step_overrides, vars_overrides))
         
         if result['status'] == 'success':
             click.echo(f"✅ Workflow '{result['workflow_name']}' completed successfully")
@@ -181,6 +186,43 @@ def _parse_overrides(set_kv: tuple[str], dest: str | None) -> dict:
         assign('git/download', 'dest', dest)
 
     return overrides
+
+
+def _parse_vars(vars_kv: tuple[str]) -> dict:
+    """Parse --var KEY=VALUE pairs to a simple dict."""
+    vars_map: dict[str, str] = {}
+    for pair in vars_kv:
+        if '=' not in pair:
+            continue
+        key, value = pair.split('=', 1)
+        key = key.strip()
+        if not key:
+            continue
+        vars_map[key] = value
+    return vars_map
+
+
+def _parse_extra_vars(args: list[str]) -> dict:
+    """Parse unknown CLI args as variable overrides using --key value syntax.
+
+    Examples:
+      --myvar project --sub src -> {"myvar": "project", "sub": "src"}
+      --flag                    -> {"flag": "true"}
+    """
+    vars_map: dict[str, str] = {}
+    i = 0
+    while i < len(args):
+        token = args[i]
+        if isinstance(token, str) and token.startswith('--') and len(token) > 2:
+            key = token[2:]
+            value = "true"
+            if i + 1 < len(args) and not (isinstance(args[i+1], str) and args[i+1].startswith('--')):
+                value = str(args[i+1])
+                i += 1
+            if key:
+                vars_map[key] = value
+        i += 1
+    return vars_map
 
 
 if __name__ == '__main__':

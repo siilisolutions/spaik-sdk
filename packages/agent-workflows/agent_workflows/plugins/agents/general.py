@@ -15,8 +15,6 @@ async def execute(ctx: Dict[str, Any]) -> None:
     )
     response = await agent.get_response_text_async(prompt)
     logger(f"🤖 Running agent with prompt: {prompt}, response: {response}")
-    await asyncio.sleep(0.3)
-    logger(f"🎉 Agent completed successfully!") 
 
 
 

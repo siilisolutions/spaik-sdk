@@ -20,12 +20,15 @@ class WorkflowExecutionError(Exception):
 class WorkflowEngine:
     """Executes workflows with parallel job support"""
     
-    def __init__(self, workspace: Optional[Path] = None, step_overrides: Optional[Dict[str, Dict[str, Any]]] = None):
+    def __init__(self, workspace: Optional[Path] = None, step_overrides: Optional[Dict[str, Dict[str, Any]]] = None, vars_overrides: Optional[Dict[str, Any]] = None):
         self.workspace = workspace or Path.cwd()
         self.history_dir = self.workspace / '.agent-workflows' / 'history'
         self.history_dir.mkdir(parents=True, exist_ok=True)
         # Step-level overrides keyed by plugin path, e.g. {"git/download": {"dest": "..."}}
         self.step_overrides: Dict[str, Dict[str, Any]] = step_overrides or {}
+        # global variables for interpolation (filled per run)
+        self.global_vars: Dict[str, Any] = {}
+        self.vars_overrides: Dict[str, Any] = vars_overrides or {}
     
     async def run(self, workflow_path: Path) -> Dict[str, Any]:
         """Execute a workflow and return run metadata"""
@@ -48,6 +51,11 @@ class WorkflowEngine:
                 'jobs': {}
             }
             
+            # capture global vars for interpolation (workflow vars + CLI overrides)
+            self.global_vars = dict(workflow.get('vars', {}))
+            if self.vars_overrides:
+                self.global_vars.update(self.vars_overrides)
+
             self._log(f"🚀 Starting workflow: {workflow['name']}")
             
             # Execute jobs in parallel where possible
@@ -124,8 +132,9 @@ class WorkflowEngine:
         
         self._log(f"🔄 Starting job: {job_name}")
         
-        # Merge environment variables
+        # Merge environment variables and variables
         env = {**global_env, **job_config.get('env', {})}
+        job_vars: Dict[str, Any] = {**self.global_vars, **job_config.get('vars', {})}
         
         try:
             # Execute steps sequentially
@@ -139,7 +148,7 @@ class WorkflowEngine:
                 }
                 run_metadata['jobs'][job_name]['steps'].append(step_metadata)
                 
-                await self._execute_step(step, env, job_name, i)
+                await self._execute_step(step, env, job_vars, job_name, i)
                 
                 step_metadata.update({
                     'end_time': time.time(),
@@ -159,7 +168,7 @@ class WorkflowEngine:
             })
             raise
     
-    async def _execute_step(self, step: Dict[str, Any], env: Dict[str, Any], 
+    async def _execute_step(self, step: Dict[str, Any], env: Dict[str, Any], vars_map: Dict[str, Any],
                            job_name: str, step_index: int):
         """Execute a single step"""
         plugin_path = step['uses']
@@ -170,19 +179,67 @@ class WorkflowEngine:
         
         self._log(f"  📦 [{job_name}] Step {step_index}: {plugin_path}")
         
+        # Interpolate variables into `with` values
+        interpolated_with = self._interpolate(step_with, env=env, vars_map=vars_map)
+
         # Create step context
         ctx = {
             'env': env,
             'step': step,
             'workspace': self.workspace,
             'logger': self._log,
-            'with': step_with
+            'with': interpolated_with
         }
         
         try:
             await load_plugin(plugin_path, ctx)
         except Exception as e:
             raise WorkflowExecutionError(f"Step {step_index} failed: {e}")
+
+    def _interpolate(self, data: Any, env: Dict[str, Any], vars_map: Dict[str, Any]) -> Any:
+        """Recursively interpolate strings in data using vars and env.
+
+        Supports:
+          - Python format-like: "{myvar}"
+          - GitHub Actions-like: "${{ vars.myvar }}" and "${{ env.MY_ENV }}"
+        """
+        import re
+
+        def replace_in_string(s: str) -> str:
+            # 1) Handle ${{ ... }} expressions
+            def gh_replace(match: re.Match[str]) -> str:
+                expr = match.group(1).strip()
+                # support vars.foo and env.BAR
+                if expr.startswith('vars.'):
+                    key = expr[len('vars.'):]
+                    return str(vars_map.get(key, ''))
+                if expr.startswith('env.'):
+                    key = expr[len('env.'):]
+                    return str(env.get(key, ''))
+                # fallback to env then vars
+                return str(env.get(expr, vars_map.get(expr, '')))
+
+            s2 = re.sub(r"\$\{\{\s*([^}]+?)\s*\}\}", gh_replace, s)
+
+            # 2) Handle {var} braces, but avoid KeyError if missing
+            class SafeDict(dict):
+                def __missing__(self, key):  # type: ignore[override]
+                    return ""
+
+            combined = SafeDict({**{str(k): str(v) for k, v in vars_map.items()},
+                                 **{str(k): str(v) for k, v in env.items()}})
+            try:
+                return s2.format_map(combined)
+            except Exception:
+                return s2
+
+        if isinstance(data, str):
+            return replace_in_string(data)
+        if isinstance(data, list):
+            return [self._interpolate(v, env, vars_map) for v in data]
+        if isinstance(data, dict):
+            return {k: self._interpolate(v, env, vars_map) for k, v in data.items()}
+        return data
     
     async def _save_run_metadata(self, metadata: Dict[str, Any]):
         """Save run metadata to history"""
@@ -198,7 +255,7 @@ class WorkflowEngine:
         print(f"[{timestamp}] {message}")
 
 
-async def run_workflow(workflow_path: Path, workspace: Optional[Path] = None, step_overrides: Optional[Dict[str, Dict[str, Any]]] = None) -> Dict[str, Any]:
+async def run_workflow(workflow_path: Path, workspace: Optional[Path] = None, step_overrides: Optional[Dict[str, Dict[str, Any]]] = None, vars_overrides: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Convenience function to run a workflow"""
-    engine = WorkflowEngine(workspace, step_overrides)
+    engine = WorkflowEngine(workspace, step_overrides, vars_overrides)
     return await engine.run(workflow_path)

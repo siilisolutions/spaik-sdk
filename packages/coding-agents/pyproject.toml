@@ -1,0 +1,43 @@
+[project]
+name = "siili-coding-agents"
+version = "0.1.0"
+description = "Example agents using agent-sdk"
+requires-python = ">=3.10"
+dependencies = [
+    "siili-ai-sdk",
+    "claude-code-sdk>=0.0.14",
+    "anyio>=4.0.0",
+    "typer>=0.9.0",
+    "python-dotenv>=1.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "mypy",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["siili_coding_agents"]
+include = ["siili_coding_agents/py.typed"]
+
+[tool.ruff]
+line-length = 140
+fix = true
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["W293"]
+
+[tool.ruff.format]
+quote-style = "double" 
+
+[tool.uv.sources]
+siili-ai-sdk = { path = "../agent-sdk", editable = true }

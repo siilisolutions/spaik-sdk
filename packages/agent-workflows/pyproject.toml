@@ -8,6 +8,7 @@ dependencies = [
     "click>=8.0",
     "asyncio",
     "siili-ai-sdk",
+    "siili-coding-agents",
 ]
 
 [project.optional-dependencies]
@@ -28,3 +29,4 @@ packages = ["agent_workflows"]
 
 [tool.uv.sources]
 siili-ai-sdk = { path = "../agent-sdk", editable = true }
+siili-coding-agents = { path = "../coding-agents", editable = true }
