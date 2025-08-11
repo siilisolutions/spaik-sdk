@@ -1,0 +1,29 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+general stuff:
+- zod for type guards
+- use function for named functions instead of const
+- always use named exports and export them while declaring the functions
+- name react component props as "Props" unless conflict or need to export it, use interface instead of type
+- focus on clean code. small files small functions
+- comments are a code smell
+- zustand for type management
+- axios based api clients for interacing with backend, should extend BaseApiClient
+- do NOT add unnecessary index.ts files
+- do NOT use null types
+
+basic folders:
+
+src/stores -> zustand stores
+src/api -> interactinons with backend
+src/components -> atomic reusable components that are not tied to a particular view. if consisting one main component and multiple subcomponents name the main component SomeComponent/SomeComponent.tsx and put the subcomponents to the same folder
+src/views -> non reusable views. if there are components used only there put them in same folder
+src/utils -> random shit
+
+---------
+
+after youve done something complex in agent mode ALWAYS run `yarn tsc && yarn lint --fix && yarn test`
