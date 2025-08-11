@@ -1,0 +1,21 @@
+name: simple-workflow
+env:
+  ENVIRONMENT: demo
+
+jobs:
+  generate:
+    env:
+      AI_MODEL: gpt-4
+    steps:
+      - uses: git/download
+        with:
+          repo: "git@gitlab.siilicloud.com:siili-ai-labs/siili-ai-sdk.git"
+          ref: "main"         # optional
+          files:
+            - "yarn.lock"
+            # add more paths or globs if needed
+          dest: "."
+      - uses: agents/general
+        with: 
+          prompt: "say hello"
+      
