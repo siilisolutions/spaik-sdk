@@ -20,6 +20,7 @@ class ModelRegistry:
 
     # OpenAI models
     GPT_4_1 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1", reasoning=False, prompt_caching=True)
+    GPT_4O = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4o", reasoning=False, prompt_caching=True)
     O4_MINI = LLMModel(family=LLMFamilies.OPENAI, name="o4-mini")
     O4_MINI_APRIL_2025 = LLMModel(family=LLMFamilies.OPENAI, name="o4-mini-2025-04-16")
     GPT_5 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5", reasoning=True, prompt_caching=True)
@@ -84,8 +85,8 @@ class ModelRegistry:
             "o4 mini": cls.O4_MINI,
             "o4 mini 2025-04-16": cls.O4_MINI_APRIL_2025,
             "gpt 4.1": cls.GPT_4_1,
+            "gpt 4o": cls.GPT_4O,
             "gpt 5": cls.GPT_5,
-            "gpt5": cls.GPT_5,
             "gpt 5 mini": cls.GPT_5_MINI,
             "gpt 5 nano": cls.GPT_5_NANO,
             "gemini 2.5 flash": cls.GEMINI_2_5_FLASH,
