@@ -27,9 +27,6 @@ class EnvConfig:
     def get_default_model(self) -> LLMModel:
         return ModelRegistry.from_name(self.get_key("DEFAULT_MODEL"))
 
-    def get_provider_key(self, provider: str) -> str:
-        return self.get_key(f"{provider.upper()}_API_KEY")
-
     def get_provider_type(self) -> ProviderType:
         provider_type_name = self.get_key("MODEL_PROVIDER", required=False)
         if not provider_type_name:
@@ -47,6 +44,9 @@ class EnvConfig:
 
     def get_prompt_loader_mode(self) -> PromptLoaderMode:
         return PromptLoaderMode.from_name(self.get_key("PROMPT_LOADER_MODE", "local"))
+
+    def get_credentials_provider_type(self) -> str:
+        return self.get_key("CREDENTIALS_PROVIDER_TYPE", "env")
 
 
 env_config = EnvConfig()
