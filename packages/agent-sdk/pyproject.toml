@@ -28,6 +28,8 @@ dependencies = [
     "restrictedpython>=8.0",
     "rich>=14.0.0",
     "aioconsole>=0.8.1",
+    "langchain-tavily>=0.2.11",
+    "crawl4ai>=0.7.4",
 ]
 
 [project.optional-dependencies]
