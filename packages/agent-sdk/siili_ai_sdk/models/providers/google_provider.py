@@ -3,7 +3,6 @@ from typing import Any, Collection, Dict
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_google_genai import ChatGoogleGenerativeAI  # type: ignore
 
-from siili_ai_sdk.config.env import env_config
 from siili_ai_sdk.config.get_credentials_provider import credentials_provider
 from siili_ai_sdk.models.factories.google_factory import GoogleModelFactory
 from siili_ai_sdk.models.llm_config import LLMConfig

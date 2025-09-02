@@ -1,4 +1,3 @@
-import asyncio
 import json
 import time
 import uuid
@@ -208,9 +207,6 @@ class ThreadRouterFactory:
                 raise HTTPException(status_code=501, detail="Thread job processor not supported")
             message = await _create_message(thread_id, request, user)
 
-            
-
-
             job = AgentJob(job_type=JobType.THREAD_MESSAGE, id=thread_id)
             cancellation_subscriber = (
                 await self.cancellation_subscriber_provider(thread_id) if self.cancellation_subscriber_provider else None
@@ -220,8 +216,8 @@ class ThreadRouterFactory:
             def on_complete():
                 if cancellation_subscriber:
                     cancellation_subscriber.stop()
+
             logger.debug(f"Starting processing for thread {thread_id}")
-            
 
             async def generate_stream():
                 try:
@@ -229,8 +225,8 @@ class ThreadRouterFactory:
                     yield MessageAddedEvent(message=message).dump_json(thread_id) + "\n\n"
 
                     async for event_response in self.thread_job_processor.process_job(
-                            job=job, cancellation_handle=cancellation_handle, on_complete=on_complete
-                            ):
+                        job=job, cancellation_handle=cancellation_handle, on_complete=on_complete
+                    ):
                         logger.debug(f"Received event response: {event_response}")
                         yield json.dumps(event_response) + "\n\n"
 
@@ -241,7 +237,7 @@ class ThreadRouterFactory:
             logger.info(f"StreamingResponse for job {thread_id}")
             return StreamingResponse(
                 generate_stream(),
-                media_type="text/plain; charset=utf-8", # devtools are not happy with the proper mime type
+                media_type="text/plain; charset=utf-8",  # devtools are not happy with the proper mime type
                 headers={
                     "Cache-Control": "no-cache",
                     # "Connection": "keep-alive",
@@ -250,7 +246,7 @@ class ThreadRouterFactory:
                     "X-Accel-Buffering": "no",  # Disable nginx buffering
                 },
             )
-        
+
         @router.post("/{thread_id}/messages", response_model=MessageResponse)
         async def create_message(thread_id: str, request: CreateMessageRequest, user: BaseUser = Depends(get_current_user)):
             """Create a new message"""
@@ -262,6 +258,5 @@ class ThreadRouterFactory:
             job = AgentJob(job_type=JobType.THREAD_MESSAGE, id=thread_id)
             await self.job_queue.push(job)
             return ThreadConverters.message_model_to_response(message)
-
 
         return router

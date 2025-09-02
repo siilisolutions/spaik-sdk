@@ -123,6 +123,18 @@ class MessageHandler:
                     "message_id": streaming_event.message_id,
                 }
 
+            elif streaming_event.event_type == EventType.USAGE_METADATA:
+                logger.info(f"📊 Processing USAGE_METADATA for message: {streaming_event.message_id}")
+                # Store consumption metadata in ThreadContainer
+                if streaming_event.message_id and streaming_event.usage_metadata:
+                    self.thread_container.add_consumption_metadata(streaming_event.message_id, streaming_event.usage_metadata)
+                # Yield usage metadata for external consumption
+                yield {
+                    "type": "usage_metadata",
+                    "message_id": streaming_event.message_id,
+                    "usage_metadata": streaming_event.usage_metadata,
+                }
+
             elif streaming_event.event_type == EventType.COMPLETE:
                 logger.debug(f"🔍 Processing COMPLETE for message: {streaming_event.message_id}")
                 # Mark all blocks as non-streaming

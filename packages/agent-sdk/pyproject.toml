@@ -64,8 +64,8 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
 python_classes = "Test*"
-# Exclude problematic files
-norecursedirs = ["__pycache__", "*.egg-info"]
+# Exclude problematic files and manual tests
+norecursedirs = ["__pycache__", "*.egg-info", "tests/manual"]
 # Better test discovery and output
 addopts = [
     "--strict-markers",
@@ -75,7 +75,8 @@ addopts = [
     "--cov=siili_ai_sdk",
     "--cov-report=term-missing",
     "--ignore=__init__.py",
-    "--ignore=setup.py"
+    "--ignore=setup.py",
+    "--ignore=tests/manual"
 ]
 # Custom markers for different test types
 markers = [

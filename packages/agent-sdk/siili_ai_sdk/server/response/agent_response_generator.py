@@ -1,6 +1,6 @@
-from collections.abc import Awaitable, Callable
 import time
-from typing import AsyncGenerator, Dict, Any, Optional, TypeVar
+from collections.abc import Callable
+from typing import Any, AsyncGenerator, Dict, Optional, TypeVar
 
 from siili_ai_sdk.agent.base_agent import BaseAgent
 from siili_ai_sdk.llm.cancellation_handle import CancellationHandle
@@ -16,13 +16,12 @@ class AgentResponseGenerator(ResponseGenerator):
         self.agent = agent
         self.call_agent = call_agent
 
-    async def stream_response(self, 
-                              thread: ThreadContainer, 
-                              cancellation_handle: Optional[CancellationHandle] = None
-                              ) -> AsyncGenerator[Dict[str, Any], None]:
+    async def stream_response(
+        self, thread: ThreadContainer, cancellation_handle: Optional[CancellationHandle] = None
+    ) -> AsyncGenerator[Dict[str, Any], None]:
         self.agent.set_thread_container(thread)
         self.agent.set_cancellation_handle(cancellation_handle)
-        
+
         # Stream from the agent execution
         async for event in self.call_agent(self.agent):
             if not event.is_publishable():
@@ -38,8 +37,3 @@ class AgentResponseGenerator(ResponseGenerator):
             "timestamp": int(time.time() * 1000),
             "data": event.get_event_data(),
         }
-
-
-
-
-

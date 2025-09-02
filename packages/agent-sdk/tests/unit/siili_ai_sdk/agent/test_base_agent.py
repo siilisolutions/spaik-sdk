@@ -1,5 +1,5 @@
 import time
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import pytest
 from dotenv import load_dotenv
@@ -9,10 +9,12 @@ from pydantic import BaseModel
 
 from siili_ai_sdk.agent.base_agent import BaseAgent
 from siili_ai_sdk.llm.cancellation_handle import CancellationHandle
+from siili_ai_sdk.llm.consumption.token_usage import TokenUsage
+from siili_ai_sdk.llm.cost.builtin_cost_provider import BuiltinCostProvider
 from siili_ai_sdk.models.model_registry import ModelRegistry
 from siili_ai_sdk.recording.conditional_recorder import ConditionalRecorder
 from siili_ai_sdk.recording.impl.local_recorder import LocalRecorder
-from siili_ai_sdk.thread.models import MessageBlockType
+from siili_ai_sdk.thread.models import MessageAddedEvent, MessageBlockType
 from siili_ai_sdk.tools.tool_provider import ToolProvider
 from siili_ai_sdk.utils.init_logger import init_logger
 
@@ -29,9 +31,11 @@ def create_recorder(recording_name: str, delay: float = 0.001) -> ConditionalRec
 
 
 class ConcreteTestAgent(BaseAgent):
-    def __init__(self, recording_name: str, delay: float = 0.001, **kwargs):
+    def __init__(self, recording_name: str, delay: float = 0.001, 
+        system_prompt: str = "You're an an agent used in unit testing. Be very concise in your responses.",
+        **kwargs):
         super().__init__(
-            system_prompt="You're an an agent used in unit testing. Be very concise in your responses.",
+            system_prompt=system_prompt,
             recorder=create_recorder(recording_name, delay),
             **kwargs,
         )
@@ -66,6 +70,40 @@ class ToolCallTestAgent(BaseAgent):
 
     def get_tool_providers(self) -> List[ToolProvider]:
         return [TestToolProvider()]
+
+
+def assert_consumption_equals(actual_consumption: TokenUsage, expected_consumption: TokenUsage):
+    """Helper function to assert consumption data matches expected values exactly."""
+    # Collect all token mismatches
+    mismatches = []
+    
+    # Check each field individually
+    if actual_consumption.input_tokens != expected_consumption.input_tokens:
+        mismatches.append(f"input_tokens: expected {expected_consumption.input_tokens}, got {actual_consumption.input_tokens}")
+    
+    if actual_consumption.output_tokens != expected_consumption.output_tokens:
+        mismatches.append(f"output_tokens: expected {expected_consumption.output_tokens}, got {actual_consumption.output_tokens}")
+    
+    if actual_consumption.total_tokens != expected_consumption.total_tokens:
+        mismatches.append(f"total_tokens: expected {expected_consumption.total_tokens}, got {actual_consumption.total_tokens}")
+    
+    if actual_consumption.reasoning_tokens != expected_consumption.reasoning_tokens:
+        mismatches.append(f"reasoning_tokens: expected {expected_consumption.reasoning_tokens}, got {actual_consumption.reasoning_tokens}")
+    
+    if actual_consumption.cache_creation_tokens != expected_consumption.cache_creation_tokens:
+        mismatches.append(f"cache_creation_tokens: expected {expected_consumption.cache_creation_tokens}, got {actual_consumption.cache_creation_tokens}")
+    
+    if actual_consumption.cache_read_tokens != expected_consumption.cache_read_tokens:
+        mismatches.append(f"cache_read_tokens: expected {expected_consumption.cache_read_tokens}, got {actual_consumption.cache_read_tokens}")
+    
+    # If there are any mismatches, raise a detailed error
+    if mismatches:
+        error_msg = "Consumption token mismatches:\n" + "\n".join(f"  - {mismatch}" for mismatch in mismatches)
+        error_msg += f"\n\nExpected: {expected_consumption}"
+        error_msg += f"\nActual:   {actual_consumption}"
+        raise AssertionError(error_msg)
+
+
 
 
 @pytest.mark.unit
@@ -174,8 +212,8 @@ class TestBaseAgent:
         agent = ConcreteTestAgent(
             recording_name="test_mystery_streaming_issue",
         )
-        events=[]
-        counts={}
+        events = []
+        counts = {}
         async for event in agent.get_event_stream("derp'"):
             events.append(event)
             counts[event.get_event_type()] = counts.get(event.get_event_type(), 0) + 1
@@ -188,12 +226,14 @@ class TestBaseAgent:
 
         # weird stuff going on on second run
 
-        events=[]
-        counts={}
+        events = []
+        counts = {}
         async for event in agent.get_event_stream("derp'"):
             events.append(event)
             if event.get_event_type() == "MessageAdded":
-                logger.info(f"message: {event.message}")
+                message_event = event if isinstance(event, MessageAddedEvent) else None
+                if message_event:
+                    logger.info(f"message: {message_event.message}")
             counts[event.get_event_type()] = counts.get(event.get_event_type(), 0) + 1
         logger.info(f"counts: {counts}")
         assert counts["MessageAdded"] == 1
@@ -202,5 +242,53 @@ class TestBaseAgent:
         assert counts["ToolCallStarted"] == 2
         assert counts["ToolResponseReceived"] == 2
 
+    def test_consumption_tracking(self):
+        """Test that consumption metadata is properly tracked and stored with exact values."""
+        agent = ConcreteTestAgent(
+            recording_name="test_consumption_tracking",
+            llm_model=ModelRegistry.CLAUDE_4_SONNET,
+            system_prompt=f"""
+            You're an an agent used in unit testing 
+            (in particular cost estimates). Ignore the following 
+            garbage {"foobar"*1000}""",
+        )
         
+        # Send first message
+        response1 = agent.get_response("Hello, how are you?")
+        
+        # TODO: prompt caching doesnt seem to be working - these will break once thats fixed
+        # Expected consumption after first message (made-up exact figures)
+        expected_first_message = TokenUsage(
+            input_tokens=3070,
+            output_tokens=84,
+            total_tokens=3154,
+            reasoning_tokens=0,
+            cache_creation_tokens=0,
+            cache_read_tokens=0,
+        )
+        
+        # Check consumption after first message
+        total_consumption_1 = agent.thread_container.get_total_consumption()
+        assert_consumption_equals(total_consumption_1, expected_first_message)
+        
+        # Send second message  
+        response2 = agent.get_response("Tell me a short joke.")
+        
+        # Expected total consumption after both messages (made-up exact figures)
+        expected_total_consumption = TokenUsage(
+            input_tokens=6174,
+            output_tokens=144,
+            total_tokens=6318,
+            reasoning_tokens=0,
+            cache_creation_tokens=0,
+            cache_read_tokens=0,
+        )
+        
+        # Check total consumption after second message
+        total_consumption_2 = agent.thread_container.get_total_consumption()
+        assert_consumption_equals(total_consumption_2, expected_total_consumption)
 
+        cost = BuiltinCostProvider().get_cost_estimate(
+            ModelRegistry.CLAUDE_4_SONNET, 
+            total_consumption_2)
+        assert cost.cost ==  0.020682 

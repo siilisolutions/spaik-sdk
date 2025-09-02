@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from langchain_core.tools import BaseTool, StructuredTool, tool
 from pydantic import BaseModel, Field, create_model
 
+
 class ToolProvider(ABC):
     """
     Abstract class for tool providers.
@@ -124,7 +125,6 @@ class ToolProvider(ABC):
             )
         """
         return StructuredTool.from_function(func=func, name=name, description=description, **kwargs)
-
 
 
 # Re-export langchain tools for convenience

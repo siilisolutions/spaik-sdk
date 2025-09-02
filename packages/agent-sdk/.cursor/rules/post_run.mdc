@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+After you have done something substantial (eg. touching multiple files):
+
+First, take a look at the code you wrote. Does it look clean an elegant with good separation of concerns and small files and small methods. If not, go clean it up. Also make sure you don't have any inline imports etc smelly stuff.
+
+Then run this command to make sure everything is ok:
+
+`make lint-fix && make typecheck && make test-unit`
+
