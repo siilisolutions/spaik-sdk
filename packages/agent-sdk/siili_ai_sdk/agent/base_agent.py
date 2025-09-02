@@ -7,6 +7,9 @@ from pydantic import BaseModel
 
 from siili_ai_sdk.config.env import env_config
 from siili_ai_sdk.llm.cancellation_handle import CancellationHandle
+from siili_ai_sdk.llm.cost.builtin_cost_provider import BuiltinCostProvider
+from siili_ai_sdk.llm.cost.cost_estimate import CostEstimate
+from siili_ai_sdk.llm.cost.cost_provider import CostProvider
 from siili_ai_sdk.llm.langchain_service import LangChainService
 from siili_ai_sdk.models.llm_config import LLMConfig
 from siili_ai_sdk.models.llm_model import LLMModel
@@ -46,7 +49,9 @@ class BaseAgent(ABC):
         tool_providers: Optional[List[ToolProvider]] = None,
         recorder: Optional[ConditionalRecorder] = None,
         cancellation_handle: Optional[CancellationHandle] = None,
+        cost_provider: Optional[CostProvider] = None
     ):
+
         logger.debug("Initializing BaseAgent")
         self.prompt_loader = prompt_loader or get_prompt_loader(prompt_loader_mode)
         self.system_prompt = system_prompt or self._get_system_prompt(system_prompt_args, system_prompt_version)
@@ -58,12 +63,13 @@ class BaseAgent(ABC):
         self.playback = recorder.get_playback() if recorder is not None else None
         self.thread_container.subscribe(self._on_thread_event)
         self.cancellation_handle = cancellation_handle
+        self.cost_provider = cost_provider or BuiltinCostProvider()
 
     def get_response_stream(self, user_input: Optional[str] = None) -> AsyncGenerator[Dict[str, Any], None]:
         self.trace.add_input(user_input)
         langchain_service = self._create_langchain_service()
         return langchain_service.execute_stream_tokens(user_input, self.tools)
-    
+
     async def get_event_stream(self, user_input: Optional[str] = None) -> AsyncGenerator[ThreadEvent, None]:
         event_adapter = EventAdapter(self.thread_container)
         async for _event in self.get_response_stream(user_input):
@@ -71,7 +77,7 @@ class BaseAgent(ABC):
             for new_event in new_events:
                 yield new_event
         event_adapter.cleanup()
-    
+
     def get_response(self, user_input: Optional[str] = None) -> ThreadMessage:
         return asyncio.run(self.get_response_async(user_input))
 
@@ -160,3 +166,13 @@ class BaseAgent(ABC):
         """Handle thread events and forward to trace"""
         if isinstance(event, BlockFullyAddedEvent):
             self.trace.add_block(event.block)
+
+    def get_cost(self, latest_only: bool = False)->CostEstimate:
+        token_usage = self.thread_container.get_token_usage()
+        if latest_only:
+            token_usage = self.thread_container.get_latest_token_usage()
+        return self.cost_provider.get_cost_estimate(
+            self.get_llm_model(),
+            token_usage
+            )
+

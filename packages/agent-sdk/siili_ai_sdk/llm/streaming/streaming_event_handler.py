@@ -1,5 +1,6 @@
 from typing import AsyncGenerator, Optional
 
+from siili_ai_sdk.llm.consumption.consumption_extractor import ConsumptionExtractor
 from siili_ai_sdk.llm.streaming.block_manager import BlockManager
 from siili_ai_sdk.llm.streaming.content_parser import ContentParser
 from siili_ai_sdk.llm.streaming.models import EventType, StreamingEvent
@@ -24,6 +25,7 @@ class StreamingEventHandler:
         self.summary_processor = SummaryProcessor()
         self.tool_processor = ToolProcessor()
         self.state_manager = StreamingStateManager()
+        self.consumption_extractor = ConsumptionExtractor()
 
         # Initialize component handlers
         self.content_handler = StreamingContentHandler(self.block_manager, self.state_manager)
@@ -77,6 +79,15 @@ class StreamingEventHandler:
                     final_msg, self.state_manager.current_message_id, self.block_manager
                 ):
                     yield streaming_event
+
+        # Extract and emit consumption information
+        consumption_estimate = self.consumption_extractor.extract_from_stream_end(data)
+        if consumption_estimate:
+            yield StreamingEvent(
+                event_type=EventType.USAGE_METADATA,
+                message_id=self.state_manager.current_message_id,
+                usage_metadata=consumption_estimate.token_usage,
+            )
 
         # Process tool calls from final output (for o4-mini and similar models)
         if self.state_manager.current_message_id:

@@ -32,7 +32,20 @@ class LocalFileThreadRepository(BaseThreadRepository):
                 with open(self.metadata_file, "r") as f:
                     data = json.load(f)
                     # Convert dict to ThreadMetadata objects
-                    self._metadata_cache = {thread_id: ThreadMetadata(**metadata_dict) for thread_id, metadata_dict in data.items()}
+                    metadata_cache = {}
+                    for thread_id, metadata_dict in data.items():
+                        if isinstance(metadata_dict, dict):
+                            # Create ThreadMetadata with explicit arguments to satisfy type checker
+                            metadata_cache[thread_id] = ThreadMetadata(
+                                thread_id=metadata_dict.get("thread_id", thread_id),
+                                title=metadata_dict.get("title", "New Thread"),
+                                message_count=metadata_dict.get("message_count", 0),
+                                last_activity_time=metadata_dict.get("last_activity_time", 0),
+                                created_at=metadata_dict.get("created_at", 0),
+                                author_id=metadata_dict.get("author_id", "unknown"),
+                                type=metadata_dict.get("type", "chat"),
+                            )
+                    self._metadata_cache = metadata_cache
             except (json.JSONDecodeError, TypeError, KeyError):
                 # If metadata is corrupted, rebuild it
                 self._rebuild_metadata_cache()

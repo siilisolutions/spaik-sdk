@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from siili_ai_sdk.thread.models import MessageBlockType
+
+if TYPE_CHECKING:
+    from siili_ai_sdk.llm.consumption.token_usage import TokenUsage
 
 
 class EventType(str, Enum):
@@ -16,6 +19,7 @@ class EventType(str, Enum):
     TOKEN = "token"
     TOOL_USE = "tool_use"
     TOOL_RESPONSE = "tool_response"
+    USAGE_METADATA = "usage_metadata"
     COMPLETE = "complete"
     ERROR = "error"
 
@@ -35,3 +39,4 @@ class StreamingEvent:
     tool_call_id: Optional[str] = None
     tool_name: Optional[str] = None
     tool_args: Optional[Dict[str, Any]] = None
+    usage_metadata: Optional["TokenUsage"] = None

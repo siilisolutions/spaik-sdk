@@ -16,7 +16,6 @@ class ModelRegistry:
     CLAUDE_4_1_OPUS = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-4-1-20250805", prompt_caching=True)
     CLAUDE_4_SONNET_MAY_2025 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-sonnet-4-20250514", prompt_caching=True)
     CLAUDE_4_OPUS_MAY_2025 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-4-20250514", prompt_caching=True)
-    
 
     # OpenAI models
     GPT_4_1 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1", reasoning=False, prompt_caching=True)

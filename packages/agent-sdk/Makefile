@@ -73,7 +73,7 @@ lint-fix:
 
 # Run type checking
 typecheck:
-	uv run mypy siili_ai_sdk tests
+	uv run ty check siili_ai_sdk tests
 
 # Clean test artifacts
 clean:

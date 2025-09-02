@@ -1,10 +1,11 @@
 import copy
 import time
 import uuid
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from langchain_core.messages import BaseMessage, SystemMessage
 
+from siili_ai_sdk.llm.consumption.token_usage import TokenUsage
 from siili_ai_sdk.llm.converters import convert_thread_message_to_langchain
 from siili_ai_sdk.thread.models import (
     BlockAddedEvent,
@@ -334,6 +335,44 @@ class ThreadContainer:
         """Get number of messages including system message"""
         return len(self.messages) + 1
 
+    def add_consumption_metadata(self, message_id: str, consumption_metadata: TokenUsage) -> None:
+        """Add consumption metadata to a specific message"""
+        for message in self.messages:
+            if message.id == message_id:
+                message.consumption_metadata = consumption_metadata
+                self._increment_version()
+                break
+
+    def get_total_consumption(self) -> TokenUsage:
+        """Calculate total consumption across all messages with consumption metadata"""
+        total_tokens = TokenUsage()
+
+        for message in self.messages:
+            if message.consumption_metadata and isinstance(message.consumption_metadata, TokenUsage):
+                token_usage = message.consumption_metadata
+                total_tokens.input_tokens += token_usage.input_tokens
+                total_tokens.output_tokens += token_usage.output_tokens
+                total_tokens.total_tokens += token_usage.total_tokens
+                total_tokens.reasoning_tokens += token_usage.reasoning_tokens
+                total_tokens.cache_creation_tokens += token_usage.cache_creation_tokens
+                total_tokens.cache_read_tokens += token_usage.cache_read_tokens
+
+        return total_tokens
+
+    def get_consumption_by_message(self, message_id: str) -> Optional[TokenUsage]:
+        """Get consumption metadata for a specific message"""
+        for message in self.messages:
+            if message.id == message_id and message.consumption_metadata:
+                return message.consumption_metadata
+        return None
+
+    def get_latest_token_usage(self) -> Optional[TokenUsage]:
+        """Get consumption metadata for the latest message"""
+        latest_message = self.get_latest_ai_message()
+        if latest_message and latest_message.consumption_metadata:
+            return latest_message.consumption_metadata
+        return None
+
     def __str__(self) -> str:
         """String representation of the entire thread container"""
         lines = ["=== THREAD CONTAINER ==="]
@@ -373,6 +412,22 @@ class ThreadContainer:
             lines.append(f"  {error_indicator} {tool_id}: {repr(preview)}")
             if response.error:
                 lines.append(f"    Error: {response.error}")
+
+        # Add consumption summary
+        total_consumption = self.get_total_consumption()
+        consumption_messages = sum(1 for msg in self.messages if msg.consumption_metadata)
+        total_messages = len(self.messages)
+        lines.append(f"\n📊 CONSUMPTION SUMMARY ({consumption_messages}/{total_messages} messages):")
+        
+        if consumption_messages > 0:
+            lines.append(f"  Total tokens: {total_consumption.total_tokens:,}")
+            lines.append(f"  Input: {total_consumption.input_tokens:,} | Output: {total_consumption.output_tokens:,}")
+            if total_consumption.reasoning_tokens > 0:
+                lines.append(f"  Reasoning: {total_consumption.reasoning_tokens:,}")
+            if total_consumption.cache_creation_tokens > 0 or total_consumption.cache_read_tokens > 0:
+                lines.append(f"  Cache create: {total_consumption.cache_creation_tokens:,} | Cache read: {total_consumption.cache_read_tokens:,}")
+        else:
+            lines.append("  No consumption data available")
 
         return "\n".join(lines)
 

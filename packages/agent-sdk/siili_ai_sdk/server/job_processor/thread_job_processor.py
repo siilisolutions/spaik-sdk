@@ -25,7 +25,7 @@ class ThreadJobProcessor(BaseJobProcessor):
         thread_container = await self.thread_service.get_thread(job.id)
         if thread_container is None:
             raise HTTPException(status_code=404, detail="Thread not found")
-        #thread_event_publisher.bind_container(thread_container)
+        # thread_event_publisher.bind_container(thread_container)
         async for chunk in self.response_generator.stream_response(thread_container, cancellation_handle):
             yield chunk
         await self.thread_service.update_thread(thread_container)

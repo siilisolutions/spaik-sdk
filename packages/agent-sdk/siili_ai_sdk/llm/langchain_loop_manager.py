@@ -48,12 +48,12 @@ Web servers MUST NOT use the external event loop approach because:
    you lose the ability to stream results back to the web server's event loop
    in real-time. The thread boundary kills the streaming semantics.
 
-2. **Request context isolation**: Web frameworks expect all operations for a 
+2. **Request context isolation**: Web frameworks expect all operations for a
    request to happen in the same event loop to maintain proper async context,
    request isolation, and cancellation semantics.
 
 3. **Performance overhead**: Cross-thread async communication adds significant
-   latency and complexity that's unnecessary when the web server already 
+   latency and complexity that's unnecessary when the web server already
    provides a persistent event loop.
 
 The key insight: Web servers naturally solve the Google client issue by having
@@ -199,43 +199,43 @@ def _is_in_web_server_context() -> bool:
     try:
         # Check if we're in an event loop
         loop = asyncio.get_running_loop()
-        
+
         # FastAPI/web servers typically run event loops indefinitely
         # Check for common web server indicators in the call stack
         import inspect
         import threading
-        
+
         # Get current thread name - web servers often have descriptive thread names
         thread_name = threading.current_thread().name
-        if any(name in thread_name.lower() for name in ['uvicorn', 'fastapi', 'starlette', 'asgi', 'wsgi']):
+        if any(name in thread_name.lower() for name in ["uvicorn", "fastapi", "starlette", "asgi", "wsgi"]):
             return True
-            
+
         # Check the call stack for web framework indicators
         frame = inspect.currentframe()
         try:
             while frame:
                 frame_info = inspect.getframeinfo(frame)
                 filename = frame_info.filename.lower()
-                
+
                 # Look for web framework files in the call stack
-                if any(indicator in filename for indicator in [
-                    'uvicorn', 'fastapi', 'starlette', 'asgi', 'wsgi', 
-                    'tornado', 'aiohttp', 'sanic', 'quart'
-                ]):
+                if any(
+                    indicator in filename
+                    for indicator in ["uvicorn", "fastapi", "starlette", "asgi", "wsgi", "tornado", "aiohttp", "sanic", "quart"]
+                ):
                     return True
-                    
+
                 frame = frame.f_back
         finally:
             del frame
-            
+
         # Check if the event loop has been running for a while (web servers)
         # vs just started (asyncio.run())
-        if hasattr(loop, '_ready') and len(loop._ready) > 0:
+        if hasattr(loop, "_ready") and hasattr(loop._ready, "__len__") and len(loop._ready) > 0:
             # This is a heuristic - web servers tend to have more pending tasks
             return True
-            
+
         return False
-        
+
     except RuntimeError:
         # No running event loop - definitely not in a web server
         return False
@@ -243,19 +243,20 @@ def _is_in_web_server_context() -> bool:
         logger.debug(f"Error detecting web server context: {e}")
         return False
 
-def _is_google_model(llm_config:LLMConfig) -> bool:
-        """Check if this is a Google/Gemini model that might have event loop issues."""
-        return llm_config.provider_type == ProviderType.GOOGLE
 
-def should_use_loop_manager(llm_config:LLMConfig) -> bool:
+def _is_google_model(llm_config: LLMConfig) -> bool:
+    """Check if this is a Google/Gemini model that might have event loop issues."""
+    return llm_config.provider_type == ProviderType.GOOGLE
+
+
+def should_use_loop_manager(llm_config: LLMConfig) -> bool:
     """Determine if we should use the loop manager for Google models."""
     if not _is_google_model(llm_config):
         return False
-        
+
     # Only use loop manager if NOT in a web server context
     # Web servers have persistent event loops, so the issue doesn't occur
     return not _is_in_web_server_context()
-
 
 
 # Global instance

@@ -1,9 +1,12 @@
+import json
+import time
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
-import json
-import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from siili_ai_sdk.llm.consumption.token_usage import TokenUsage
 
 
 class MessageBlockType(Enum):
@@ -45,11 +48,13 @@ class ThreadMessage:
     author_name: str
     timestamp: int  # UTC millis
     blocks: List[MessageBlock]
+    consumption_metadata: Optional["TokenUsage"] = None
 
     def get_text_content(self) -> str:
         return "\n".join([(block.content or "") for block in self.blocks if block.type == MessageBlockType.PLAIN])
+
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        result = {
             "id": self.id,
             "ai": self.ai,
             "author_id": self.author_id,
@@ -57,6 +62,9 @@ class ThreadMessage:
             "timestamp": self.timestamp,
             "blocks": [block.to_dict() for block in self.blocks],
         }
+        if self.consumption_metadata:
+            result["consumption_metadata"] = self.consumption_metadata
+        return result
 
     def __repr__(self) -> str:
         """Return a detailed string representation for debugging."""
@@ -100,14 +108,16 @@ class ThreadEvent(ABC):
     def is_publishable(self) -> bool:
         """Return True if the event is publishable."""
         return False
-    
+
     def dump_json(self, thread_id: str) -> str:
-        return json.dumps({
-            "thread_id": thread_id,
-            "event_type": self.get_event_type(),
-            "timestamp": int(time.time() * 1000),
-            "data": self.get_event_data(),
-        })
+        return json.dumps(
+            {
+                "thread_id": thread_id,
+                "event_type": self.get_event_type(),
+                "timestamp": int(time.time() * 1000),
+                "data": self.get_event_data(),
+            }
+        )
 
 
 @dataclass
@@ -183,6 +193,7 @@ class StreamingEndedEvent(InternalEvent):
     message_id: str
     completed_blocks: List[str]
 
+
 @dataclass
 class MessageAddedEvent(PublishableEvent):
     message: ThreadMessage
@@ -204,6 +215,6 @@ class BlockFullyAddedEvent(PublishableEvent):
     block_id: str
     message_id: str
     block: MessageBlock
+
     def get_event_data(self) -> Optional[Dict[str, Any]]:
         return {"message_id": self.message_id, "block_id": self.block_id}
-
