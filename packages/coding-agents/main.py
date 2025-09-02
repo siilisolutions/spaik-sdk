@@ -1,4 +1,4 @@
-from siili_coding_agents.claude_agent import ClaudeAgent
+from siili_coding_agents.claude_code.claude_agent import ClaudeAgent
 
 
 def main() -> None:
