@@ -3,6 +3,9 @@ from typing import AsyncGenerator
 import anyio
 from claude_code_sdk import TextBlock, query, AssistantMessage
 from claude_code_sdk import ClaudeSDKClient, ClaudeCodeOptions
+from siili_ai_sdk import MessageBlock
+
+from siili_coding_agents.claude_code.to_sdk_message import to_sdk_message_blocks
 
 class ClaudeAgent:
     def __init__(self, options: ClaudeCodeOptions = ClaudeCodeOptions(), yolo: bool = False):
@@ -14,21 +17,20 @@ class ClaudeAgent:
 
     def run(self, prompt: str) -> None:
         async def run():
-            async for message in self.stream(prompt):
+            async for message in self.stream_blocks(prompt):
                 print(message)
         
         anyio.run(run)
 
 
-    async def stream(self, prompt: str) -> AsyncGenerator[str, None]:
+    async def stream_blocks(self, prompt: str) -> AsyncGenerator[MessageBlock, None]:
         async with ClaudeSDKClient(
             options=self.options
         ) as client:
             await client.query(prompt=prompt)
 
             async for message in client.receive_response():
-                if isinstance(message, AssistantMessage):
-                    for block in message.content:
-                        if isinstance(block, TextBlock):
-                            yield block.text
+                blocks = to_sdk_message_blocks(message)
+                for block in blocks:
+                    yield block
                 
