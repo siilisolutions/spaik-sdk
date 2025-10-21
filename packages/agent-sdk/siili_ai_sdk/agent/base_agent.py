@@ -49,9 +49,8 @@ class BaseAgent(ABC):
         tool_providers: Optional[List[ToolProvider]] = None,
         recorder: Optional[ConditionalRecorder] = None,
         cancellation_handle: Optional[CancellationHandle] = None,
-        cost_provider: Optional[CostProvider] = None
+        cost_provider: Optional[CostProvider] = None,
     ):
-
         logger.debug("Initializing BaseAgent")
         self.prompt_loader = prompt_loader or get_prompt_loader(prompt_loader_mode)
         self.system_prompt = system_prompt or self._get_system_prompt(system_prompt_args, system_prompt_version)
@@ -167,12 +166,8 @@ class BaseAgent(ABC):
         if isinstance(event, BlockFullyAddedEvent):
             self.trace.add_block(event.block)
 
-    def get_cost(self, latest_only: bool = False)->CostEstimate:
+    def get_cost(self, latest_only: bool = False) -> CostEstimate:
         token_usage = self.thread_container.get_token_usage()
         if latest_only:
             token_usage = self.thread_container.get_latest_token_usage()
-        return self.cost_provider.get_cost_estimate(
-            self.get_llm_model(),
-            token_usage
-            )
-
+        return self.cost_provider.get_cost_estimate(self.get_llm_model(), token_usage)

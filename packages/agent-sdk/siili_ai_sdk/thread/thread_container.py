@@ -1,7 +1,7 @@
 import copy
 import time
 import uuid
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from langchain_core.messages import BaseMessage, SystemMessage
 
@@ -418,14 +418,16 @@ class ThreadContainer:
         consumption_messages = sum(1 for msg in self.messages if msg.consumption_metadata)
         total_messages = len(self.messages)
         lines.append(f"\n📊 CONSUMPTION SUMMARY ({consumption_messages}/{total_messages} messages):")
-        
+
         if consumption_messages > 0:
             lines.append(f"  Total tokens: {total_consumption.total_tokens:,}")
             lines.append(f"  Input: {total_consumption.input_tokens:,} | Output: {total_consumption.output_tokens:,}")
             if total_consumption.reasoning_tokens > 0:
                 lines.append(f"  Reasoning: {total_consumption.reasoning_tokens:,}")
             if total_consumption.cache_creation_tokens > 0 or total_consumption.cache_read_tokens > 0:
-                lines.append(f"  Cache create: {total_consumption.cache_creation_tokens:,} | Cache read: {total_consumption.cache_read_tokens:,}")
+                lines.append(
+                    f"  Cache create: {total_consumption.cache_creation_tokens:,} | Cache read: {total_consumption.cache_read_tokens:,}"
+                )
         else:
             lines.append("  No consumption data available")
 
