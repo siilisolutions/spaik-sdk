@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from siili_ai_sdk.llm.consumption.token_usage import TokenUsage
 
