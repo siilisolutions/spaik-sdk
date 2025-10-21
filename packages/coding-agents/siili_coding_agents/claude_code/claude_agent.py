@@ -1,7 +1,6 @@
 from re import A
 from typing import AsyncGenerator
 import anyio
-from claude_code_sdk import TextBlock, query, AssistantMessage
 from claude_code_sdk import ClaudeSDKClient, ClaudeCodeOptions
 from siili_ai_sdk import MessageBlock
 
