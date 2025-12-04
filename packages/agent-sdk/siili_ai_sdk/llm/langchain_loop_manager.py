@@ -1,13 +1,13 @@
 """
-LangChain Loop Manager - Event Loop Isolation for Google/Gemini Models
+LangChain Loop Manager - Event Loop Isolation for Models with Event Loop Issues
 
-This module exists to work around a fundamental incompatibility between Google's
-Python client libraries and the way asyncio.run() manages event loops.
+This module exists to work around a fundamental incompatibility between certain
+model providers (Google/Gemini, Ollama) and the way asyncio.run() manages event loops.
 
 THE PROBLEM:
 ============
-Google's client libraries (google-ai-generativelanguage, google-generativeai, etc.)
-create internal gRPC connections and async state that get bound to the specific
+Some model providers (Google's gRPC-based clients, Ollama's async HTTP client, etc.)
+create internal connections and async state that get bound to the specific
 event loop instance they're created in. When that event loop closes, these
 internal connections become unusable and raise "Event loop is closed" errors.
 
@@ -33,8 +33,8 @@ We detect the execution context and apply different strategies:
 
 1. **Standalone Context** (detected by stack frame inspection):
    - Use a persistent background event loop in a separate thread
-   - All Google model operations run in this persistent loop
-   - The background loop never closes, so Google's client stays happy
+   - All affected model operations run in this persistent loop
+   - The background loop never closes, so the clients stay happy
 
 2. **Web Server Context** (detected by uvicorn/fastapi in call stack):
    - Use normal execution (no loop manager)
@@ -56,7 +56,7 @@ Web servers MUST NOT use the external event loop approach because:
    latency and complexity that's unnecessary when the web server already
    provides a persistent event loop.
 
-The key insight: Web servers naturally solve the Google client issue by having
+The key insight: Web servers naturally solve these client issues by having
 persistent event loops, so they don't need (and can't use) the workaround.
 
 DETECTION STRATEGY:
@@ -72,6 +72,7 @@ both contexts without requiring users to explicitly configure the behavior.
 AFFECTED MODELS:
 ================
 - All Google/Gemini models (provider_type == ProviderType.GOOGLE)
+- All Ollama models (provider_type == ProviderType.OLLAMA)
 - Other providers (Anthropic, OpenAI) are unaffected
 
 EXAMPLES:
@@ -97,11 +98,12 @@ ALTERNATIVES CONSIDERED:
 
 WHY THIS IS NECESSARY:
 ======================
-Google's client design assumes a long-lived event loop (like in web servers).
+Some client designs assume a long-lived event loop (like in web servers).
 The asyncio.run() pattern creates short-lived loops that violate this assumption.
-Other providers handle this gracefully, but Google's doesn't.
+Other providers (Anthropic, OpenAI) handle this gracefully by recreating connections
+or using stateless clients.
 
-This is a known limitation that's unlikely to be fixed in Google's clients
+This is a known limitation that's unlikely to be fixed in these clients
 since it would require significant architectural changes on their end.
 """
 
@@ -244,14 +246,14 @@ def _is_in_web_server_context() -> bool:
         return False
 
 
-def _is_google_model(llm_config: LLMConfig) -> bool:
-    """Check if this is a Google/Gemini model that might have event loop issues."""
-    return llm_config.provider_type == ProviderType.GOOGLE
+def _needs_loop_manager(llm_config: LLMConfig) -> bool:
+    """Check if this model provider might have event loop issues with multiple asyncio.run() calls."""
+    return llm_config.provider_type in (ProviderType.GOOGLE, ProviderType.OLLAMA)
 
 
 def should_use_loop_manager(llm_config: LLMConfig) -> bool:
-    """Determine if we should use the loop manager for Google models."""
-    if not _is_google_model(llm_config):
+    """Determine if we should use the loop manager for models with event loop issues."""
+    if not _needs_loop_manager(llm_config):
         return False
 
     # Only use loop manager if NOT in a web server context

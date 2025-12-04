@@ -23,8 +23,8 @@ class StreamingEventHandler:
         self.content_parser = ContentParser()
         self.block_manager = BlockManager()
         self.summary_processor = SummaryProcessor()
-        self.tool_processor = ToolProcessor()
         self.state_manager = StreamingStateManager()
+        self.tool_processor = ToolProcessor(self.state_manager)
         self.consumption_extractor = ConsumptionExtractor()
 
         # Initialize component handlers

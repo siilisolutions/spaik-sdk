@@ -54,5 +54,9 @@ class BaseProvider(ABC):
             from siili_ai_sdk.models.providers.google_provider import GoogleProvider
 
             return GoogleProvider()
+        elif provider_type == ProviderType.OLLAMA:
+            from siili_ai_sdk.models.providers.ollama_provider import OllamaProvider
+
+            return OllamaProvider()
         else:
             raise ValueError(f"Unsupported provider type: {provider_type}")

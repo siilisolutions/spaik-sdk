@@ -1,3 +1,4 @@
+import time
 from enum import Enum
 from typing import Optional
 
@@ -30,6 +31,7 @@ class BlockDisplay:
         self.streaming = streaming
         self.tool_name = tool_name
         self.tool_error = tool_error
+        self.created_at = time.time()
 
     def to_panel(self) -> Panel:
         """Convert this block to a Rich Panel"""

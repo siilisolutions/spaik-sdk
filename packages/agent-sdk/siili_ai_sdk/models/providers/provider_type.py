@@ -8,6 +8,7 @@ class ProviderType(Enum):
     AZURE_AI_FOUNDRY = "azure_ai_foundry"
     OPENAI_DIRECT = "openai"
     GOOGLE = "google"
+    OLLAMA = "ollama"
 
     @classmethod
     def from_name(cls, name: str) -> "ProviderType":
@@ -22,11 +23,29 @@ class ProviderType(Enum):
         elif model_name.startswith("gpt") or model_name.startswith("o3") or model_name.startswith("o4"):
             return cls.OPENAI_DIRECT
         else:
+            # For ollama models, we can't determine from name alone since they're arbitrary
+            # Users will need to specify family="ollama" when creating LLMModel
             raise ValueError(f"Cant determine provider type from model name: {model_name}")
+
+    @classmethod
+    def from_family(cls, family: str) -> "ProviderType":
+        """Get provider type from model family."""
+        family_lower = family.lower()
+        if family_lower == "anthropic":
+            return cls.ANTHROPIC
+        elif family_lower == "openai":
+            return cls.OPENAI_DIRECT
+        elif family_lower == "google":
+            return cls.GOOGLE
+        elif family_lower == "ollama":
+            return cls.OLLAMA
+        else:
+            raise ValueError(f"Unknown model family: {family}")
 
 
 PROVIDER_ALIASES = {
     "claude": ProviderType.ANTHROPIC,
+    "ollama": ProviderType.OLLAMA,
     "azure": ProviderType.AZURE_AI_FOUNDRY,
     "foundry": ProviderType.AZURE_AI_FOUNDRY,
     "openai": ProviderType.OPENAI_DIRECT,
