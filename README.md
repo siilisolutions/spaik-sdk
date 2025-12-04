@@ -74,7 +74,7 @@ agent-sdk/
 # Python dependencies
 cd examples/backend && uv sync
 
-# TypeScript dependencies  
+# TypeScript dependencies (do this in project root)
 yarn install:all
 ```
 
@@ -120,6 +120,9 @@ Visit `http://localhost:5173` for a full-featured chat interface.
 - **[Python SDK](packages/agent-sdk/README.md)** - Core agent functionality
 - **[React Hooks](packages/agent-sdk-hooks/README.md)** - Frontend integration
 - **[Examples](examples/)** - Working examples for all use cases
+
+## VSCode imports
+If your python imports when viewing for example main.py show red lines under try adding the `./examples/backend/.venv/bin/python` to python interpreters by pressing _Ctrl + Shift + P_ and selecting Select Python interpreter.
 
 ## Development Status
 
