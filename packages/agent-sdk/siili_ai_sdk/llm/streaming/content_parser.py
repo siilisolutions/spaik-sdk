@@ -19,6 +19,12 @@ class ContentParser:
             if reasoning_data:
                 reasoning_content = self._extract_reasoning_from_data(reasoning_data)
                 logger.debug(f"Reasoning data found: {reasoning_data}")
+            
+            # Also check for reasoning_content field (Ollama format)
+            ollama_reasoning = chunk.additional_kwargs.get("reasoning_content")
+            if ollama_reasoning:
+                reasoning_content = ollama_reasoning
+                logger.debug(f"Ollama reasoning content found: {ollama_reasoning}")
 
         # Check for reasoning summary in responses API format
         if hasattr(chunk, "summary") and chunk.summary:

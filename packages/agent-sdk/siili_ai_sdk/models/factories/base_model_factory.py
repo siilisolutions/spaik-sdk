@@ -55,12 +55,14 @@ class BaseModelFactory(ABC):
 
         from siili_ai_sdk.models.factories.anthropic_factory import AnthropicModelFactory
         from siili_ai_sdk.models.factories.google_factory import GoogleModelFactory
+        from siili_ai_sdk.models.factories.ollama_factory import OllamaModelFactory
         from siili_ai_sdk.models.factories.openai_factory import OpenAIModelFactory
 
         factories = [
             AnthropicModelFactory(),
             OpenAIModelFactory(),
             GoogleModelFactory(),
+            OllamaModelFactory(),
         ]
         for factory in factories:
             if factory.supports_model_config(config):

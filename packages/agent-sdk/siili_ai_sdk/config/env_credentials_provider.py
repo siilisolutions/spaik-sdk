@@ -3,5 +3,5 @@ from siili_ai_sdk.config.env import env_config
 
 
 class EnvCredentialsProvider(CredentialsProvider):
-    def get_key(self, key: str) -> str:
-        return env_config.get_key(key, required=True)
+    def get_key(self, key: str, default: str = "", required: bool = True) -> str:
+        return env_config.get_key(key, default, required)

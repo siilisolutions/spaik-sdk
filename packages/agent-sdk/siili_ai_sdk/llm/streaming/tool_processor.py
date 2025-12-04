@@ -10,6 +10,9 @@ logger = init_logger(__name__)
 class ToolProcessor:
     """Handles processing of tool calls and responses from final outputs."""
 
+    def __init__(self, state_manager=None):
+        self.state_manager = state_manager
+
     async def process_final_output_tool_calls(
         self, data: Any, message_id: str, block_manager: BlockManager
     ) -> AsyncGenerator[StreamingEvent, None]:

@@ -109,10 +109,13 @@ class BaseAgent(ABC):
     def create_llm_config(self, llm_model: Optional[LLMModel] = None, reasoning: Optional[bool] = None) -> LLMConfig:
         if llm_model is None:
             llm_model = self.get_llm_model()
+        
+        provider_type = ProviderType.from_family(llm_model.family)
+            
         return LLMConfig(
             model=llm_model,
-            provider_type=ProviderType.from_model_name(llm_model.name),
-            reasoning=reasoning if reasoning is not None else self.is_reasoning(),
+            provider_type=provider_type,
+            reasoning=reasoning if reasoning is not None else llm_model.reasoning,
             tool_usage=len(self.tools) > 0,
         )
 

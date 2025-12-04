@@ -4,3 +4,4 @@ class LLMFamilies:
     ANTHROPIC = "anthropic"
     OPENAI = "openai"
     GOOGLE = "google"
+    OLLAMA = "ollama"

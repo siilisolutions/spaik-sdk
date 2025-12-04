@@ -25,6 +25,11 @@ class StreamingContentHandler:
         if self.state_manager.current_message_id is None:
             return
 
+        # Check if we need a new reasoning block based on timestamps
+        if self.block_manager.should_create_new_reasoning_block():
+            # Reset current reasoning block to force creation of a new one
+            self.block_manager.reset_reasoning_block()
+
         # Check if this is creating a new reasoning block
         creating_new_block = self.block_manager.get_reasoning_block_id() is None
 
