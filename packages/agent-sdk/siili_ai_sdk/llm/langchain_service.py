@@ -6,6 +6,10 @@ from typing import Dict, List, Optional, Type, TypeVar, cast
 
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import BaseTool
+
+# Using create_react_agent because create_agent from langchain.agents
+# uses invoke() internally and does NOT emit on_chat_model_stream events,
+# which breaks token-level streaming. See: https://github.com/langchain-ai/langchain/issues/34017
 from langgraph.prebuilt import create_react_agent
 from pydantic import BaseModel
 
@@ -30,7 +34,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 if DEBUG:
-    from langchain.globals import set_debug
+    from langchain_core.globals import set_debug
 
     set_debug(True)
 
@@ -60,11 +64,7 @@ class LangChainService:
         self.cancellation_handle = cancellation_handle
 
     def create_executor(self, tools: list[BaseTool]):
-        return create_react_agent(
-            self._get_model(),
-            tools,
-            version="v2",  # Use v2 for better parallel tool call handling
-        )
+        return create_react_agent(self._get_model(), tools)
 
     def _get_model(self):
         return self.llm_config.get_model_wrapper().get_langchain_model()

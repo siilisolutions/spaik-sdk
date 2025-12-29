@@ -11,7 +11,6 @@ logger = init_logger(__name__)
 
 
 class OllamaModelFactory(BaseModelFactory):
-    
     # Models are dynamically created by users with LLMModel(family="ollama", name="...")
     # So we start with an empty registry and let users add models as needed
     MODELS = ModelRegistry.get_by_family(LLMFamilies.OLLAMA)
@@ -28,15 +27,15 @@ class OllamaModelFactory(BaseModelFactory):
             "model": config.model.name,
             "temperature": config.temperature,
         }
-        
+
         # Enable streaming if requested
         if config.streaming:
             model_config["streaming"] = True
-        
+
         # Handle reasoning configuration for models that support it (like deepseek-r1)
-        # reasoning=True should separate <think> content to additional_kwargs['reasoning_content']  
+        # reasoning=True should separate <think> content to additional_kwargs['reasoning_content']
         # reasoning=None/False leaves <think> tags in main content
         if config.reasoning is not None:
             model_config["reasoning"] = config.reasoning
-            
+
         return model_config

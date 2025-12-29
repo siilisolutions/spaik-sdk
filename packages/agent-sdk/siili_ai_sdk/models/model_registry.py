@@ -29,10 +29,10 @@ class ModelRegistry:
     GPT_5_NANO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-nano", reasoning=True, prompt_caching=True)
 
     # Google models
-    GEMINI_2_5_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash-preview-05-20", prompt_caching=True)
-    GEMINI_2_5_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-pro-preview-05-06", prompt_caching=True)
-    GEMINI_2_5_FLASH_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash-preview-05-20", prompt_caching=True)
-    GEMINI_2_5_PRO_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-pro-preview-05-06", prompt_caching=True)
+    GEMINI_2_5_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash", prompt_caching=True)
+    GEMINI_2_5_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-pro", prompt_caching=True)
+    GEMINI_2_5_FLASH_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash", prompt_caching=True)
+    GEMINI_2_5_PRO_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-pro", prompt_caching=True)
 
     # Registry for custom models
     _custom_models: Set[LLMModel] = set()

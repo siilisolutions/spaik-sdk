@@ -45,24 +45,24 @@ class BlockManager:
     def get_block_ids(self) -> List[str]:
         """Get list of all current block IDs."""
         return list(self.current_blocks.keys())
-    
+
     def should_create_new_reasoning_block(self) -> bool:
         """Check if we need a new reasoning block based on timestamps.
-        
+
         Rule: If there's any tool call newer than the current reasoning block, create new reasoning block.
         This ensures reasoning gets properly segmented around tool calls.
         """
         if self.reasoning_block_id is None:
             return False
-            
+
         current_reasoning_timestamp = self.block_timestamps.get(self.reasoning_block_id, 0)
-        
+
         # Check if any tool block is newer than our current reasoning block
         for tool_block_id in self.tool_use_blocks.values():
             tool_timestamp = self.block_timestamps.get(tool_block_id, 0)
             if tool_timestamp > current_reasoning_timestamp:
                 return True
-                
+
         return False
 
     async def ensure_tool_use_block(

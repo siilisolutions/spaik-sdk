@@ -109,9 +109,9 @@ class BaseAgent(ABC):
     def create_llm_config(self, llm_model: Optional[LLMModel] = None, reasoning: Optional[bool] = None) -> LLMConfig:
         if llm_model is None:
             llm_model = self.get_llm_model()
-        
+
         provider_type = ProviderType.from_family(llm_model.family)
-            
+
         return LLMConfig(
             model=llm_model,
             provider_type=provider_type,
