@@ -144,6 +144,11 @@ class TestBaseAgent:
             ModelRegistry.GEMINI_2_5_FLASH,
             ModelRegistry.CLAUDE_4_5_SONNET,
             ModelRegistry.CLAUDE_4_5_HAIKU,
+            ModelRegistry.CLAUDE_4_5_OPUS,
+            ModelRegistry.GPT_5_1,
+            ModelRegistry.GPT_5_2,
+            ModelRegistry.GEMINI_3_FLASH,
+            ModelRegistry.GEMINI_3_PRO,
         ],
     )
     def test_get_response_text_with_different_models(self, model):
@@ -168,6 +173,12 @@ class TestBaseAgent:
             ModelRegistry.GPT_5,
             ModelRegistry.CLAUDE_4_5_SONNET,
             ModelRegistry.CLAUDE_4_5_HAIKU,
+            ModelRegistry.CLAUDE_4_5_OPUS,
+            ModelRegistry.GPT_5_1,
+            ModelRegistry.GPT_5_1_CODEX,
+            ModelRegistry.GPT_5_2,
+            ModelRegistry.GPT_5_2_PRO,
+            ModelRegistry.GEMINI_3_FLASH,
         ],
     )
     def test_get_response_with_tool_call(self, model):

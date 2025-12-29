@@ -18,6 +18,7 @@ class ModelRegistry:
     CLAUDE_4_OPUS_MAY_2025 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-4-20250514", prompt_caching=True)
     CLAUDE_4_5_SONNET = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-sonnet-4-5-20250929", prompt_caching=True)
     CLAUDE_4_5_HAIKU = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-haiku-4-5-20251001", prompt_caching=True)
+    CLAUDE_4_5_OPUS = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-4-5-20251101", prompt_caching=True)
 
     # OpenAI models
     GPT_4_1 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1", reasoning=False, prompt_caching=True)
@@ -27,12 +28,20 @@ class ModelRegistry:
     GPT_5 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5", reasoning=True, prompt_caching=True)
     GPT_5_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-mini", reasoning=True, prompt_caching=True)
     GPT_5_NANO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-nano", reasoning=True, prompt_caching=True)
+    GPT_5_1 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.1", reasoning=True, prompt_caching=True)
+    GPT_5_1_CODEX = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.1-codex", reasoning=True, prompt_caching=True)
+    GPT_5_1_CODEX_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.1-codex-mini", reasoning=True, prompt_caching=True)
+    GPT_5_1_CODEX_MAX = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.1-codex-max", reasoning=True, prompt_caching=True)
+    GPT_5_2 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.2", reasoning=True, prompt_caching=True)
+    GPT_5_2_PRO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.2-pro", reasoning=True, prompt_caching=True)
 
     # Google models
     GEMINI_2_5_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash", prompt_caching=True)
     GEMINI_2_5_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-pro", prompt_caching=True)
     GEMINI_2_5_FLASH_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash", prompt_caching=True)
     GEMINI_2_5_PRO_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-pro", prompt_caching=True)
+    GEMINI_3_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-flash-preview", prompt_caching=True)
+    GEMINI_3_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-pro-preview", prompt_caching=True)
 
     # Registry for custom models
     _custom_models: Set[LLMModel] = set()
@@ -78,10 +87,13 @@ class ModelRegistry:
             "sonnet 4.5": cls.CLAUDE_4_5_SONNET,
             "haiku": cls.CLAUDE_4_5_HAIKU,
             "haiku 4.5": cls.CLAUDE_4_5_HAIKU,
-            "opus": cls.CLAUDE_4_OPUS,
+            "opus": cls.CLAUDE_4_5_OPUS,
             "opus 4.1": cls.CLAUDE_4_1_OPUS,
+            "opus 4.5": cls.CLAUDE_4_5_OPUS,
             "claude 4.1 opus": cls.CLAUDE_4_1_OPUS,
             "claude opus 4.1": cls.CLAUDE_4_1_OPUS,
+            "claude 4.5 opus": cls.CLAUDE_4_5_OPUS,
+            "claude opus 4.5": cls.CLAUDE_4_5_OPUS,
             "claude": cls.CLAUDE_4_SONNET,
             "claude 3.7 sonnet": cls.CLAUDE_3_7_SONNET,
             "claude 4 sonnet": cls.CLAUDE_4_SONNET,
@@ -95,8 +107,18 @@ class ModelRegistry:
             "gpt 5": cls.GPT_5,
             "gpt 5 mini": cls.GPT_5_MINI,
             "gpt 5 nano": cls.GPT_5_NANO,
+            "gpt 5.1": cls.GPT_5_1,
+            "gpt 5.1 codex": cls.GPT_5_1_CODEX,
+            "gpt 5.1 codex mini": cls.GPT_5_1_CODEX_MINI,
+            "gpt 5.1 codex max": cls.GPT_5_1_CODEX_MAX,
+            "gpt 5.2": cls.GPT_5_2,
+            "gpt 5.2 pro": cls.GPT_5_2_PRO,
             "gemini 2.5 flash": cls.GEMINI_2_5_FLASH,
             "gemini 2.5 pro": cls.GEMINI_2_5_PRO,
+            "gemini 3 flash": cls.GEMINI_3_FLASH,
+            "gemini 3.0 flash": cls.GEMINI_3_FLASH,
+            "gemini 3 pro": cls.GEMINI_3_PRO,
+            "gemini 3.0 pro": cls.GEMINI_3_PRO,
         }
 
 
