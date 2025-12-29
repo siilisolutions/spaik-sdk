@@ -10,13 +10,13 @@ dependencies = [
     "PyJWT>=2.8.0",
     "requests>=2.31.0",
     "cryptography>=41.0.0", # Required for JWT RSA operations
-    "langchain>=0.3.23",
-    "langchain-anthropic>=0.3.14",
-    "langchain-core>=0.3.55",
-    "langchain-google-genai>=2.0.8",
-    "langchain-openai>=0.3.14",
+    "langchain>=1.2.0",
+    "langchain-anthropic>=1.3.0",
+    "langchain-core>=1.2.0",
+    "langchain-google-genai>=4.0.0",
+    "langchain-openai>=1.1.0",
     "langchain-ollama>=0.3.0",
-    "langgraph>=0.3.31",
+    "langgraph>=1.0.0",
     "pandas>=2.0.3",
     "pandas-stubs",
     "uvicorn>=0.33.0",
@@ -29,7 +29,7 @@ dependencies = [
     "restrictedpython>=8.0",
     "rich>=14.0.0",
     "aioconsole>=0.8.1",
-    "langchain-tavily>=0.2.11",
+    "langchain-tavily>=0.2.15",
     "crawl4ai>=0.7.4",
 ]
 
