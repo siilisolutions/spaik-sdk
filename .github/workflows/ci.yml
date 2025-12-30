@@ -42,6 +42,8 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.agent-sdk == 'true' }}
     runs-on: ubuntu-latest
+    env:
+      DEFAULT_MODEL: claude-sonnet-4-20250514
     defaults:
       run:
         working-directory: packages/agent-sdk

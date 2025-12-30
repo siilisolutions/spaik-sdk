@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      DEFAULT_MODEL: claude-sonnet-4-20250514
     defaults:
       run:
         working-directory: packages/agent-sdk
