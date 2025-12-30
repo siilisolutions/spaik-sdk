@@ -72,6 +72,17 @@ jobs:
           uv run ruff check .
           uv run ty check siili_coding_agents
 
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml
+          git commit -m "chore: bump coding-agents version to ${{ steps.new_version.outputs.version }}"
+
+      - name: Remove local path dependency for publishing
+        run: |
+          sed -i '/^\[tool\.uv\.sources\]/,/^$/d' pyproject.toml
+
       - name: Build package
         run: uv build
 
@@ -80,12 +91,8 @@ jobs:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: uv publish
 
-      - name: Commit and tag
+      - name: Tag and push
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add pyproject.toml
-          git commit -m "chore: bump coding-agents version to ${{ steps.new_version.outputs.version }}"
           git tag "coding-agents-v${{ steps.new_version.outputs.version }}"
           git push origin HEAD --tags
 

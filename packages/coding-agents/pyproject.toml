@@ -38,3 +38,6 @@ ignore = ["W293"]
 
 [tool.ruff.format]
 quote-style = "double" 
+
+[tool.uv.sources]
+siili-ai-sdk = { path = "../agent-sdk", editable = true }
