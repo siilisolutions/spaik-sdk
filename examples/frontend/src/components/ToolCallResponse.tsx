@@ -1,4 +1,4 @@
-import { MessageBlock } from '@siili-ai-sdk/hooks';
+import { MessageBlock } from '@siilisolutions/ai-sdk-react';
 
 interface Props {
     block: MessageBlock

@@ -1,47 +1,78 @@
 import asyncio
+import gc
+import logging
+import sys
 import uuid
 from asyncio.subprocess import PIPE, create_subprocess_exec
 from dataclasses import dataclass
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from siili_ai_sdk import MessageBlock, MessageBlockType
 
-from .output_parser import parse_json_output, parse_stream_line
+from ..base import BaseCodingAgent, CommonOptions
+from .output_parser import ParseResult, parse_json_output, parse_stream_line
+
+# Suppress asyncio subprocess cleanup warnings and exceptions
+# This is a known Python issue when subprocesses are garbage collected after the event loop closes
+logging.getLogger("asyncio").setLevel(logging.CRITICAL)
+
+
+def _suppress_subprocess_exception(unraisable):
+    """Suppress the 'Event loop is closed' exception from subprocess cleanup."""
+    # Check if this is the known asyncio subprocess cleanup issue
+    exc = unraisable.exc_value
+    if exc is not None and "Event loop is closed" in str(exc):
+        return  # Suppress this known issue
+    # For other exceptions, use default handling
+    sys.__unraisablehook__(unraisable)
+
+
+sys.unraisablehook = _suppress_subprocess_exception
 
 
 @dataclass
-class CursorOptions:
-    """Configuration options for Cursor CLI agent"""
+class CursorAgentOptions(CommonOptions):
+    """Cursor-specific options extending common options"""
     api_key: Optional[str] = None
-    model: Optional[str] = None
     output_format: str = "json"
-    working_directory: Optional[str] = None
-    force: bool = False
     print_mode: bool = True  # Enable print mode by default for SDK use
     background: bool = False
+    use_sessions: bool = False  # Use sessions for multi-turn conversations
+    process_timeout: Optional[float] = None  # Timeout in seconds, None = no timeout
 
 
-class CursorAgent:
+class CursorAgent(BaseCodingAgent):
     """Wrapper for Cursor CLI that integrates with the Siili AI SDK"""
     
-    def __init__(self, options: CursorOptions = CursorOptions(), yolo: bool = False):
-        self.options = options
+    def __init__(self, options: Optional[CursorAgentOptions] = None):
+        opts = options or CursorAgentOptions()
+        super().__init__(opts)
+        self.options = opts
         self._session_id: Optional[str] = None
-        if yolo:
-            self.options.force = True
+        self._post_init()
     
-    def run(self, prompt: str) -> None:
-        """Run Cursor CLI with the given prompt in blocking mode"""
+    def run(self, prompt: str) -> str:
+        """Run Cursor CLI with the given prompt in blocking mode.
+        
+        Returns:
+            The final result from the agent.
+        """
+        result_parts: list[str] = []
+        
         async def _run():
-            async for message in self.stream_blocks(prompt):
-                print(message.content if hasattr(message, 'content') else message)
+            async for block in self.stream_blocks(prompt):
+                if block.content:
+                    result_parts.append(block.content)
+            # Force cleanup of subprocess transports before loop closes
+            gc.collect()
         
         asyncio.run(_run())
+        return "\n".join(result_parts)
     
     async def stream_blocks(self, prompt: str) -> AsyncGenerator[MessageBlock, None]:
         """Stream response blocks from Cursor CLI"""
-        # Create session if none exists
-        if not self._session_id:
+        # Only use sessions if explicitly enabled
+        if self.options.use_sessions and not self._session_id:
             session_id = await self._create_new_session()
             if not session_id:
                 yield MessageBlock(
@@ -57,21 +88,33 @@ class CursorAgent:
         try:
             process = await create_subprocess_exec(
                 *cmd,
+                stdin=PIPE,  # Provide stdin so we can close it
                 stdout=PIPE,
                 stderr=PIPE,
                 cwd=self.options.working_directory
             )
             
+            # Close stdin immediately to signal no more input
+            if process.stdin:
+                process.stdin.close()
+                await process.stdin.wait_closed()
+            
             # Stream stdout
-            collected_output: list[str] = []
+            collected_output: List[str] = []
             fmt = (self.options.output_format or "json").lower()
+            completed = False
+            
             if process.stdout:
                 async for line in self._read_stream(process.stdout):
                     if not line.strip():
                         continue
                     if fmt == "stream-json":
-                        for block in parse_stream_line(line):
+                        result = parse_stream_line(line)
+                        for block in result.blocks:
                             yield block
+                        if result.is_complete:
+                            completed = True
+                            break  # Stop reading, we're done
                     elif fmt == "json":
                         collected_output.append(line)
                     else:
@@ -82,6 +125,16 @@ class CursorAgent:
                             type=MessageBlockType.PLAIN,
                             content=line
                         )
+            
+            # Kill process if it completed but hasn't exited
+            if completed and process.returncode is None:
+                process.terminate()
+                try:
+                    await asyncio.wait_for(process.wait(), timeout=2.0)
+                except asyncio.TimeoutError:
+                    process.kill()
+                    await process.wait()
+                return  # We're done, exit cleanly
             
             # Wait for process completion
             return_code = await process.wait()
@@ -131,7 +184,7 @@ class CursorAgent:
         fmt = self.options.output_format or "text"
         if fmt in ("text", "json", "stream-json"):
             cmd.extend(["--output-format", fmt])
-        if self.options.force:
+        if self.common_options.yolo:
             cmd.append("--force")
 
         if session_id:
@@ -167,7 +220,7 @@ class CursorAgent:
                 content=f"Error resuming Cursor session: {str(e)}"
             )
     
-    async def list_sessions(self) -> list[Dict[str, Any]]:
+    async def list_sessions(self) -> List[Dict[str, Any]]:
         """List previous Cursor CLI sessions"""
         cmd = ["cursor-agent", "ls"]
         
@@ -179,7 +232,7 @@ class CursorAgent:
         fmt = self.options.output_format or "text"
         if fmt in ("text", "json", "stream-json"):
             cmd.extend(["--output-format", fmt])
-        if self.options.force:
+        if self.common_options.yolo:
             cmd.append("--force")
         
         try:
@@ -248,7 +301,7 @@ class CursorAgent:
         """Clear the current session ID from memory"""
         self._session_id = None
     
-    def _build_command(self, prompt: str) -> list[str]:
+    def _build_command(self, prompt: str) -> List[str]:
         """Build the cursor-agent command with all options"""
         cmd = ["cursor-agent"]
         
@@ -269,8 +322,8 @@ class CursorAgent:
         if fmt in ("text", "json", "stream-json"):
             cmd.extend(["--output-format", fmt])
             
-        # Add force flag if enabled
-        if self.options.force:
+        # yolo mode -> Cursor's --force flag
+        if self.common_options.yolo:
             cmd.append("--force")
             
         # Add background mode if enabled
@@ -296,3 +349,22 @@ class CursorAgent:
                 yield line.decode('utf-8', errors='replace')
             except Exception:
                 break
+    
+    def get_setup_instructions(self) -> str:
+        """Return setup instructions for Cursor CLI."""
+        return """Cursor Agent Setup:
+
+1. Install Cursor CLI:
+   curl https://cursor.com/install -fsS | bash
+
+2. Authenticate:
+   cursor-agent login
+
+3. Verify authentication:
+   cursor-agent status
+
+4. (Optional) Update to latest:
+   cursor-agent update
+
+For more info: https://docs.cursor.com/cli"""
+

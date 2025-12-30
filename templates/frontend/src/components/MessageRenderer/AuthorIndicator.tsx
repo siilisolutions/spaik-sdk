@@ -1,4 +1,4 @@
-import { Message } from '@siili-ai-sdk/hooks';
+import { Message } from '@siilisolutions/ai-sdk-react';
 
 interface Props {
     message: Message;
