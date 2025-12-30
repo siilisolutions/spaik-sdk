@@ -1,4 +1,4 @@
-# Agent SDK Hooks
+# Siili AI SDK React
 
 A React hooks library for building AI agent chat interfaces with real-time streaming capabilities. Built with Zustand for state management and Zod for type safety.
 
@@ -33,9 +33,9 @@ Perfect for building production-ready AI chat applications without dealing with 
 ## Installation
 
 ```bash
-npm install @siili-ai-sdk/hooks
+npm install @siilisolutions/ai-sdk-react
 # or
-yarn add @siili-ai-sdk/hooks
+yarn add @siilisolutions/ai-sdk-react
 ```
 
 ## Quick Start
@@ -43,7 +43,7 @@ yarn add @siili-ai-sdk/hooks
 ### 1. Setup the Provider
 
 ```tsx
-import { AgentSdkClientProvider, createThreadsApiClient } from '@siili-ai-sdk/hooks';
+import { AgentSdkClientProvider, createThreadsApiClient } from '@siilisolutions/ai-sdk-react';
 
 // Create API client
 const apiClient = createThreadsApiClient({
@@ -71,7 +71,7 @@ import {
   useThreadSelection, 
   useThread,
   useThreadActions
-} from '@siili-ai-sdk/hooks';
+} from '@siilisolutions/ai-sdk-react';
 
 function ChatInterface() {
   // Get list of threads
