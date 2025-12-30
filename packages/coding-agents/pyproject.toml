@@ -3,7 +3,7 @@ name = "siili-coding-agents"
 version = "0.1.0"
 description = "Pre-built coding agents for AI-assisted software development"
 readme = "README.md"
-license = {file = "../../LICENSE"}
+license = "MIT"
 authors = [
     {name = "Siili Solutions Oyj", email = "info@siili.com"}
 ]
@@ -22,8 +22,8 @@ classifiers = [
 requires-python = ">=3.10"
 
 [project.urls]
-Homepage = "https://github.com/siili-ai/siili-ai-sdk"
-Repository = "https://github.com/siili-ai/siili-ai-sdk"
+Homepage = "https://github.com/siilisolutions/siili-ai-sdk"
+Repository = "https://github.com/siilisolutions/siili-ai-sdk"
 dependencies = [
     "siili-ai-sdk>=0.2.0",
     "claude-code-sdk>=0.0.14",
