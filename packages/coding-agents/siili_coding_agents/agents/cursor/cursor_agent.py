@@ -2,33 +2,31 @@ import asyncio
 import uuid
 from asyncio.subprocess import PIPE, create_subprocess_exec
 from dataclasses import dataclass
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from siili_ai_sdk import MessageBlock, MessageBlockType
 
+from ..base import BaseCodingAgent, CommonOptions
 from .output_parser import parse_json_output, parse_stream_line
 
 
 @dataclass
-class CursorOptions:
-    """Configuration options for Cursor CLI agent"""
+class CursorAgentOptions(CommonOptions):
+    """Cursor-specific options extending common options"""
     api_key: Optional[str] = None
-    model: Optional[str] = None
     output_format: str = "json"
-    working_directory: Optional[str] = None
-    force: bool = False
     print_mode: bool = True  # Enable print mode by default for SDK use
     background: bool = False
 
 
-class CursorAgent:
+class CursorAgent(BaseCodingAgent):
     """Wrapper for Cursor CLI that integrates with the Siili AI SDK"""
     
-    def __init__(self, options: CursorOptions = CursorOptions(), yolo: bool = False):
-        self.options = options
+    def __init__(self, options: Optional[CursorAgentOptions] = None):
+        opts = options or CursorAgentOptions()
+        super().__init__(opts)
+        self.options = opts
         self._session_id: Optional[str] = None
-        if yolo:
-            self.options.force = True
     
     def run(self, prompt: str) -> None:
         """Run Cursor CLI with the given prompt in blocking mode"""
@@ -63,7 +61,7 @@ class CursorAgent:
             )
             
             # Stream stdout
-            collected_output: list[str] = []
+            collected_output: List[str] = []
             fmt = (self.options.output_format or "json").lower()
             if process.stdout:
                 async for line in self._read_stream(process.stdout):
@@ -131,7 +129,7 @@ class CursorAgent:
         fmt = self.options.output_format or "text"
         if fmt in ("text", "json", "stream-json"):
             cmd.extend(["--output-format", fmt])
-        if self.options.force:
+        if self.common_options.yolo:
             cmd.append("--force")
 
         if session_id:
@@ -167,7 +165,7 @@ class CursorAgent:
                 content=f"Error resuming Cursor session: {str(e)}"
             )
     
-    async def list_sessions(self) -> list[Dict[str, Any]]:
+    async def list_sessions(self) -> List[Dict[str, Any]]:
         """List previous Cursor CLI sessions"""
         cmd = ["cursor-agent", "ls"]
         
@@ -179,7 +177,7 @@ class CursorAgent:
         fmt = self.options.output_format or "text"
         if fmt in ("text", "json", "stream-json"):
             cmd.extend(["--output-format", fmt])
-        if self.options.force:
+        if self.common_options.yolo:
             cmd.append("--force")
         
         try:
@@ -248,7 +246,7 @@ class CursorAgent:
         """Clear the current session ID from memory"""
         self._session_id = None
     
-    def _build_command(self, prompt: str) -> list[str]:
+    def _build_command(self, prompt: str) -> List[str]:
         """Build the cursor-agent command with all options"""
         cmd = ["cursor-agent"]
         
@@ -269,8 +267,8 @@ class CursorAgent:
         if fmt in ("text", "json", "stream-json"):
             cmd.extend(["--output-format", fmt])
             
-        # Add force flag if enabled
-        if self.options.force:
+        # yolo mode -> Cursor's --force flag
+        if self.common_options.yolo:
             cmd.append("--force")
             
         # Add background mode if enabled
@@ -296,3 +294,4 @@ class CursorAgent:
                 yield line.decode('utf-8', errors='replace')
             except Exception:
                 break
+

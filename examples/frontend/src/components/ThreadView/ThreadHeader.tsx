@@ -1,4 +1,4 @@
-import { Thread } from '@siili-ai-sdk/hooks';
+import { Thread } from '@siilisolutions/ai-sdk-react';
 
 interface Props {
     thread: Thread;

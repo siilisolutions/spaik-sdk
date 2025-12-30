@@ -487,8 +487,8 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.41.1.tgz#848f99b0d9936d92221bb6070baeff4db6947a30"
   integrity sha512-Wq2zpapRYLfi4aKxf2Xff0tN+7slj2d4R87WEzqw7ZLsVvO5zwYCIuEGSZYiK41+GlwUo1HiR+GdkLEJnCKTCw==
 
-"@siili-ai-sdk/hooks@file:packages/agent-sdk-hooks":
-  version "0.0.1"
+"@siilisolutions/ai-sdk-react@file:packages/agent-sdk-hooks":
+  version "0.1.0"
   dependencies:
     zod "^3.22.4"
     zustand "^4.4.7"

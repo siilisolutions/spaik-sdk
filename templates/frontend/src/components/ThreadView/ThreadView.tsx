@@ -1,4 +1,4 @@
-import { Id, useThread } from '@siili-ai-sdk/hooks';
+import { Id, useThread } from '@siilisolutions/ai-sdk-react';
 import { ThreadHeader } from './ThreadHeader';
 import { MessagesList } from './MessagesList';
 import { MessageInput } from './MessageInput';

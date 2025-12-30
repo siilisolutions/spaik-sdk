@@ -1,24 +1,23 @@
-# from siili_coding_agents.claude_code.claude_agent import ClaudeAgent
 import os
 
-from siili_coding_agents.cursor import CursorAgent, CursorOptions
+from siili_coding_agents import ClaudeAgent, CursorAgent, CursorAgentOptions
 
 
 def main() -> None:
     # Claude Code agent (commented out)
-    # agent = ClaudeAgent(yolo=True)
+    # from siili_coding_agents import ClaudeAgentOptions
+    # agent = ClaudeAgent(ClaudeAgentOptions(yolo=True))
     # agent.run("search online for latest news, then write them as news.md")
     
     # Cursor CLI agent with session management
-    options = CursorOptions(
+    options = CursorAgentOptions(
         api_key=os.getenv("CURSOR_API_KEY"),
         output_format="stream-json",  # Use stream-json for better real-time output
-        force=True,
-        print_mode=True,
         working_directory=os.getcwd(),
+        yolo=True,
     )
     
-    agent = CursorAgent(options, yolo=True)
+    agent = CursorAgent(options)
     
     # These calls will use the same session (stored in memory during agent lifetime)
     # If no session exists, it will create one automatically

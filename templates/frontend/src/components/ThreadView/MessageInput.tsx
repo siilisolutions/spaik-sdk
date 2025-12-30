@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useThreadActions } from '@siili-ai-sdk/hooks';
+import { useThreadActions } from '@siilisolutions/ai-sdk-react';
 
 interface Props {
     threadId: string;
