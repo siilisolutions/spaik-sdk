@@ -48,5 +48,8 @@ class EnvConfig:
     def get_credentials_provider_type(self) -> str:
         return self.get_key("CREDENTIALS_PROVIDER_TYPE", "env")
 
+    def get_image_model(self) -> str:
+        return self.get_key("IMAGE_MODEL")
+
 
 env_config = EnvConfig()

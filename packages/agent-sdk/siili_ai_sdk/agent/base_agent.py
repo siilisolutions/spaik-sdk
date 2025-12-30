@@ -175,5 +175,6 @@ class BaseAgent(ABC):
             token_usage = self.thread_container.get_latest_token_usage()
         if token_usage is None:
             from siili_ai_sdk.llm.consumption.token_usage import TokenUsage
+
             token_usage = TokenUsage(input_tokens=0, output_tokens=0)
         return self.cost_provider.get_cost_estimate(self.get_llm_model(), token_usage)
