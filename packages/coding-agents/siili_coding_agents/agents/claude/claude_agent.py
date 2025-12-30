@@ -25,6 +25,7 @@ class ClaudeAgent(BaseCodingAgent):
         super().__init__(opts)
         self.options = opts
         self._claude_options = self._build_claude_options()
+        self._post_init()
     
     def _build_claude_options(self) -> ClaudeCodeOptions:
         """Build ClaudeCodeOptions from our options"""
@@ -61,4 +62,19 @@ class ClaudeAgent(BaseCodingAgent):
                 blocks = to_sdk_message_blocks(message)
                 for block in blocks:
                     yield block
+    
+    def get_setup_instructions(self) -> str:
+        """Return setup instructions for Claude Code."""
+        return """Claude Code Setup:
+
+1. Install Claude Code CLI:
+   npm install -g @anthropic-ai/claude-code
+
+2. Authenticate:
+   claude login
+
+3. Verify installation:
+   claude --version
+
+For more info: https://docs.anthropic.com/claude-code"""
 

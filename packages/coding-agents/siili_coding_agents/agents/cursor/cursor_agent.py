@@ -17,6 +17,7 @@ class CursorAgentOptions(CommonOptions):
     output_format: str = "json"
     print_mode: bool = True  # Enable print mode by default for SDK use
     background: bool = False
+    use_sessions: bool = False  # Use sessions for multi-turn conversations
 
 
 class CursorAgent(BaseCodingAgent):
@@ -27,6 +28,7 @@ class CursorAgent(BaseCodingAgent):
         super().__init__(opts)
         self.options = opts
         self._session_id: Optional[str] = None
+        self._post_init()
     
     def run(self, prompt: str) -> None:
         """Run Cursor CLI with the given prompt in blocking mode"""
@@ -38,8 +40,8 @@ class CursorAgent(BaseCodingAgent):
     
     async def stream_blocks(self, prompt: str) -> AsyncGenerator[MessageBlock, None]:
         """Stream response blocks from Cursor CLI"""
-        # Create session if none exists
-        if not self._session_id:
+        # Only use sessions if explicitly enabled
+        if self.options.use_sessions and not self._session_id:
             session_id = await self._create_new_session()
             if not session_id:
                 yield MessageBlock(
@@ -55,10 +57,16 @@ class CursorAgent(BaseCodingAgent):
         try:
             process = await create_subprocess_exec(
                 *cmd,
+                stdin=PIPE,  # Provide stdin so we can close it
                 stdout=PIPE,
                 stderr=PIPE,
                 cwd=self.options.working_directory
             )
+            
+            # Close stdin immediately to signal no more input
+            if process.stdin:
+                process.stdin.close()
+                await process.stdin.wait_closed()
             
             # Stream stdout
             collected_output: List[str] = []
@@ -294,4 +302,22 @@ class CursorAgent(BaseCodingAgent):
                 yield line.decode('utf-8', errors='replace')
             except Exception:
                 break
+    
+    def get_setup_instructions(self) -> str:
+        """Return setup instructions for Cursor CLI."""
+        return """Cursor Agent Setup:
+
+1. Install Cursor CLI:
+   curl https://cursor.com/install -fsS | bash
+
+2. Authenticate:
+   cursor-agent login
+
+3. Verify authentication:
+   cursor-agent status
+
+4. (Optional) Update to latest:
+   cursor-agent update
+
+For more info: https://docs.cursor.com/cli"""
 

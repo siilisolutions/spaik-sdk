@@ -1,34 +1,24 @@
 import os
 
-from siili_coding_agents import ClaudeAgent, CursorAgent, CursorAgentOptions
+from siili_coding_agents import CursorAgent, CursorAgentOptions
 
 
 def main() -> None:
-    # Claude Code agent (commented out)
-    # from siili_coding_agents import ClaudeAgentOptions
-    # agent = ClaudeAgent(ClaudeAgentOptions(yolo=True))
-    # agent.run("search online for latest news, then write them as news.md")
-    
-    # Cursor CLI agent with session management
+    # Cursor agent - verifies connection automatically on init
     options = CursorAgentOptions(
-        api_key=os.getenv("CURSOR_API_KEY"),
-        output_format="stream-json",  # Use stream-json for better real-time output
+        output_format="stream-json",
         working_directory=os.getcwd(),
         yolo=True,
+        # verify_on_init=True,  # default
+        # verify_timeout=30.0,  # default
     )
     
+    # This will raise AgentConnectionError if not authenticated
     agent = CursorAgent(options)
     
-    # These calls will use the same session (stored in memory during agent lifetime)
-    # If no session exists, it will create one automatically
+    # Run tasks
     agent.run("write a joke about cats in cat_joke.md")
-    agent.run("make it much spicier")
-    
-    # Optional: Clear session from memory
-    # agent.clear_session()
-    
-    # Note: Sessions are only maintained in memory during the agent's lifetime
-    # New agent instances will create fresh sessions
+
 
 if __name__ == "__main__":
     main()
