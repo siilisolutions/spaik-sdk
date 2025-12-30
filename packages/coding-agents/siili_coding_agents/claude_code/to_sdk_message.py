@@ -64,13 +64,14 @@ def to_sdk_message_blocks(message: Message) -> List[MessageBlock]:
                     type=MessageBlockType.PLAIN,
                     content=block.text))
             elif isinstance(block, ToolResultBlock):
+                content_str = str(block.content) if block.content else None
                 ret.append(MessageBlock(
                     id=str(uuid.uuid4()),
                     streaming=False,
                     type=MessageBlockType.TOOL_USE,
                     tool_call_id=block.tool_use_id,
-                    tool_call_response=block.content if not block.is_error else None,
-                    tool_call_error=block.content if block.is_error else None,
+                    tool_call_response=content_str if not block.is_error else None,
+                    tool_call_error=content_str if block.is_error else None,
                     ))
             else:
                 raise Exception(block)

@@ -41,7 +41,7 @@ class WorkflowEngine:
             dag = DAG(deps)
             
             # Create run context
-            run_metadata = {
+            run_metadata: Dict[str, Any] = {
                 'run_id': run_id,
                 'workflow_name': workflow['name'],
                 'start_time': start_time,

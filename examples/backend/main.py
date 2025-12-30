@@ -1,4 +1,5 @@
-from typing import List
+from contextlib import asynccontextmanager
+from typing import AsyncIterator, List
 
 import uvicorn
 from dotenv import load_dotenv
@@ -11,17 +12,6 @@ from siili_ai_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
 
 load_dotenv()
 
-# FastAPI app
-app = FastAPI(title="Agent SDK Backend Example", version="0.0.1")
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 class DemoTool(ToolProvider):
     def get_tools(self) -> List[BaseTool]:
@@ -37,24 +27,38 @@ class DemoTool(ToolProvider):
 
         return [get_secret_greeting, get_user_name]
 
+
 class DemoAgent(BaseAgent):
     def get_tool_providers(self) -> List[ToolProvider]:
         return [DemoTool()]
 
+
 class MinimalAgent(BaseAgent):
     pass
 
-@app.on_event("startup")
-async def startup_event():
 
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     agent = DemoAgent(llm_model=ModelRegistry.CLAUDE_4_SONNET)
-    
+
     api_builder = ApiBuilder.local(agent=agent)
     thread_router = api_builder.build_thread_router()
     app.include_router(thread_router)
+    yield
 
 
-def run_server():
+app = FastAPI(title="Agent SDK Backend Example", version="0.0.1", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,  # type: ignore[arg-type]
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+def run_server() -> None:
     """Run the uvicorn server"""
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
 

@@ -21,7 +21,7 @@ async def execute(ctx: Dict[str, Any]) -> None:
     # Collect streamed response text into a single string
     logger(f"🤖 Running agent with prompt: {prompt}")
 
-    async for part in agent.stream(prompt):
+    async for part in agent.stream_blocks(prompt):
         logger(f"🤖 {part}")
 
     await asyncio.sleep(0.3)

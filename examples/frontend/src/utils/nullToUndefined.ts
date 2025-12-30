@@ -9,7 +9,7 @@ export function nullToUndefined<T>(input: T): T {
         for (const [key, value] of Object.entries(input)) {
             result[key] = nullToUndefined(value);
         }
-        return result;
+        return result as unknown as T;
     }
     return input;
 } 
