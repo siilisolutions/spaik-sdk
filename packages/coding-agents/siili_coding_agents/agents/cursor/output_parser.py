@@ -1,8 +1,16 @@
 import json
 import uuid
-from typing import List
+from dataclasses import dataclass
+from typing import List, Tuple
 
 from siili_ai_sdk import MessageBlock, MessageBlockType
+
+
+@dataclass
+class ParseResult:
+    """Result of parsing a stream line."""
+    blocks: List[MessageBlock]
+    is_complete: bool = False  # True when we've received the final result
 
 
 def _text_block(text: str, streaming: bool) -> MessageBlock:
@@ -14,22 +22,23 @@ def _text_block(text: str, streaming: bool) -> MessageBlock:
     )
 
 
-def parse_stream_line(line: str) -> List[MessageBlock]:
+def parse_stream_line(line: str) -> ParseResult:
     """Parse a single line from stream-json output into MessageBlocks.
 
-    Returns zero or more MessageBlocks depending on the event type.
+    Returns ParseResult with blocks and completion flag.
     Falls back to returning the raw line as a text block if JSON parsing fails.
     """
     if not line.strip():
-        return []
+        return ParseResult(blocks=[])
 
     try:
         event = json.loads(line)
     except Exception:
-        return [_text_block(line, streaming=True)]
+        return ParseResult(blocks=[_text_block(line, streaming=True)])
 
     blocks: List[MessageBlock] = []
     event_type = event.get("type")
+    is_complete = False
 
     if event_type == "assistant":
         message = event.get("message", {})
@@ -59,9 +68,10 @@ def parse_stream_line(line: str) -> List[MessageBlock]:
         result_text = event.get("result")
         if result_text:
             blocks.append(_text_block(result_text, streaming=False))
+        is_complete = True  # Result event signals completion
 
     # Ignore system/user/status events for now
-    return blocks
+    return ParseResult(blocks=blocks, is_complete=is_complete)
 
 
 def parse_json_output(raw: str) -> List[MessageBlock]:
@@ -95,4 +105,3 @@ def parse_json_output(raw: str) -> List[MessageBlock]:
         blocks.append(_text_block(raw, streaming=False))
 
     return blocks
-

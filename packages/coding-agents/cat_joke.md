@@ -1,5 +1,5 @@
 # Cat Joke
 
-Why don't cats play poker in the jungle?
+Why did the cat break up with the internet?
 
-Too many cheetahs!
+Because it found someone better to stare at!

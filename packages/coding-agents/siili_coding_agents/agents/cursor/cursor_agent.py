@@ -1,4 +1,7 @@
 import asyncio
+import gc
+import logging
+import sys
 import uuid
 from asyncio.subprocess import PIPE, create_subprocess_exec
 from dataclasses import dataclass
@@ -7,7 +10,24 @@ from typing import Any, AsyncGenerator, Dict, List, Optional
 from siili_ai_sdk import MessageBlock, MessageBlockType
 
 from ..base import BaseCodingAgent, CommonOptions
-from .output_parser import parse_json_output, parse_stream_line
+from .output_parser import ParseResult, parse_json_output, parse_stream_line
+
+# Suppress asyncio subprocess cleanup warnings and exceptions
+# This is a known Python issue when subprocesses are garbage collected after the event loop closes
+logging.getLogger("asyncio").setLevel(logging.CRITICAL)
+
+
+def _suppress_subprocess_exception(unraisable):
+    """Suppress the 'Event loop is closed' exception from subprocess cleanup."""
+    # Check if this is the known asyncio subprocess cleanup issue
+    exc = unraisable.exc_value
+    if exc is not None and "Event loop is closed" in str(exc):
+        return  # Suppress this known issue
+    # For other exceptions, use default handling
+    sys.__unraisablehook__(unraisable)
+
+
+sys.unraisablehook = _suppress_subprocess_exception
 
 
 @dataclass
@@ -18,6 +38,7 @@ class CursorAgentOptions(CommonOptions):
     print_mode: bool = True  # Enable print mode by default for SDK use
     background: bool = False
     use_sessions: bool = False  # Use sessions for multi-turn conversations
+    process_timeout: Optional[float] = None  # Timeout in seconds, None = no timeout
 
 
 class CursorAgent(BaseCodingAgent):
@@ -33,8 +54,11 @@ class CursorAgent(BaseCodingAgent):
     def run(self, prompt: str) -> None:
         """Run Cursor CLI with the given prompt in blocking mode"""
         async def _run():
-            async for message in self.stream_blocks(prompt):
-                print(message.content if hasattr(message, 'content') else message)
+            async for block in self.stream_blocks(prompt):
+                if block.content:
+                    print(block.content)
+            # Force cleanup of subprocess transports before loop closes
+            gc.collect()
         
         asyncio.run(_run())
     
@@ -71,13 +95,19 @@ class CursorAgent(BaseCodingAgent):
             # Stream stdout
             collected_output: List[str] = []
             fmt = (self.options.output_format or "json").lower()
+            completed = False
+            
             if process.stdout:
                 async for line in self._read_stream(process.stdout):
                     if not line.strip():
                         continue
                     if fmt == "stream-json":
-                        for block in parse_stream_line(line):
+                        result = parse_stream_line(line)
+                        for block in result.blocks:
                             yield block
+                        if result.is_complete:
+                            completed = True
+                            break  # Stop reading, we're done
                     elif fmt == "json":
                         collected_output.append(line)
                     else:
@@ -88,6 +118,16 @@ class CursorAgent(BaseCodingAgent):
                             type=MessageBlockType.PLAIN,
                             content=line
                         )
+            
+            # Kill process if it completed but hasn't exited
+            if completed and process.returncode is None:
+                process.terminate()
+                try:
+                    await asyncio.wait_for(process.wait(), timeout=2.0)
+                except asyncio.TimeoutError:
+                    process.kill()
+                    await process.wait()
+                return  # We're done, exit cleanly
             
             # Wait for process completion
             return_code = await process.wait()

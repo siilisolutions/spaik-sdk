@@ -1,4 +1,5 @@
 import asyncio
+import gc
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import AsyncGenerator, Optional
@@ -113,6 +114,8 @@ class BaseCodingAgent(ABC):
                     f"Agent did not respond.\n\n{self.get_setup_instructions()}"
                 )
             
+            # Force cleanup of subprocess transports before loop closes
+            gc.collect()
             return True
             
         except asyncio.TimeoutError:
