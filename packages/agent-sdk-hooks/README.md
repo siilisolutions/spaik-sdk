@@ -33,9 +33,9 @@ Perfect for building production-ready AI chat applications without dealing with 
 ## Installation
 
 ```bash
-npm install @agent-sdk/hooks
+npm install @siili-ai-sdk/hooks
 # or
-yarn add @agent-sdk/hooks
+yarn add @siili-ai-sdk/hooks
 ```
 
 ## Quick Start
@@ -43,7 +43,7 @@ yarn add @agent-sdk/hooks
 ### 1. Setup the Provider
 
 ```tsx
-import { AgentSdkClientProvider, createThreadsApiClient } from '@agent-sdk/hooks';
+import { AgentSdkClientProvider, createThreadsApiClient } from '@siili-ai-sdk/hooks';
 
 // Create API client
 const apiClient = createThreadsApiClient({
@@ -71,7 +71,7 @@ import {
   useThreadSelection, 
   useThread,
   useThreadActions
-} from '@agent-sdk/hooks';
+} from '@siili-ai-sdk/hooks';
 
 function ChatInterface() {
   // Get list of threads

@@ -1,8 +1,29 @@
 [project]
 name = "siili-ai-sdk"
 version = "0.1.0"
-description = "SDK for building various kinds of agentic + AI solutions"
+description = "Python SDK for building AI agents with multi-LLM support, streaming, and production-ready infrastructure"
+readme = "README.md"
+license = {file = "../../LICENSE"}
+authors = [
+    {name = "Siili Solutions Oyj", email = "info@siili.com"}
+]
+keywords = ["ai", "agents", "llm", "langchain", "openai", "anthropic", "claude", "gpt", "streaming"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 requires-python = ">=3.10"
+
+[project.urls]
+Homepage = "https://github.com/siili-ai/siili-ai-sdk"
+Repository = "https://github.com/siili-ai/siili-ai-sdk"
+Documentation = "https://github.com/siili-ai/siili-ai-sdk#readme"
 dependencies = [
     "azure-storage-blob",
     "dotenv>=0.9.9",
