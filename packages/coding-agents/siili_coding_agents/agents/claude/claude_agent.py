@@ -45,13 +45,21 @@ class ClaudeAgent(BaseCodingAgent):
             
         return claude_opts
 
-    def run(self, prompt: str) -> None:
-        """Run Claude Code with the given prompt in blocking mode"""
+    def run(self, prompt: str) -> str:
+        """Run Claude Code with the given prompt in blocking mode.
+        
+        Returns:
+            The final result from the agent.
+        """
+        result_parts: list[str] = []
+        
         async def _run():
-            async for message in self.stream_blocks(prompt):
-                print(message)
+            async for block in self.stream_blocks(prompt):
+                if block.content:
+                    result_parts.append(block.content)
         
         anyio.run(_run)
+        return "\n".join(result_parts)
 
     async def stream_blocks(self, prompt: str) -> AsyncGenerator[MessageBlock, None]:
         """Stream response blocks from Claude Code"""

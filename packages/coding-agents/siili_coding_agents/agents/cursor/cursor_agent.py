@@ -51,16 +51,23 @@ class CursorAgent(BaseCodingAgent):
         self._session_id: Optional[str] = None
         self._post_init()
     
-    def run(self, prompt: str) -> None:
-        """Run Cursor CLI with the given prompt in blocking mode"""
+    def run(self, prompt: str) -> str:
+        """Run Cursor CLI with the given prompt in blocking mode.
+        
+        Returns:
+            The final result from the agent.
+        """
+        result_parts: list[str] = []
+        
         async def _run():
             async for block in self.stream_blocks(prompt):
                 if block.content:
-                    print(block.content)
+                    result_parts.append(block.content)
             # Force cleanup of subprocess transports before loop closes
             gc.collect()
         
         asyncio.run(_run())
+        return "\n".join(result_parts)
     
     async def stream_blocks(self, prompt: str) -> AsyncGenerator[MessageBlock, None]:
         """Stream response blocks from Cursor CLI"""

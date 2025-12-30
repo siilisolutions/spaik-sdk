@@ -9,15 +9,14 @@ def main() -> None:
         output_format="stream-json",
         working_directory=os.getcwd(),
         yolo=True,
-        # verify_on_init=True,  # default
-        # verify_timeout=30.0,  # default
     )
     
     # This will raise AgentConnectionError if not authenticated
     agent = CursorAgent(options)
     
-    # Run tasks
-    agent.run("write a joke about cats in cat_joke.md")
+    # Run task and get result
+    result = agent.run("write a joke about cats in cat_joke.md")
+    print(f"\n=== Result ===\n{result}")
 
 
 if __name__ == "__main__":

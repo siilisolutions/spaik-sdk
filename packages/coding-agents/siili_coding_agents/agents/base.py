@@ -60,10 +60,11 @@ class BaseCodingAgent(ABC):
         return self.common_options.yolo
     
     @abstractmethod
-    def run(self, prompt: str) -> None:
+    def run(self, prompt: str) -> str:
         """Run the agent with the given prompt in blocking mode.
         
-        Output is printed to stdout.
+        Returns:
+            The final result/response from the agent.
         """
         pass
     
