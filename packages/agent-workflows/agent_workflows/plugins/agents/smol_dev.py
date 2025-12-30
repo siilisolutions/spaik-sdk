@@ -7,7 +7,7 @@ from typing import Dict, Any
 async def execute(ctx: Dict[str, Any]) -> None:
     """Execute smol-dev agent operation"""
     logger = ctx['logger']
-    workspace = ctx['workspace']
+    _workspace = ctx['workspace']
     step_with = ctx.get('with', {})
     
     task = step_with.get('task', 'Implement application features')
@@ -41,7 +41,7 @@ async def execute(ctx: Dict[str, Any]) -> None:
         logger(f"  📄 {file}")
         await asyncio.sleep(0.1)
     
-    logger(f"🎉 Smol-dev agent completed successfully!")
+    logger("🎉 Smol-dev agent completed successfully!")
     
     # In a real implementation:
     # 1. Interface with actual smol-dev or similar AI coding agent

@@ -47,7 +47,7 @@ def run(ctx: click.Context, file: str, workspace: str, set_kv: tuple[str], vars_
             click.echo(f"📋 Jobs completed: {len(result['completed_jobs'])}")
             sys.exit(0)
         else:
-            click.echo(f"❌ Workflow failed", err=True)
+            click.echo("❌ Workflow failed", err=True)
             if 'failed_jobs' in result:
                 click.echo(f"💥 Failed jobs: {', '.join(result['failed_jobs'])}", err=True)
             sys.exit(1)

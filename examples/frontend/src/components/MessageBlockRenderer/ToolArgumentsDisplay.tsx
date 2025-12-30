@@ -1,5 +1,5 @@
 interface Props {
-    toolCallArgs?: any;
+    toolCallArgs?: Record<string, unknown>;
 }
 
 export function ToolArgumentsDisplay({ toolCallArgs }: Props) {

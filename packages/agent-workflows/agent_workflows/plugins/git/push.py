@@ -7,7 +7,7 @@ from typing import Dict, Any
 async def execute(ctx: Dict[str, Any]) -> None:
     """Execute git push operation"""
     logger = ctx['logger']
-    workspace = ctx['workspace']
+    _workspace = ctx['workspace']
     step_with = ctx.get('with', {})
     
     branch = step_with.get('branch', 'main')
@@ -21,8 +21,8 @@ async def execute(ctx: Dict[str, Any]) -> None:
     
     # Mock git commands (in real implementation, would run actual git)
     commands = [
-        f"git add .",
-        f"git commit -m 'Automated commit'",
+        "git add .",
+        "git commit -m 'Automated commit'",
         f"git push {remote} {branch}" + (" --force" if force else "")
     ]
     

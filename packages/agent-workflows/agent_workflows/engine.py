@@ -1,10 +1,9 @@
 """Core workflow execution engine"""
 
-import asyncio
 import json
 import time
 from pathlib import Path
-from typing import Dict, Any, List, Set, Optional
+from typing import Dict, Any, Set, Optional
 from datetime import datetime
 
 from .dag import DAG
@@ -42,7 +41,7 @@ class WorkflowEngine:
             dag = DAG(deps)
             
             # Create run context
-            run_metadata = {
+            run_metadata: Dict[str, Any] = {
                 'run_id': run_id,
                 'workflow_name': workflow['name'],
                 'start_time': start_time,

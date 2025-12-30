@@ -1,13 +1,11 @@
 """Generic agent"""
 
-import asyncio
-import json
 from typing import Dict, Any
 from siili_ai_sdk.agent.base_agent import BaseAgent
 
 async def execute(ctx: Dict[str, Any]) -> None:
     logger = ctx['logger']
-    workspace = ctx['workspace']
+    _workspace = ctx['workspace']
     step_with = ctx.get('with', {})
     prompt = step_with['prompt']
     agent=  GeneralAgent(

@@ -13,7 +13,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "ruff",
-    "mypy",
+    "ty",
 ]
 
 [build-system]
