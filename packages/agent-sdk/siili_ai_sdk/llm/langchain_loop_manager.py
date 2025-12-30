@@ -232,7 +232,7 @@ def _is_in_web_server_context() -> bool:
 
         # Check if the event loop has been running for a while (web servers)
         # vs just started (asyncio.run())
-        if hasattr(loop, "_ready") and hasattr(loop._ready, "__len__") and len(loop._ready) > 0:
+        if hasattr(loop, "_ready") and hasattr(loop._ready, "__len__") and len(loop._ready) > 0:  # type: ignore[arg-type]
             # This is a heuristic - web servers tend to have more pending tasks
             return True
 

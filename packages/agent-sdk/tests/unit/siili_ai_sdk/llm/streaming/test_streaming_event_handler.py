@@ -20,7 +20,7 @@ def make_chain_stream_event(content: str) -> dict:
 def make_chain_end_event(content: str = "", usage_metadata: dict | None = None) -> dict:
     chunk = AIMessageChunk(content=content)
     if usage_metadata:
-        chunk.usage_metadata = usage_metadata
+        chunk.usage_metadata = usage_metadata  # type: ignore[assignment]
     return {"event": "on_chain_end", "data": {"output": {"messages": [chunk]}}}
 
 
