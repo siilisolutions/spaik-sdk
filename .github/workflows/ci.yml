@@ -1,0 +1,195 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      agent-sdk: ${{ steps.filter.outputs.agent-sdk }}
+      coding-agents: ${{ steps.filter.outputs.coding-agents }}
+      agent-workflows: ${{ steps.filter.outputs.agent-workflows }}
+      agent-sdk-hooks: ${{ steps.filter.outputs.agent-sdk-hooks }}
+      examples-agents: ${{ steps.filter.outputs.examples-agents }}
+      examples-backend: ${{ steps.filter.outputs.examples-backend }}
+      examples-frontend: ${{ steps.filter.outputs.examples-frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            agent-sdk:
+              - 'packages/agent-sdk/**'
+            coding-agents:
+              - 'packages/coding-agents/**'
+            agent-workflows:
+              - 'packages/agent-workflows/**'
+            agent-sdk-hooks:
+              - 'packages/agent-sdk-hooks/**'
+            examples-agents:
+              - 'examples/agents/**'
+            examples-backend:
+              - 'examples/backend/**'
+            examples-frontend:
+              - 'examples/frontend/**'
+
+  agent-sdk:
+    needs: changes
+    if: ${{ needs.changes.outputs.agent-sdk == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/agent-sdk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.10
+      - name: Install dependencies
+        run: uv sync
+      - name: Lint
+        run: uv run ruff check .
+      - name: Type check
+        run: uv run ty check siili_ai_sdk tests
+      - name: Unit tests
+        run: uv run python3 -m pytest tests/unit/ -m "unit" --no-cov
+
+  coding-agents:
+    needs: [changes, agent-sdk]
+    if: ${{ always() && needs.changes.outputs.coding-agents == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/coding-agents
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.10
+      - name: Install dependencies
+        run: uv sync
+      - name: Lint
+        run: uv run ruff check .
+      - name: Type check
+        run: uv run ty check siili_coding_agents
+
+  agent-workflows:
+    needs: [changes, agent-sdk]
+    if: ${{ always() && needs.changes.outputs.agent-workflows == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/agent-workflows
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.10
+      - name: Install dependencies
+        run: uv sync
+      - name: Lint
+        run: uv run ruff check .
+      - name: Type check
+        run: uv run ty check agent_workflows
+      - name: Tests
+        run: uv run python3 -m pytest tests/
+
+  examples-agents:
+    needs: [changes, agent-sdk]
+    if: ${{ always() && needs.changes.outputs.examples-agents == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/agents
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.10
+      - name: Install dependencies
+        run: uv sync
+      - name: Lint
+        run: uv run ruff check .
+      - name: Type check
+        run: uv run ty check .
+
+  examples-backend:
+    needs: [changes, agent-sdk]
+    if: ${{ always() && needs.changes.outputs.examples-backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.10
+      - name: Install dependencies
+        run: uv sync
+      - name: Lint
+        run: uv run ruff check .
+      - name: Type check
+        run: uv run ty check .
+
+  agent-sdk-hooks:
+    needs: changes
+    if: ${{ needs.changes.outputs.agent-sdk-hooks == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/agent-sdk-hooks
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Lint
+        run: yarn lint
+      - name: Type check
+        run: yarn type-check
+
+  examples-frontend:
+    needs: [changes, agent-sdk-hooks]
+    if: ${{ always() && needs.changes.outputs.examples-frontend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      - name: Install hooks dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: packages/agent-sdk-hooks
+      - name: Build hooks
+        run: yarn build
+        working-directory: packages/agent-sdk-hooks
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Lint
+        run: yarn lint
+      - name: Type check
+        run: yarn tsc --noEmit
+
