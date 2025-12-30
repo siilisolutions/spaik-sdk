@@ -1,10 +1,8 @@
 from typing import List
 
 from dotenv import load_dotenv
-
 from siili_ai_sdk.agent.base_agent import BaseAgent
 from siili_ai_sdk.models.llm_model import LLMModel
-from siili_ai_sdk.models.providers.provider_type import ProviderType
 from siili_ai_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
 
 
@@ -58,7 +56,7 @@ class OllamaAgent(BaseAgent):
     def __init__(self):
         # Create Ollama model - users can create any Ollama model this way
         ollama_model = LLMModel(
-            family="ollama", 
+            family="ollama",
             name="gpt-oss:20b",
             reasoning=True,  # This model supports reasoning
             prompt_caching=False  # Ollama doesn't support prompt caching like cloud providers

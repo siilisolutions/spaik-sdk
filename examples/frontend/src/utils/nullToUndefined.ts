@@ -5,7 +5,7 @@ export function nullToUndefined<T>(input: T): T {
         return input.map(nullToUndefined) as unknown as T;
     }
     if (typeof input === 'object' && input !== null) {
-        const result: any = {};
+        const result: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(input)) {
             result[key] = nullToUndefined(value);
         }

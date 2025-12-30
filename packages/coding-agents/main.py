@@ -1,5 +1,6 @@
 # from siili_coding_agents.claude_code.claude_agent import ClaudeAgent
 import os
+
 from siili_coding_agents.cursor import CursorAgent, CursorOptions
 
 
@@ -31,4 +32,4 @@ def main() -> None:
     # New agent instances will create fresh sessions
 
 if __name__ == "__main__":
-    main() 
+    main()

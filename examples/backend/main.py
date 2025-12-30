@@ -1,13 +1,13 @@
 from typing import List
+
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.tools.tool_provider import ToolProvider, tool, BaseTool
-from siili_ai_sdk.server.api.routers.api_builder import ApiBuilder
 from siili_ai_sdk.models.model_registry import ModelRegistry
+from siili_ai_sdk.server.api.routers.api_builder import ApiBuilder
+from siili_ai_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
 
 load_dotenv()
 
@@ -60,4 +60,4 @@ def run_server():
 
 
 if __name__ == "__main__":
-    run_server() 
+    run_server()

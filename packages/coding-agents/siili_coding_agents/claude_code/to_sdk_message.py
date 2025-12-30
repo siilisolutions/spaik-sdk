@@ -1,7 +1,19 @@
-from typing import List
 import uuid
-from claude_code_sdk import AssistantMessage, Message, ResultMessage, SystemMessage, TextBlock, ThinkingBlock, ToolResultBlock, ToolUseBlock, UserMessage
+from typing import List
+
+from claude_code_sdk import (
+    AssistantMessage,
+    Message,
+    ResultMessage,
+    SystemMessage,
+    TextBlock,
+    ThinkingBlock,
+    ToolResultBlock,
+    ToolUseBlock,
+    UserMessage,
+)
 from siili_ai_sdk import MessageBlock, MessageBlockType, ThreadMessage
+
 
 def to_sdk_message(message: Message) -> ThreadMessage:
     raise Exception(message)
@@ -16,14 +28,14 @@ def to_sdk_message_blocks(message: Message) -> List[MessageBlock]:
         for block in message.content:
             if isinstance(block, TextBlock):
                 ret.append(MessageBlock(
-                    id=str(uuid.uuid4()), 
-                    streaming=False, 
-                    type=MessageBlockType.PLAIN, 
+                    id=str(uuid.uuid4()),
+                    streaming=False,
+                    type=MessageBlockType.PLAIN,
                     content=block.text))
             elif isinstance(block, ToolUseBlock):
                 ret.append(MessageBlock(
-                    id=str(uuid.uuid4()), 
-                    streaming=False, 
+                    id=str(uuid.uuid4()),
+                    streaming=False,
                     type=MessageBlockType.TOOL_USE,
                     tool_call_id=block.id,
                     tool_name=block.name,
@@ -31,31 +43,31 @@ def to_sdk_message_blocks(message: Message) -> List[MessageBlock]:
                     ))
             elif isinstance(block, ThinkingBlock):
                 ret.append(MessageBlock(
-                    id=str(uuid.uuid4()), 
-                    streaming=False, 
-                    type=MessageBlockType.REASONING, 
+                    id=str(uuid.uuid4()),
+                    streaming=False,
+                    type=MessageBlockType.REASONING,
                     content=block.thinking))
             else:
                 raise Exception(block)
     elif isinstance(message, ResultMessage):
         ret.append(MessageBlock(
-            id=str(uuid.uuid4()), 
-            streaming=False, 
-            type=MessageBlockType.PLAIN, 
+            id=str(uuid.uuid4()),
+            streaming=False,
+            type=MessageBlockType.PLAIN,
             content=message.result))
     elif isinstance(message, UserMessage):
         for block in message.content:
             if isinstance(block, TextBlock):
                 ret.append(MessageBlock(
-                    id=str(uuid.uuid4()), 
-                    streaming=False, 
-                    type=MessageBlockType.PLAIN, 
+                    id=str(uuid.uuid4()),
+                    streaming=False,
+                    type=MessageBlockType.PLAIN,
                     content=block.text))
             elif isinstance(block, ToolResultBlock):
                 ret.append(MessageBlock(
-                    id=str(uuid.uuid4()), 
-                    streaming=False, 
-                    type=MessageBlockType.TOOL_USE, 
+                    id=str(uuid.uuid4()),
+                    streaming=False,
+                    type=MessageBlockType.TOOL_USE,
                     tool_call_id=block.tool_use_id,
                     tool_call_response=block.content if not block.is_error else None,
                     tool_call_error=block.content if block.is_error else None,

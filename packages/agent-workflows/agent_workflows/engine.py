@@ -1,10 +1,9 @@
 """Core workflow execution engine"""
 
-import asyncio
 import json
 import time
 from pathlib import Path
-from typing import Dict, Any, List, Set, Optional
+from typing import Dict, Any, Set, Optional
 from datetime import datetime
 
 from .dag import DAG

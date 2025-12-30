@@ -7,11 +7,11 @@ from typing import Dict, Any
 async def execute(ctx: Dict[str, Any]) -> None:
     """Execute template matching operation"""
     logger = ctx['logger']
-    workspace = ctx['workspace']
+    _workspace = ctx['workspace']
     step_with = ctx.get('with', {})
     
     prompt = step_with.get('prompt', 'Generic application')
-    template_type = step_with.get('type', 'auto')
+    _template_type = step_with.get('type', 'auto')
     
     logger(f"🔍 Matching template for: {prompt}")
     
@@ -36,7 +36,7 @@ async def execute(ctx: Dict[str, Any]) -> None:
     logger(f"🎯 Selected template: {selected_template}")
     
     # Simulate template application
-    logger(f"📄 Generating project structure...")
+    logger("📄 Generating project structure...")
     await asyncio.sleep(0.3)
     
     # Mock file generation

@@ -1,10 +1,11 @@
-from re import A
 from typing import AsyncGenerator
+
 import anyio
-from claude_code_sdk import ClaudeSDKClient, ClaudeCodeOptions
+from claude_code_sdk import ClaudeCodeOptions, ClaudeSDKClient
 from siili_ai_sdk import MessageBlock
 
 from siili_coding_agents.claude_code.to_sdk_message import to_sdk_message_blocks
+
 
 class ClaudeAgent:
     def __init__(self, options: ClaudeCodeOptions = ClaudeCodeOptions(), yolo: bool = False):
