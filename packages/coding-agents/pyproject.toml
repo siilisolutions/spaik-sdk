@@ -20,10 +20,6 @@ classifiers = [
     "Topic :: Software Development",
 ]
 requires-python = ">=3.10"
-
-[project.urls]
-Homepage = "https://github.com/siilisolutions/siili-ai-sdk"
-Repository = "https://github.com/siilisolutions/siili-ai-sdk"
 dependencies = [
     "siili-ai-sdk>=0.2.0",
     "claude-code-sdk>=0.0.14",
@@ -37,6 +33,10 @@ dev = [
     "ruff",
     "ty",
 ]
+
+[project.urls]
+Homepage = "https://github.com/siilisolutions/siili-ai-sdk"
+Repository = "https://github.com/siilisolutions/siili-ai-sdk"
 
 [build-system]
 requires = ["hatchling"]
