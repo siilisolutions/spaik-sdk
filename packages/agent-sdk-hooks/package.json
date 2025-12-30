@@ -1,11 +1,26 @@
 {
     "name": "@siili-ai-sdk/hooks",
-    "version": "0.0.1",
-    "description": "React hooks for Siili AI SDK",
+    "version": "0.1.0",
+    "description": "React hooks for Siili AI SDK - state management and streaming for AI agent frontends",
     "type": "module",
     "main": "dist/index.js",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
+    "license": "MIT",
+    "author": {
+        "name": "Siili Solutions Oyj",
+        "email": "info@siili.com",
+        "url": "https://siili.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/siili-ai/siili-ai-sdk.git",
+        "directory": "packages/agent-sdk-hooks"
+    },
+    "homepage": "https://github.com/siili-ai/siili-ai-sdk#readme",
+    "bugs": {
+        "url": "https://github.com/siili-ai/siili-ai-sdk/issues"
+    },
     "exports": {
         ".": {
             "import": "./dist/index.js",
@@ -45,8 +60,11 @@
         "hooks",
         "agent",
         "ai",
+        "llm",
+        "streaming",
         "state-management",
         "zustand",
-        "zod"
+        "zod",
+        "siili"
     ]
 }
