@@ -1,7 +1,7 @@
 {
-    "name": "@siili-ai-sdk/hooks",
+    "name": "@siilisolutions/ai-sdk-react",
     "version": "0.1.0",
-    "description": "React hooks for Siili AI SDK - state management and streaming for AI agent frontends",
+    "description": "React library for Siili AI SDK - state management and streaming for AI agent frontends",
     "type": "module",
     "main": "dist/index.js",
     "module": "dist/index.js",
