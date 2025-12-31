@@ -47,6 +47,8 @@ dependencies = [
     "aioconsole>=0.8.1",
     "langchain-tavily>=0.2.15",
     "crawl4ai>=0.7.4",
+    "mcp>=1.9.2",
+    "langchain-mcp-adapters>=0.2.1",
 ]
 
 [project.optional-dependencies]
@@ -141,4 +143,5 @@ dev = [
     "pytest-timeout>=2.4.0",
     "ruff>=0.13.1",
     "ty",
+    "echo-mcp-server-for-testing>=0.1.5",
 ]
