@@ -1,0 +1,170 @@
+name: Security Audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      fail_on_severity:
+        description: 'Minimum severity to fail on'
+        required: false
+        default: 'high'
+        type: choice
+        options:
+          - low
+          - moderate
+          - high
+          - critical
+
+jobs:
+  # Python packages - run in parallel
+  audit-agent-sdk:
+    name: Audit agent-sdk (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/agent-sdk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.10
+      - name: Install dependencies
+        run: uv sync
+      - name: Install pip-audit
+        run: uv pip install pip-audit
+      - name: Run security audit
+        run: |
+          uv run python -m pip_audit --strict --desc on --progress-spinner off
+
+  audit-coding-agents:
+    name: Audit coding-agents (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/coding-agents
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.10
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Install pip-audit
+        run: uv pip install pip-audit
+      - name: Run security audit
+        run: |
+          uv run python -m pip_audit --strict --desc on --progress-spinner off
+
+  audit-agent-workflows:
+    name: Audit agent-workflows (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/agent-workflows
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - name: Set up Python
+        run: uv python install 3.10
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Install pip-audit
+        run: uv pip install pip-audit
+      - name: Run security audit
+        run: |
+          uv run python -m pip_audit --strict --desc on --progress-spinner off
+
+  # JavaScript/TypeScript packages - run in parallel
+  audit-agent-sdk-hooks:
+    name: Audit agent-sdk-hooks (JS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Run security audit
+        working-directory: packages/agent-sdk-hooks
+        run: |
+          # bun doesn't have native audit, use npm audit with package-lock generation
+          # First generate a package-lock.json for npm audit
+          npm i --package-lock-only --legacy-peer-deps 2>/dev/null || true
+          npm audit --audit-level=${{ inputs.fail_on_severity || 'high' }} || {
+            echo "::error::Security vulnerabilities found in agent-sdk-hooks"
+            exit 1
+          }
+
+  audit-agent-sdk-material:
+    name: Audit agent-sdk-material (JS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Run security audit
+        working-directory: packages/agent-sdk-material
+        run: |
+          # bun doesn't have native audit, use npm audit with package-lock generation
+          npm i --package-lock-only --legacy-peer-deps 2>/dev/null || true
+          npm audit --audit-level=${{ inputs.fail_on_severity || 'high' }} || {
+            echo "::error::Security vulnerabilities found in agent-sdk-material"
+            exit 1
+          }
+
+  # Summary job that depends on all audit jobs
+  audit-summary:
+    name: Audit Summary
+    runs-on: ubuntu-latest
+    needs:
+      - audit-agent-sdk
+      - audit-coding-agents
+      - audit-agent-workflows
+      - audit-agent-sdk-hooks
+      - audit-agent-sdk-material
+    if: always()
+    steps:
+      - name: Check audit results
+        run: |
+          echo "## Security Audit Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check each job result
+          declare -A results
+          results["agent-sdk"]="${{ needs.audit-agent-sdk.result }}"
+          results["coding-agents"]="${{ needs.audit-coding-agents.result }}"
+          results["agent-workflows"]="${{ needs.audit-agent-workflows.result }}"
+          results["agent-sdk-hooks"]="${{ needs.audit-agent-sdk-hooks.result }}"
+          results["agent-sdk-material"]="${{ needs.audit-agent-sdk-material.result }}"
+          
+          failed=0
+          for pkg in "${!results[@]}"; do
+            status="${results[$pkg]}"
+            if [ "$status" = "success" ]; then
+              echo "✅ **$pkg**: Passed" >> $GITHUB_STEP_SUMMARY
+            elif [ "$status" = "failure" ]; then
+              echo "❌ **$pkg**: Failed - vulnerabilities found" >> $GITHUB_STEP_SUMMARY
+              failed=1
+            else
+              echo "⚠️ **$pkg**: $status" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ $failed -eq 1 ]; then
+            echo "### ⚠️ Action Required" >> $GITHUB_STEP_SUMMARY
+            echo "One or more packages have security vulnerabilities that need to be addressed." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "### ✅ All Clear" >> $GITHUB_STEP_SUMMARY
+            echo "No security vulnerabilities found above the configured threshold." >> $GITHUB_STEP_SUMMARY
+          fi
