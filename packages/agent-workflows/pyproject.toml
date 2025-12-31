@@ -1,6 +1,6 @@
 [project]
 name = "siili-agent-workflows"
-version = "0.1.0"
+version = "0.2.0"
 description = "YAML-driven workflow engine for AI agents"
 readme = "README.md"
 license = "MIT"
