@@ -1,4 +1,4 @@
-import { Paper, Box, alpha, useTheme, Avatar, Typography } from '@mui/material';
+import { Paper, Box, useTheme, Avatar, Typography } from '@mui/material';
 import { Message } from '@siilisolutions/ai-sdk-react';
 import { MessageContent } from './MessageContent';
 import { AttachmentGallery } from './AttachmentGallery';

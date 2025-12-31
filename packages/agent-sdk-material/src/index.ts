@@ -34,6 +34,10 @@ export { MessageInput } from './components/MessageInput/MessageInput';
 export { AttachButton } from './components/MessageInput/AttachButton';
 export { PendingAttachments } from './components/MessageInput/PendingAttachments';
 
+// Markdown
+export { MarkdownProvider, useMarkdownContext, MarkdownRenderer, StoredImage } from './markdown';
+export type { CustomComponentProps, CustomComponentRegistry } from './markdown';
+
 // Utilities
 export { formatTimestamp, formatFullTimestamp } from './utils/formatTime';
 

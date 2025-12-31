@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, ReactNode } from 'react';
 import { Box, Drawer, useMediaQuery, useTheme } from '@mui/material';
 import {
     AgentSdkClientProvider,
@@ -9,13 +9,16 @@ import {
 } from '@siilisolutions/ai-sdk-react';
 import { ThreadSidebar } from '../ThreadSidebar/ThreadSidebar';
 import { ChatPanel } from '../ChatPanel/ChatPanel';
+import { MarkdownProvider, CustomComponentRegistry } from '../../markdown';
 
 interface AgentChatContentProps {
     baseUrl: string;
     sidebarWidth?: number;
+    sidebarHeader?: ReactNode;
+    sidebarTitle?: string;
 }
 
-function AgentChatContent({ baseUrl, sidebarWidth = 300 }: AgentChatContentProps) {
+function AgentChatContent({ baseUrl, sidebarWidth = 300, sidebarHeader, sidebarTitle }: AgentChatContentProps) {
     const { refresh } = useThreadListActions();
     const { selectedThreadId } = useThreadSelection();
     const theme = useTheme();
@@ -37,7 +40,7 @@ function AgentChatContent({ baseUrl, sidebarWidth = 300 }: AgentChatContentProps
         setMobileOpen(!mobileOpen);
     };
 
-    const sidebar = <ThreadSidebar width={sidebarWidth} />;
+    const sidebar = <ThreadSidebar width={sidebarWidth} header={sidebarHeader} title={sidebarTitle} />;
 
     return (
         <Box
@@ -77,11 +80,29 @@ function AgentChatContent({ baseUrl, sidebarWidth = 300 }: AgentChatContentProps
 }
 
 export interface AgentChatProps {
+    /** Base URL for the agent API (e.g., "http://localhost:8000") */
     baseUrl: string;
+    /** Width of the sidebar in pixels */
     sidebarWidth?: number;
+    /** Optional custom header/logo for the sidebar */
+    sidebarHeader?: ReactNode;
+    /** Title shown in default sidebar header. Defaults to "Agent Chat" */
+    sidebarTitle?: string;
+    /** 
+     * Custom components for markdown rendering.
+     * Keys are component names (e.g., "MyCard"), values are React components.
+     * Use in AI responses as: <MyCard prop="value" />
+     */
+    customComponents?: CustomComponentRegistry;
 }
 
-export function AgentChat({ baseUrl, sidebarWidth }: AgentChatProps) {
+export function AgentChat({ 
+    baseUrl, 
+    sidebarWidth, 
+    sidebarHeader, 
+    sidebarTitle,
+    customComponents = {},
+}: AgentChatProps) {
     const apiClient = useMemo(() => {
         const threadsApi = createThreadsApiClient({ baseUrl });
         return new AgentSdkClient(threadsApi);
@@ -89,7 +110,14 @@ export function AgentChat({ baseUrl, sidebarWidth }: AgentChatProps) {
 
     return (
         <AgentSdkClientProvider apiClient={apiClient}>
-            <AgentChatContent baseUrl={baseUrl} sidebarWidth={sidebarWidth} />
+            <MarkdownProvider customComponents={customComponents} filesBaseUrl={baseUrl}>
+                <AgentChatContent 
+                    baseUrl={baseUrl} 
+                    sidebarWidth={sidebarWidth}
+                    sidebarHeader={sidebarHeader}
+                    sidebarTitle={sidebarTitle}
+                />
+            </MarkdownProvider>
         </AgentSdkClientProvider>
     );
 }

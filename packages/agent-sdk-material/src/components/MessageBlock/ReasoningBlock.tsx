@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Collapse, IconButton, Typography, alpha, useTheme } from '@mui/material';
+import { Box, Collapse, Typography, alpha, useTheme } from '@mui/material';
 import { PsychologyIcon, ExpandMoreIcon } from '../../utils/icons';
 
 interface Props {
