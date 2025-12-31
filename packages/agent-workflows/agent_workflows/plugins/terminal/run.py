@@ -30,7 +30,12 @@ async def _run_subprocess(
     logger(f"  💻 {display}")
 
     if use_shell:
-        cmd_str = " ".join(argv_or_str) if isinstance(argv_or_str, list) else argv_or_str
+        cmd_str: str
+        if isinstance(argv_or_str, list):
+            cmd_str = " ".join(argv_or_str)
+        else:
+            assert isinstance(argv_or_str, str)  # for type checker
+            cmd_str = argv_or_str
         process = await asyncio.create_subprocess_shell(
             cmd_str,
             cwd=str(cwd) if cwd else None,

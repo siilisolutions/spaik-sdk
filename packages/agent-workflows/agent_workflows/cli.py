@@ -105,13 +105,16 @@ def validate_workflow_file(workflow_name: str) -> None:
         show_workflow_not_found(workflow_name, result.searched_locations)
         sys.exit(1)
 
+    assert result.path is not None  # for type checker (sys.exit above)
+    workflow_path = result.path
+
     try:
-        workflow = load_workflow(result.path)
+        workflow = load_workflow(workflow_path)
         click.echo(f"✅ Workflow '{workflow['name']}' is valid")
         if result.is_bundled:
             click.echo("   (bundled workflow)")
         else:
-            click.echo(f"   Source: {result.path}")
+            click.echo(f"   Source: {workflow_path}")
 
         # Check DAG
         deps = {}
@@ -151,6 +154,7 @@ def run_workflow_by_name(
         show_workflow_not_found(workflow_name, result.searched_locations)
         sys.exit(1)
 
+    assert result.path is not None  # for type checker (sys.exit above)
     workflow_path = result.path
     workspace_path = Path(workspace) if workspace else None
     step_overrides = _parse_overrides(set_kv, dest)
@@ -254,14 +258,17 @@ def cli(
         click.echo("💡 Tip: Run 'siili-agent-workflows --list' to see available workflows.")
         sys.exit(0)
 
+    assert workflow_name is not None  # for type checker (sys.exit above)
+    wf_name = workflow_name
+
     # Handle --validate flag
     if validate:
-        validate_workflow_file(workflow_name)
+        validate_workflow_file(wf_name)
         return
 
     # Default: run the workflow
     run_workflow_by_name(
-        workflow_name=workflow_name,
+        workflow_name=wf_name,
         extra_args=ctx.args,
         workspace=workspace,
         set_kv=set_kv,
