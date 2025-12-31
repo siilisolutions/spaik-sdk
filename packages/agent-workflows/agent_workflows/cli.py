@@ -94,6 +94,82 @@ def show_workflow_not_found(name: str, searched: list[str]) -> None:
     click.echo("Run 'siili-agent-workflows --list' to see all available workflows.", err=True)
 
 
+def show_getting_started() -> None:
+    """Show getting started guide when no workflow is specified."""
+    global_dir = get_global_config_dir()
+    global_env = global_dir / ".env"
+
+    click.echo()
+    click.echo("🚀 SIILI AGENT WORKFLOWS")
+    click.echo("=" * 50)
+    click.echo()
+    click.echo("Run workflows by name:")
+    click.echo("  siili-agent-workflows <workflow-name> [options]")
+    click.echo()
+    click.echo("─" * 50)
+    click.echo("📦 BUNDLED WORKFLOWS")
+    click.echo("─" * 50)
+
+    workflows = list_all_workflows()
+    if workflows["bundled"]:
+        for wf in workflows["bundled"]:
+            click.echo(f"  • {wf}")
+    click.echo()
+
+    click.echo("─" * 50)
+    click.echo("🔑 API KEYS SETUP")
+    click.echo("─" * 50)
+    click.echo(f"Create: {global_env}")
+    click.echo()
+    click.echo("  OPENAI_API_KEY=sk-...")
+    click.echo("  ANTHROPIC_API_KEY=sk-ant-...")
+    click.echo()
+
+    click.echo("─" * 50)
+    click.echo("📁 WORKFLOW LOCATIONS (searched in order)")
+    click.echo("─" * 50)
+    click.echo("  1. ./workflow-name.yml")
+    click.echo("  2. ./.agent_workflows/workflow-name.yml")
+    click.echo(f"  3. {global_dir}/workflow-name.yml")
+    click.echo("  4. Bundled (shipped with package)")
+    click.echo()
+
+    click.echo("─" * 50)
+    click.echo("📝 CREATE A WORKFLOW")
+    click.echo("─" * 50)
+    click.echo("  my-workflow.yml:")
+    click.echo()
+    click.echo("  name: my-workflow")
+    click.echo("  jobs:")
+    click.echo("    main:")
+    click.echo("      steps:")
+    click.echo("        - uses: terminal/run")
+    click.echo("          with:")
+    click.echo('            command: echo "Hello!"')
+    click.echo("        - uses: agents/claude_code")
+    click.echo("          with:")
+    click.echo('            prompt: "Do something"')
+    click.echo()
+
+    click.echo("─" * 50)
+    click.echo("🔌 AVAILABLE PLUGINS")
+    click.echo("─" * 50)
+    click.echo("  terminal/run       - Run shell commands")
+    click.echo("  terminal/script    - Run script files")
+    click.echo("  git/download       - Clone/download repos")
+    click.echo("  git/push           - Push changes")
+    click.echo("  agents/claude_code - Claude Code CLI")
+    click.echo("  agents/general     - General LLM agent")
+    click.echo("  agents/structured  - Structured JSON responses")
+    click.echo("  audio/stt          - Speech-to-text")
+    click.echo("  audio/tts          - Text-to-speech")
+    click.echo()
+
+    click.echo("Try: siili-agent-workflows --list")
+    click.echo("     siili-agent-workflows --help")
+    click.echo()
+
+
 def validate_workflow_file(workflow_name: str) -> None:
     """Validate a workflow file without running it."""
     from .dag import DAG, CyclicDependencyError
@@ -139,6 +215,20 @@ def validate_workflow_file(workflow_name: str) -> None:
         sys.exit(1)
 
 
+def show_env_hint() -> None:
+    """Show hint about where to put API keys."""
+    global_dir = get_global_config_dir()
+    global_env = global_dir / ".env"
+    click.echo()
+    click.echo("💡 To set API keys, create a .env file at one of:", err=True)
+    click.echo(f"   • {global_env} (global, recommended)", err=True)
+    click.echo("   • ./.env (current directory)", err=True)
+    click.echo()
+    click.echo("   Example .env contents:", err=True)
+    click.echo("   OPENAI_API_KEY=sk-...", err=True)
+    click.echo("   ANTHROPIC_API_KEY=sk-ant-...", err=True)
+
+
 def run_workflow_by_name(
     workflow_name: str,
     extra_args: list[str],
@@ -160,6 +250,10 @@ def run_workflow_by_name(
     step_overrides = _parse_overrides(set_kv, dest)
     vars_overrides = {**_parse_vars(vars_kv), **_parse_extra_vars(extra_args)}
 
+    # Show where env files are loaded from
+    global_dir = get_global_config_dir()
+    click.echo(f"📁 Config: {global_dir}")
+
     try:
         run_result = asyncio.run(
             run_workflow(workflow_path, workspace_path, step_overrides, vars_overrides)
@@ -180,13 +274,21 @@ def run_workflow_by_name(
         click.echo(f"❌ Workflow parse error: {e}", err=True)
         sys.exit(1)
     except WorkflowExecutionError as e:
+        error_msg = str(e)
         click.echo(f"❌ Workflow execution error: {e}", err=True)
+        # Check for common API key errors
+        if "API_KEY" in error_msg or "api_key" in error_msg.lower():
+            show_env_hint()
         sys.exit(1)
     except KeyboardInterrupt:
         click.echo("\n🛑 Workflow cancelled by user", err=True)
         sys.exit(130)
     except Exception as e:
+        error_msg = str(e)
         click.echo(f"💀 Unexpected error: {e}", err=True)
+        # Check for common API key errors
+        if "API_KEY" in error_msg or "api_key" in error_msg.lower():
+            show_env_hint()
         sys.exit(1)
 
 
@@ -231,17 +333,59 @@ def cli(
 ) -> None:
     """YAML-driven workflow engine for AI agents.
 
-    Run a workflow by name:
+    \b
+    QUICK START
+    ───────────
+    siili-agent-workflows --list              # See available workflows
+    siili-agent-workflows speech-input        # Run a bundled workflow
+    siili-agent-workflows my-workflow --var key=value
 
-        siili-agent-workflows my-workflow --param value
+    \b
+    WORKFLOW FORMAT (my-workflow.yml)
+    ─────────────────────────────────
+    name: my-workflow
+    vars:
+      default_value: hello
+    jobs:
+      main:
+        steps:
+          - uses: terminal/run
+            with:
+              command: echo "${{ default_value }}"
+          - uses: agents/claude_code
+            with:
+              prompt: "Do something"
+              cwd: "."
 
-    List available workflows:
+    \b
+    WORKFLOW LOCATIONS (searched in order)
+    ──────────────────────────────────────
+    1. ./my-workflow.yml (current directory)
+    2. ./.agent_workflows/my-workflow.yml
+    3. ~/.config/siili-agent-workflows/my-workflow.yml (global)
+    4. Bundled workflows (shipped with package)
 
-        siili-agent-workflows --list
+    \b
+    AVAILABLE PLUGINS
+    ─────────────────
+    terminal/run       - Run shell commands
+    terminal/script    - Run script files
+    git/download       - Clone/download from repos
+    git/push           - Push changes
+    agents/claude_code - Claude Code CLI agent
+    agents/general     - General LLM agent
+    agents/structured  - Structured JSON responses
+    audio/stt          - Speech-to-text (record & transcribe)
+    audio/tts          - Text-to-speech
 
-    Validate a workflow:
+    \b
+    API KEYS
+    ────────
+    Create ~/.config/siili-agent-workflows/.env with:
+      OPENAI_API_KEY=sk-...
+      ANTHROPIC_API_KEY=sk-ant-...
 
-        siili-agent-workflows my-workflow --validate
+    Or use .env in current directory, or --env-file option.
     """
     # Load environment variables
     load_env_hierarchy(env_file)
@@ -253,9 +397,7 @@ def cli(
 
     # Require workflow name for other operations
     if not workflow_name:
-        click.echo(ctx.get_help())
-        click.echo()
-        click.echo("💡 Tip: Run 'siili-agent-workflows --list' to see available workflows.")
+        show_getting_started()
         sys.exit(0)
 
     assert workflow_name is not None  # for type checker (sys.exit above)

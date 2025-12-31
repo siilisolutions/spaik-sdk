@@ -151,12 +151,20 @@ class WorkflowEngine:
                     'status': 'running'
                 }
                 run_metadata['jobs'][job_name]['steps'].append(step_metadata)
-                
-                await self._execute_step(step, env, job_vars, job_name, i)
-                
+
+                # Execute step and capture outputs
+                step_outputs = await self._execute_step(step, env, job_vars, job_name, i)
+
+                # Merge step outputs into job vars for subsequent steps
+                if step_outputs:
+                    job_vars.update(step_outputs)
+                    # Also update global vars so other jobs can access
+                    self.global_vars.update(step_outputs)
+
                 step_metadata.update({
                     'end_time': time.time(),
-                    'status': 'success'
+                    'status': 'success',
+                    'outputs': step_outputs,
                 })
             
             run_metadata['jobs'][job_name].update({
@@ -179,30 +187,35 @@ class WorkflowEngine:
         vars_map: Dict[str, Any],
         job_name: str,
         step_index: int,
-    ):
-        """Execute a single step"""
+    ) -> Dict[str, Any]:
+        """Execute a single step.
+
+        Returns:
+            Dict of output values from the plugin.
+        """
         plugin_path = step['uses']
         # Start from step's with-config, then apply CLI-provided overrides for this plugin
         step_with = dict(step.get('with', {}))
         if plugin_path in self.step_overrides:
             step_with.update(self.step_overrides[plugin_path])
-        
+
         self._log(f"  📦 [{job_name}] Step {step_index}: {plugin_path}")
-        
+
         # Interpolate variables into `with` values
         interpolated_with = self._interpolate(step_with, env=env, vars_map=vars_map)
 
         # Create step context
         ctx = {
             'env': env,
+            'vars': vars_map,
             'step': step,
             'workspace': self.workspace,
             'logger': self._log,
-            'with': interpolated_with
+            'with': interpolated_with,
         }
-        
+
         try:
-            await load_plugin(plugin_path, ctx)
+            return await load_plugin(plugin_path, ctx)
         except Exception as e:
             raise WorkflowExecutionError(f"Step {step_index} failed: {e}")
 

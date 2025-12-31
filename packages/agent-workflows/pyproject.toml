@@ -27,9 +27,20 @@ dependencies = [
     "platformdirs>=4.0",
     "siili-ai-sdk>=0.2.0",
     "siili-coding-agents>=0.2.0",
+    # Audio plugins
+    "sounddevice>=0.4.6",
+    "numpy>=1.24.0",
+    "scipy>=1.11.0",
+    "pydub>=0.25.1",
 ]
 
 [project.optional-dependencies]
+audio = [
+    "sounddevice>=0.4.6",
+    "numpy>=1.24.0",
+    "scipy>=1.11.0",
+    "pydub>=0.25.1",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.1",
