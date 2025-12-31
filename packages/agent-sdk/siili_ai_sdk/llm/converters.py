@@ -60,7 +60,7 @@ async def convert_thread_message_to_langchain_multimodal(
             content_parts.append({"type": "text", "text": fallback_msg})
             continue
 
-        attachment_content = await _convert_attachment_to_content_part(attachment, file_storage)
+        attachment_content = await _convert_attachment_to_content_part(attachment, file_storage, provider_family)
         if attachment_content:
             content_parts.append(attachment_content)
 
@@ -73,6 +73,7 @@ async def convert_thread_message_to_langchain_multimodal(
 async def _convert_attachment_to_content_part(
     attachment: Attachment,
     file_storage: BaseFileStorage,
+    provider_family: str = "openai",
 ) -> Optional[Dict[str, Any]]:
     try:
         data, metadata = await file_storage.retrieve(attachment.file_id)
@@ -83,11 +84,21 @@ async def _convert_attachment_to_content_part(
     b64_data = base64.b64encode(data).decode("utf-8")
 
     if mime_type.startswith("image/"):
+        if provider_family == "anthropic":
+            return {
+                "type": "image",
+                "source": {"type": "base64", "media_type": mime_type, "data": b64_data},
+            }
         return {
             "type": "image_url",
             "image_url": {"url": f"data:{mime_type};base64,{b64_data}"},
         }
     elif mime_type == "application/pdf":
+        if provider_family == "anthropic":
+            return {
+                "type": "document",
+                "source": {"type": "base64", "media_type": mime_type, "data": b64_data},
+            }
         return {
             "type": "image_url",
             "image_url": {"url": f"data:{mime_type};base64,{b64_data}"},
