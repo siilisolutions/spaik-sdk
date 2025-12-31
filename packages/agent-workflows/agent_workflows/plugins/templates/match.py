@@ -1,7 +1,7 @@
 """Template matching plugin"""
 
 import asyncio
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 async def execute(ctx: Dict[str, Any]) -> None:
@@ -21,7 +21,7 @@ async def execute(ctx: Dict[str, Any]) -> None:
     # Mock template selection logic
     templates = {
         'slack': 'slack-bot-template',
-        'notion': 'notion-integration-template', 
+        'notion': 'notion-integration-template',
         'nextjs': 'nextjs-app-template',
         'git': 'git-automation-template'
     }
@@ -42,7 +42,7 @@ async def execute(ctx: Dict[str, Any]) -> None:
     # Mock file generation
     generated_files = [
         'src/main.py',
-        'src/config.py', 
+        'src/config.py',
         'requirements.txt',
         'README.md',
         'Dockerfile'

@@ -2,12 +2,12 @@
 
 import json
 import time
-from pathlib import Path
-from typing import Dict, Any, Set, Optional
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Optional, Set
 
 from .dag import DAG
-from .parser import load_workflow, get_job_dependencies
+from .parser import get_job_dependencies, load_workflow
 from .plugins import load_plugin
 
 
@@ -71,7 +71,7 @@ class WorkflowEngine:
                 for job_name in level:
                     if job_name not in completed_jobs:
                         task = self._execute_job(
-                            job_name, 
+                            job_name,
                             workflow['jobs'][job_name],
                             workflow['env'],
                             run_metadata
@@ -118,7 +118,7 @@ class WorkflowEngine:
             await self._save_run_metadata(run_metadata)
             raise
     
-    async def _execute_job(self, job_name: str, job_config: Dict[str, Any], 
+    async def _execute_job(self, job_name: str, job_config: Dict[str, Any],
                           global_env: Dict[str, Any], run_metadata: Dict[str, Any]):
         """Execute a single job with its steps"""
         job_start = time.time()

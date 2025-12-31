@@ -1,7 +1,8 @@
 """Claude Code agent wrapper"""
 
 import asyncio
-from typing import Dict, Any
+from typing import Any, Dict
+
 from siili_coding_agents import ClaudeAgent, ClaudeAgentOptions
 
 

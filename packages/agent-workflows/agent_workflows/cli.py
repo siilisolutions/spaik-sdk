@@ -109,7 +109,7 @@ def validate_workflow_file(workflow_name: str) -> None:
         workflow = load_workflow(result.path)
         click.echo(f"✅ Workflow '{workflow['name']}' is valid")
         if result.is_bundled:
-            click.echo(f"   (bundled workflow)")
+            click.echo("   (bundled workflow)")
         else:
             click.echo(f"   Source: {result.path}")
 

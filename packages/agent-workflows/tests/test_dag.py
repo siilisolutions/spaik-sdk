@@ -1,6 +1,7 @@
 """Tests for DAG utilities"""
 
 import pytest
+
 from agent_workflows.dag import DAG, CyclicDependencyError
 
 

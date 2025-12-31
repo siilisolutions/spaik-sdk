@@ -1,10 +1,11 @@
 """Tests for workflow parser"""
 
-import pytest
 import tempfile
 from pathlib import Path
 
-from agent_workflows.parser import load_workflow, validate_workflow, WorkflowParseError
+import pytest
+
+from agent_workflows.parser import WorkflowParseError, load_workflow, validate_workflow
 
 
 def test_load_valid_workflow():
