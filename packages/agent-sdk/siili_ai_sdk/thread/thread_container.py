@@ -171,6 +171,7 @@ class ThreadContainer:
                     id=str(uuid.uuid4()),
                     streaming=False,
                     type=MessageBlockType.ERROR,
+                    content=error_text,
                 )
             ],
         )

@@ -7,6 +7,8 @@
     ],
     "scripts": {
         "build:hooks": "cd packages/agent-sdk-hooks && yarn build",
+        "build:material": "cd packages/agent-sdk-material && yarn build",
+        "build:packages": "yarn build:hooks && yarn build:material",
         "dev:frontend": "cd examples/frontend && yarn dev",
         "dev:backend": "cd examples/backend && uv run uvicorn main:app --reload",
         "install:all": "yarn install && cd packages/agent-sdk-hooks && yarn install && cd ../../examples/frontend && yarn install"

@@ -1,0 +1,106 @@
+import { Paper, Box, useTheme, Avatar, Typography } from '@mui/material';
+import { Message } from '@siilisolutions/ai-sdk-react';
+import { MessageContent } from './MessageContent';
+import { AttachmentGallery } from './AttachmentGallery';
+import { SmartToyIcon, PersonIcon } from '../../utils/icons';
+import { formatTimestamp } from '../../utils/formatTime';
+
+interface Props {
+    message: Message;
+    filesBaseUrl?: string;
+}
+
+export function MessageCard({ message, filesBaseUrl }: Props) {
+    const theme = useTheme();
+    const isAi = message.ai;
+
+    return (
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: isAi ? 'row' : 'row-reverse',
+                gap: 2,
+                mb: 4,
+                px: 2,
+            }}
+        >
+            {/* Avatar Column */}
+            <Box sx={{ flexShrink: 0, mt: 0.5 }}>
+                <Avatar
+                    sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: isAi ? 'primary.main' : 'secondary.main',
+                        boxShadow: 2,
+                    }}
+                >
+                    {isAi ? <SmartToyIcon sx={{ fontSize: 18 }} /> : <PersonIcon sx={{ fontSize: 18 }} />}
+                </Avatar>
+            </Box>
+
+            {/* Message Column */}
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: isAi ? 'flex-start' : 'flex-end',
+                    maxWidth: '85%',
+                    minWidth: 0, // Flexbox fix for text overflow
+                }}
+            >
+                {/* Name & Time Row */}
+                <Box 
+                    sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1, 
+                        mb: 0.5,
+                        flexDirection: isAi ? 'row' : 'row-reverse',
+                        opacity: 0.7,
+                        px: 0.5
+                    }}
+                >
+                    <Typography variant="caption" fontWeight={600} color="text.primary">
+                        {message.author_name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                        {formatTimestamp(message.timestamp)}
+                    </Typography>
+                </Box>
+
+                {/* The Bubble / Content Area */}
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: isAi ? 0 : 2, // No padding for AI (text flow), Bubble for User
+                        px: isAi ? 0 : 2.5,
+                        borderRadius: isAi ? 0 : 3,
+                        borderTopRightRadius: isAi ? 0 : 4,
+                        bgcolor: isAi 
+                            ? 'transparent' 
+                            : theme.palette.mode === 'dark' 
+                                ? 'primary.dark' 
+                                : 'primary.main',
+                        color: isAi ? 'text.primary' : 'primary.contrastText',
+                        backgroundImage: 'none',
+                        // Styles for user message text to ensure contrast
+                        '& .MuiTypography-root': {
+                            color: isAi ? 'text.primary' : 'inherit',
+                        }
+                    }}
+                >
+                    <MessageContent blocks={message.blocks} />
+                    
+                    {message.attachments && message.attachments.length > 0 && (
+                        <Box sx={{ mt: 1.5 }}>
+                            <AttachmentGallery
+                                attachments={message.attachments}
+                                filesBaseUrl={filesBaseUrl}
+                            />
+                        </Box>
+                    )}
+                </Paper>
+            </Box>
+        </Box>
+    );
+}
