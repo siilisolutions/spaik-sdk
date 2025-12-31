@@ -5,6 +5,7 @@ import { VolumeUpIcon, VolumeOffIcon } from '../../utils/icons';
 interface SpeakButtonProps {
     text: string;
     baseUrl: string;
+    /** TTS model. Defaults to 'tts-1' (fast). Use 'tts-1-hd' for higher quality but slower. */
     model?: string;
     voice?: string;
     size?: 'small' | 'medium';
@@ -17,7 +18,7 @@ interface SpeakButtonProps {
 export function SpeakButton({ 
     text, 
     baseUrl, 
-    model,
+    model = 'tts-1',  // Fast model by default
     voice = 'alloy',
     size = 'small' 
 }: SpeakButtonProps) {
@@ -28,34 +29,34 @@ export function SpeakButton({
     });
 
     const handleClick = () => {
-        if (isPlaying) {
+        if (isPlaying || isLoading) {
             stop();
         } else {
             speak(text);
         }
     };
 
-    if (isLoading) {
-        return (
-            <IconButton size={size} disabled>
-                <CircularProgress size={size === 'small' ? 16 : 20} />
-            </IconButton>
-        );
-    }
+    const getTooltip = () => {
+        if (isLoading) return 'Cancel';
+        if (isPlaying) return 'Stop';
+        return 'Listen';
+    };
 
     return (
-        <Tooltip title={isPlaying ? 'Stop' : 'Listen'}>
+        <Tooltip title={getTooltip()}>
             <IconButton 
                 onClick={handleClick} 
                 size={size}
                 sx={{
-                    color: isPlaying ? 'primary.main' : 'action.active',
+                    color: (isPlaying || isLoading) ? 'primary.main' : 'action.active',
                     '&:hover': {
                         bgcolor: 'action.hover',
                     },
                 }}
             >
-                {isPlaying ? (
+                {isLoading ? (
+                    <CircularProgress size={size === 'small' ? 16 : 20} />
+                ) : isPlaying ? (
                     <VolumeOffIcon fontSize={size} />
                 ) : (
                     <VolumeUpIcon fontSize={size} />

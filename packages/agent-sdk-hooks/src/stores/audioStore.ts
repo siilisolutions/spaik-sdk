@@ -81,6 +81,7 @@ export function useTextToSpeech(options: UseTextToSpeechOptions): UseTextToSpeec
     const { baseUrl, model, voice, speed, format } = options;
     
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
     
     const client = useMemo(
         () => createAudioApiClient({ baseUrl }),
@@ -99,16 +100,24 @@ export function useTextToSpeech(options: UseTextToSpeechOptions): UseTextToSpeec
     } = useAudioStore();
 
     const stop = useCallback(() => {
+        // Cancel any pending request
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
+        // Stop any playing audio
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
+            audioRef.current = null;
         }
         if (currentAudioUrl) {
             URL.revokeObjectURL(currentAudioUrl);
         }
         setPlaying(false);
         setCurrentAudioUrl(null);
-    }, [currentAudioUrl, setPlaying, setCurrentAudioUrl]);
+        setTtsLoading(false);
+    }, [currentAudioUrl, setPlaying, setCurrentAudioUrl, setTtsLoading]);
 
     const speak = useCallback(async (text: string) => {
         // Stop any currently playing audio
@@ -116,6 +125,10 @@ export function useTextToSpeech(options: UseTextToSpeechOptions): UseTextToSpeec
         
         setTtsLoading(true);
         setTtsError(null);
+
+        // Create abort controller for this request
+        const abortController = new AbortController();
+        abortControllerRef.current = abortController;
 
         try {
             const request: TTSRequest = {
@@ -127,6 +140,12 @@ export function useTextToSpeech(options: UseTextToSpeechOptions): UseTextToSpeec
             };
 
             const audioBlob = await client.textToSpeech(request);
+            
+            // Check if we were aborted
+            if (abortController.signal.aborted) {
+                return;
+            }
+            
             const audioUrl = URL.createObjectURL(audioBlob);
             
             setCurrentAudioUrl(audioUrl);

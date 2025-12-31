@@ -17,9 +17,11 @@ interface Props {
     isGenerating?: boolean;
     onCancelGeneration?: () => void;
     enableSTT?: boolean;
+    /** Language code for STT (e.g., 'en', 'fi'). Defaults to 'en' to avoid auto-detect confusion. */
+    sttLanguage?: string;
 }
 
-export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGeneration, enableSTT = false }: Props) {
+export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGeneration, enableSTT = false, sttLanguage = 'en' }: Props) {
     const theme = useTheme();
     const [inputMessage, setInputMessage] = useState('');
     const { sendMessage } = useThreadActions();
@@ -137,6 +139,7 @@ export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGen
                     {enableSTT && filesBaseUrl && (
                         <PushToTalkButton
                             baseUrl={filesBaseUrl}
+                            language={sttLanguage}
                             onSend={handleSendVoice}
                             disabled={isGenerating}
                         />

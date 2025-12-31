@@ -15,11 +15,22 @@ interface Props {
 }
 
 /**
- * Extract plain text from message blocks for TTS/copy.
+ * Extract text from message blocks for copying (includes reasoning).
  */
-function getMessageText(message: Message): string {
+function getTextForCopy(message: Message): string {
     return message.blocks
         .filter(block => block.type === 'plain' || block.type === 'reasoning')
+        .map(block => block.content || '')
+        .join('\n\n')
+        .trim();
+}
+
+/**
+ * Extract text from message blocks for TTS (excludes reasoning - just the actual response).
+ */
+function getTextForTTS(message: Message): string {
+    return message.blocks
+        .filter(block => block.type === 'plain')
         .map(block => block.content || '')
         .join('\n\n')
         .trim();
@@ -28,8 +39,9 @@ function getMessageText(message: Message): string {
 export function MessageCard({ message, filesBaseUrl, enableTTS = false, enableCopy = true }: Props) {
     const theme = useTheme();
     const isAi = message.ai;
-    const messageText = getMessageText(message);
-    const showActions = isAi && messageText.length > 0;
+    const copyText = getTextForCopy(message);
+    const ttsText = getTextForTTS(message);
+    const showActions = isAi && (copyText.length > 0 || ttsText.length > 0);
 
     return (
         <Box
@@ -137,12 +149,12 @@ export function MessageCard({ message, filesBaseUrl, enableTTS = false, enableCo
                             p: 0.25,
                         }}
                     >
-                        {enableCopy && (
-                            <CopyButton text={messageText} size="small" />
+                        {enableCopy && copyText && (
+                            <CopyButton text={copyText} size="small" />
                         )}
-                        {enableTTS && filesBaseUrl && (
+                        {enableTTS && ttsText && filesBaseUrl && (
                             <SpeakButton 
-                                text={messageText} 
+                                text={ttsText} 
                                 baseUrl={filesBaseUrl}
                                 size="small"
                             />

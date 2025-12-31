@@ -1,9 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { IconButton, Tooltip, CircularProgress, Box, alpha, useTheme } from '@mui/material';
 import { usePushToTalk } from '@siilisolutions/ai-sdk-react';
-import { MicIcon } from '../../utils/icons';
+import { MicIcon, StopIcon } from '../../utils/icons';
 
-interface PushToTalkButtonProps {
+interface VoiceInputButtonProps {
     baseUrl: string;
     language?: string;
     onSend: (text: string) => Promise<void>;
@@ -11,17 +11,15 @@ interface PushToTalkButtonProps {
 }
 
 /**
- * Push-to-talk button for voice input.
- * Hold to record, release to transcribe and send.
+ * Voice input button - click to start recording, click again to stop and send.
  */
 export function PushToTalkButton({ 
     baseUrl, 
     language,
     onSend,
     disabled = false,
-}: PushToTalkButtonProps) {
+}: VoiceInputButtonProps) {
     const theme = useTheme();
-    const [isPressed, setIsPressed] = useState(false);
 
     const { 
         startRecording, 
@@ -35,43 +33,28 @@ export function PushToTalkButton({
         onSend,
     });
 
-    const handlePointerDown = useCallback(async (e: React.PointerEvent) => {
-        e.preventDefault();
-        if (disabled) return;
+    const handleClick = useCallback(async () => {
+        if (disabled || isTranscribing) return;
         
-        setIsPressed(true);
-        await startRecording();
-    }, [disabled, startRecording]);
-
-    const handlePointerUp = useCallback(async () => {
-        if (!isRecording) return;
-        
-        setIsPressed(false);
-        await stopRecording();
-    }, [isRecording, stopRecording]);
-
-    const handlePointerLeave = useCallback(async () => {
-        if (isPressed && isRecording) {
-            setIsPressed(false);
+        if (isRecording) {
             await stopRecording();
+        } else {
+            await startRecording();
         }
-    }, [isPressed, isRecording, stopRecording]);
+    }, [disabled, isRecording, isTranscribing, startRecording, stopRecording]);
 
     const getTooltip = () => {
         if (error) return `Error: ${error}`;
         if (isTranscribing) return 'Transcribing...';
-        if (isRecording) return 'Recording... Release to send';
-        return 'Hold to speak';
+        if (isRecording) return 'Click to stop and send';
+        return 'Click to start recording';
     };
 
     return (
         <Tooltip title={getTooltip()}>
             <Box sx={{ position: 'relative', display: 'inline-flex' }}>
                 <IconButton
-                    onPointerDown={handlePointerDown}
-                    onPointerUp={handlePointerUp}
-                    onPointerLeave={handlePointerLeave}
-                    onPointerCancel={handlePointerUp}
+                    onClick={handleClick}
                     disabled={disabled || isTranscribing}
                     sx={{
                         width: 40,
@@ -107,7 +90,11 @@ export function PushToTalkButton({
                         }),
                     }}
                 >
-                    <MicIcon sx={{ fontSize: 20 }} />
+                    {isRecording ? (
+                        <StopIcon sx={{ fontSize: 20 }} />
+                    ) : (
+                        <MicIcon sx={{ fontSize: 20 }} />
+                    )}
                 </IconButton>
                 {isTranscribing && (
                     <CircularProgress

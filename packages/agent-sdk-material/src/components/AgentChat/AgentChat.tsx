@@ -19,9 +19,10 @@ interface AgentChatContentProps {
     enableTTS?: boolean;
     enableSTT?: boolean;
     enableCopy?: boolean;
+    sttLanguage?: string;
 }
 
-function AgentChatContent({ baseUrl, sidebarWidth = 300, sidebarHeader, sidebarTitle, enableTTS, enableSTT, enableCopy }: AgentChatContentProps) {
+function AgentChatContent({ baseUrl, sidebarWidth = 300, sidebarHeader, sidebarTitle, enableTTS, enableSTT, enableCopy, sttLanguage }: AgentChatContentProps) {
     const { refresh } = useThreadListActions();
     const { selectedThreadId } = useThreadSelection();
     const theme = useTheme();
@@ -80,6 +81,7 @@ function AgentChatContent({ baseUrl, sidebarWidth = 300, sidebarHeader, sidebarT
                 enableTTS={enableTTS}
                 enableSTT={enableSTT}
                 enableCopy={enableCopy}
+                sttLanguage={sttLanguage}
             />
         </Box>
     );
@@ -106,6 +108,8 @@ export interface AgentChatProps {
     enableSTT?: boolean;
     /** Enable copy button on AI messages (default: true) */
     enableCopy?: boolean;
+    /** Language code for STT (e.g., 'en', 'fi'). Defaults to 'en' to prevent auto-detect confusion. */
+    sttLanguage?: string;
 }
 
 export function AgentChat({ 
@@ -117,6 +121,7 @@ export function AgentChat({
     enableTTS = false,
     enableSTT = false,
     enableCopy = true,
+    sttLanguage = 'en',
 }: AgentChatProps) {
     const apiClient = useMemo(() => {
         const threadsApi = createThreadsApiClient({ baseUrl });
@@ -134,6 +139,7 @@ export function AgentChat({
                     enableTTS={enableTTS}
                     enableSTT={enableSTT}
                     enableCopy={enableCopy}
+                    sttLanguage={sttLanguage}
                 />
             </MarkdownProvider>
         </AgentSdkClientProvider>
