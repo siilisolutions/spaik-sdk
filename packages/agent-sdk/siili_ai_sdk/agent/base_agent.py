@@ -2,7 +2,9 @@ import asyncio
 from abc import ABC
 from typing import Any, AsyncGenerator, Dict, List, Optional, Type, TypeVar
 
+from langchain_core.language_models import BaseChatModel
 from langchain_core.tools import BaseTool
+from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel
 
 from siili_ai_sdk.attachments.models import Attachment
@@ -205,3 +207,43 @@ class BaseAgent(ABC):
 
             token_usage = TokenUsage(input_tokens=0, output_tokens=0)
         return self.cost_provider.get_cost_estimate(self.get_llm_model(), token_usage)
+
+    def get_langchain_model(self) -> BaseChatModel:
+        """Get the underlying LangChain chat model.
+
+        Returns the configured LangChain BaseChatModel that can be used directly
+        with LangChain or LangGraph for custom workflows.
+
+        Returns:
+            BaseChatModel: The LangChain chat model instance.
+        """
+        return self.llm_config.get_model_wrapper().get_langchain_model()
+
+    def get_react_agent(self) -> CompiledStateGraph:
+        """Get a LangGraph react agent with the agent's tools and model.
+
+        Returns a compiled LangGraph react agent that can be used directly
+        with LangGraph workflows, custom orchestration, or integrated into
+        larger agent systems.
+
+        The react agent includes all tools configured on this agent and uses
+        the agent's LLM configuration.
+
+        Returns:
+            CompiledStateGraph: A compiled LangGraph react agent.
+
+        Example:
+            ```python
+            agent = MyAgent()
+            react_agent = agent.get_react_agent()
+
+            # Use directly with LangGraph
+            result = await react_agent.ainvoke({"messages": messages})
+
+            # Or stream events
+            async for event in react_agent.astream_events({"messages": messages}, version="v2"):
+                print(event)
+            ```
+        """
+        langchain_service = self._create_langchain_service()
+        return langchain_service.create_executor(self.tools)
