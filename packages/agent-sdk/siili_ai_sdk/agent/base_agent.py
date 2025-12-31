@@ -26,6 +26,7 @@ from siili_ai_sdk.thread.models import BlockFullyAddedEvent, ThreadEvent, Thread
 from siili_ai_sdk.thread.thread_container import ThreadContainer
 from siili_ai_sdk.tools.tool_provider import ToolProvider
 from siili_ai_sdk.tracing.agent_trace import AgentTrace
+from siili_ai_sdk.tracing.trace_sink import TraceSink
 from siili_ai_sdk.utils.init_logger import init_logger
 
 logger = init_logger(__name__)
@@ -45,6 +46,7 @@ class BaseAgent(ABC):
         llm_model: Optional[LLMModel] = None,
         reasoning: Optional[bool] = None,
         trace: Optional[AgentTrace] = None,
+        trace_sink: Optional[TraceSink] = None,
         thread_container: Optional[ThreadContainer] = None,
         tools: Optional[List[BaseTool]] = None,
         tool_providers: Optional[List[ToolProvider]] = None,
@@ -55,7 +57,7 @@ class BaseAgent(ABC):
         logger.debug("Initializing BaseAgent")
         self.prompt_loader = prompt_loader or get_prompt_loader(prompt_loader_mode)
         self.system_prompt = system_prompt or self._get_system_prompt(system_prompt_args, system_prompt_version)
-        self.trace = trace or AgentTrace(self.system_prompt, self.__class__.__name__)
+        self.trace = trace or AgentTrace(self.system_prompt, self.__class__.__name__, trace_sink=trace_sink)
         self.thread_container = thread_container or ThreadContainer(self.system_prompt)
         self.tools = tools or self._create_tools(tool_providers)
         self.llm_config = llm_config or self.create_llm_config(llm_model, reasoning)

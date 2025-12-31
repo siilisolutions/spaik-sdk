@@ -1,19 +1,26 @@
 import json
-import os
 import time
 from typing import Optional, Type
 
 from pydantic import BaseModel
 
 from siili_ai_sdk.thread.models import MessageBlock, MessageBlockType
+from siili_ai_sdk.tracing.get_trace_sink import get_trace_sink
+from siili_ai_sdk.tracing.trace_sink import TraceSink
 
 
 class AgentTrace:
-    def __init__(self, system_prompt: str, save_name: Optional[str] = None):
+    def __init__(
+        self,
+        system_prompt: str,
+        save_name: Optional[str] = None,
+        trace_sink: Optional[TraceSink] = None,
+    ):
         self.system_prompt: str = system_prompt
         self._start_time_monotonic: float = time.monotonic()
         self._steps: list[tuple[float, str]] = []
         self.save_name: Optional[str] = save_name
+        self._trace_sink: TraceSink = trace_sink or get_trace_sink()
 
     def add_step(self, step_content: str) -> None:
         current_time_monotonic: float = time.monotonic()
@@ -61,19 +68,5 @@ class AgentTrace:
         return "\n".join(lines)
 
     def save(self, name: str) -> None:
-        file_path: str = f"traces/{name}.txt"
-        system_prompt_path: str = f"traces/{name}_system_prompt.txt"
-
-        self.save_to_file(file_path)
-        with open(system_prompt_path, "w", encoding="utf-8") as f:
-            f.write(self.system_prompt)
-
-    def save_to_file(self, file_path: str) -> None:
-        # Ensure directory exists
-        directory = os.path.dirname(file_path)
-        if directory:
-            os.makedirs(directory, exist_ok=True)
-
         trace_content = self.to_string(include_system_prompt=False)
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(trace_content)
+        self._trace_sink.save_trace(name, trace_content, self.system_prompt)
