@@ -7,6 +7,7 @@ from siili_ai_sdk.agent.base_agent import BaseAgent
 from siili_ai_sdk.attachments.file_storage_provider import set_file_storage
 from siili_ai_sdk.attachments.storage.base_file_storage import BaseFileStorage
 from siili_ai_sdk.attachments.storage.impl.local_file_storage import LocalFileStorage
+from siili_ai_sdk.server.api.routers.audio_router_factory import AudioRouterFactory
 from siili_ai_sdk.server.api.routers.file_router_factory import FileRouterFactory
 from siili_ai_sdk.server.api.routers.thread_router_factory import ThreadRouterFactory
 from siili_ai_sdk.server.api.streaming.streaming_negotiator import StreamingNegotiator
@@ -58,6 +59,28 @@ class ApiBuilder:
         factory = FileRouterFactory(
             file_storage=self.file_storage,
             authorizer=self.authorizer,
+        )
+        return factory.create_router()
+
+    def build_audio_router(
+        self,
+        tts_model: Optional[str] = None,
+        stt_model: Optional[str] = None,
+    ) -> APIRouter:
+        """
+        Build the audio router for TTS/STT endpoints.
+
+        Args:
+            tts_model: Default TTS model (e.g., "tts-1", "gemini-2.5-flash-tts")
+            stt_model: Default STT model (e.g., "whisper-1")
+
+        Returns:
+            FastAPI router with /audio/speech and /audio/transcribe endpoints
+        """
+        factory = AudioRouterFactory(
+            authorizer=self.authorizer,
+            tts_model=tts_model,
+            stt_model=stt_model,
         )
         return factory.create_router()
 

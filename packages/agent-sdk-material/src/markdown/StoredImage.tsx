@@ -1,6 +1,7 @@
 import { Box, CircularProgress, Paper, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useMarkdownContext, CustomComponentProps } from './MarkdownContext';
+import { ImageActions } from '../components/AudioControls/ImageActions';
 
 interface StoredImageProps extends CustomComponentProps {
     id?: string;
@@ -12,6 +13,7 @@ interface StoredImageProps extends CustomComponentProps {
 /**
  * Built-in component for rendering images stored in the file service.
  * Use in markdown as: <StoredImage id="file-id-here" />
+ * Includes copy and download actions on hover.
  */
 export function StoredImage({ id, alt, width, height }: StoredImageProps) {
     const { filesBaseUrl } = useMarkdownContext();
@@ -59,6 +61,7 @@ export function StoredImage({ id, alt, width, height }: StoredImageProps) {
 
     return (
         <Box 
+            className="image-container"
             sx={{ 
                 display: 'inline-block', 
                 position: 'relative',
@@ -103,6 +106,12 @@ export function StoredImage({ id, alt, width, height }: StoredImageProps) {
                     ...(height && { height: parseInt(height) || height }),
                 }}
             />
+            {!loading && !error && (
+                <ImageActions 
+                    imageUrl={imageUrl} 
+                    filename={`image-${id}.png`}
+                />
+            )}
         </Box>
     );
 }

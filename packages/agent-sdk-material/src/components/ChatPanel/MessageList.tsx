@@ -9,9 +9,11 @@ interface Props {
     isLoading?: boolean;
     filesBaseUrl?: string;
     showTypingIndicator?: boolean;
+    enableTTS?: boolean;
+    enableCopy?: boolean;
 }
 
-export function MessageList({ messages, isLoading, filesBaseUrl, showTypingIndicator }: Props) {
+export function MessageList({ messages, isLoading, filesBaseUrl, showTypingIndicator, enableTTS = false, enableCopy = true }: Props) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -86,6 +88,8 @@ export function MessageList({ messages, isLoading, filesBaseUrl, showTypingIndic
                     key={message.id}
                     message={message}
                     filesBaseUrl={filesBaseUrl}
+                    enableTTS={enableTTS}
+                    enableCopy={enableCopy}
                 />
             ))}
             {showTypingIndicator && <TypingIndicator />}
