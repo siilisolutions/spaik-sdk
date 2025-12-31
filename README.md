@@ -65,9 +65,8 @@ agent-sdk/
 
 ### Prerequisites
 - Python 3.10+
-- Node.js 18+
+- Bun 1.0+
 - uv (Python package manager)
-- yarn (Node.js package manager)
 
 ### Setup
 ```bash
@@ -75,7 +74,7 @@ agent-sdk/
 cd examples/backend && uv sync
 
 # TypeScript dependencies (do this in project root)
-yarn install:all
+bun install
 ```
 
 ### Run Full Stack Example
@@ -86,7 +85,7 @@ uv run uvicorn main:app --reload
 
 # Terminal 2: Frontend
 cd examples/frontend  
-yarn dev
+bun run dev
 ```
 
 Visit `http://localhost:5173` for a full-featured chat interface.

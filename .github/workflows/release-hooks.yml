@@ -27,14 +27,17 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Get current version
         id: current_version
@@ -69,11 +72,11 @@ jobs:
 
       - name: Run checks
         run: |
-          yarn lint
-          yarn type-check
+          bun run lint
+          bun run type-check
 
       - name: Build package
-        run: yarn build
+        run: bun run build
 
       - name: Publish to npm
         # To make the package public, change to: npm publish --provenance --access public

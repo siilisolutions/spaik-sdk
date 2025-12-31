@@ -16,9 +16,9 @@ A highly configurable React library for interacting with LLM APIs that support s
 ## Installation
 
 ```bash
-npm install @your-org/llm-library
+bun add @your-org/llm-library
 # or
-yarn add @your-org/llm-library
+npm install @your-org/llm-library
 ```
 
 ## Quick Start

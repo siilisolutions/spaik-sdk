@@ -6,15 +6,14 @@
         "examples/frontend"
     ],
     "scripts": {
-        "build:hooks": "cd packages/agent-sdk-hooks && yarn build",
-        "build:material": "cd packages/agent-sdk-material && yarn build",
-        "build:packages": "yarn build:hooks && yarn build:material",
-        "dev:frontend": "cd examples/frontend && yarn dev",
+        "build:hooks": "bun run --cwd packages/agent-sdk-hooks build",
+        "build:material": "bun run --cwd packages/agent-sdk-material build",
+        "build:packages": "bun run build:hooks && bun run build:material",
+        "dev:frontend": "bun run --cwd examples/frontend dev",
         "dev:backend": "cd examples/backend && uv run uvicorn main:app --reload",
-        "install:all": "yarn install && cd packages/agent-sdk-hooks && yarn install && cd ../../examples/frontend && yarn install"
+        "install:all": "bun install"
     },
     "devDependencies": {
         "typescript": "^5.3.3"
-    },
-    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    }
 }

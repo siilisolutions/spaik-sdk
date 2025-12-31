@@ -43,24 +43,24 @@ ruff format                # Format code
 cd packages/agent-sdk-hooks
 
 # Build and development  
-yarn build                 # Build library
-yarn dev                   # Build in watch mode
-yarn type-check            # TypeScript checking
-yarn lint                  # ESLint
-yarn lint:fix              # ESLint with fixes
+bun run build              # Build library
+bun run dev                # Build in watch mode
+bun run type-check         # TypeScript checking
+bun run lint               # ESLint
+bun run lint:fix           # ESLint with fixes
 ```
 
 ### Monorepo Commands (from root)
 ```bash
 # Install all dependencies
-yarn install:all
+bun install
 
 # Development servers
-yarn dev:backend           # Start FastAPI backend example
-yarn dev:frontend          # Start React frontend example
+bun run dev:backend        # Start FastAPI backend example
+bun run dev:frontend       # Start React frontend example
 
 # Build specific packages
-yarn build:hooks           # Build React hooks package
+bun run build:hooks        # Build React hooks package
 ```
 
 ## Architecture
@@ -120,8 +120,8 @@ AZURE_ENDPOINT=your-endpoint    # Optional
 ## Package Management
 
 - Python: `uv` for dependency management and virtual environments
-- JavaScript: `yarn` with workspaces for monorepo management  
-- Versions: Python 3.10+, Node.js 18+
+- JavaScript: `bun` with workspaces for monorepo management  
+- Versions: Python 3.10+, Bun 1.0+
 
 ## Development Status
 

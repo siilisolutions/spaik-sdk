@@ -33,9 +33,9 @@ Perfect for building production-ready AI chat applications without dealing with 
 ## Installation
 
 ```bash
-npm install @siilisolutions/ai-sdk-react
+bun add @siilisolutions/ai-sdk-react
 # or
-yarn add @siilisolutions/ai-sdk-react
+npm install @siilisolutions/ai-sdk-react
 ```
 
 ## Quick Start
@@ -236,17 +236,17 @@ if (error) {
 
 ```bash
 # Install dependencies
-yarn install
+bun install
 
 # Build library
-yarn build
+bun run build
 
 # Type check
-yarn tsc
+bun run tsc
 
 # Lint and fix
-yarn lint --fix
+bun run lint --fix
 
 # Run tests
-yarn test
+bun test
 ```
