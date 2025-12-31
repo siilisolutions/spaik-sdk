@@ -97,10 +97,10 @@ export function MessageInput({ threadId }: Props) {
                     onKeyPress={handleKeyPress}
                     placeholder="Type your message here..."
                     disabled={isSending}
+                    rows={1}
                     style={{
                         flex: 1,
-                        minHeight: '44px',
-                        maxHeight: '120px',
+                        height: '44px',
                         padding: '12px',
                         borderRadius: '8px',
                         border: '1px solid #d1d5db',
@@ -109,7 +109,9 @@ export function MessageInput({ threadId }: Props) {
                         fontFamily: 'inherit',
                         outline: 'none',
                         transition: 'border-color 0.2s',
-                        backgroundColor: isSending ? '#f9f9f9' : 'white'
+                        backgroundColor: isSending ? '#f9f9f9' : 'white',
+                        overflow: 'hidden',
+                        lineHeight: '20px',
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#007bff'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}

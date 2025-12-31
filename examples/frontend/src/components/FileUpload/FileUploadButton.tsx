@@ -38,23 +38,38 @@ export function FileUploadButton({ onFilesSelected, disabled, accept }: Props) {
                 onClick={handleClick}
                 disabled={disabled}
                 style={{
-                    padding: '12px',
+                    width: '44px',
+                    height: '44px',
                     borderRadius: '8px',
-                    border: '1px solid #d1d5db',
-                    backgroundColor: disabled ? '#f3f4f6' : 'white',
-                    color: disabled ? '#9ca3af' : '#374151',
-                    fontSize: '14px',
+                    border: 'none',
+                    backgroundColor: disabled ? '#f3f4f6' : '#f8f9fa',
+                    color: disabled ? '#9ca3af' : '#6b7280',
+                    fontSize: '18px',
                     cursor: disabled ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'background-color 0.2s, border-color 0.2s',
+                    transition: 'all 0.15s ease',
+                    flexShrink: 0,
                 }}
-                title="Attach files"
+                onMouseEnter={(e) => {
+                    if (!disabled) {
+                        e.currentTarget.style.backgroundColor = '#e9ecef';
+                        e.currentTarget.style.color = '#495057';
+                    }
+                }}
+                onMouseLeave={(e) => {
+                    if (!disabled) {
+                        e.currentTarget.style.backgroundColor = '#f8f9fa';
+                        e.currentTarget.style.color = '#6b7280';
+                    }
+                }}
+                title="Attach files (images, PDFs)"
             >
-                📎
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
             </button>
         </>
     );
 }
-
