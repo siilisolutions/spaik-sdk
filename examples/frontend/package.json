@@ -11,8 +11,8 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@siilisolutions/ai-sdk-react": "file:../../packages/agent-sdk-hooks",
-        "@siilisolutions/ai-sdk-material": "file:../../packages/agent-sdk-material",
+        "@siilisolutions/ai-sdk-react": "workspace:*",
+        "@siilisolutions/ai-sdk-material": "workspace:*",
         "axios": "^1.12.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",

@@ -5,15 +5,15 @@
     "": {
       "name": "agent-sdk-monorepo",
       "devDependencies": {
-        "typescript": "^5.3.3",
+        "typescript": "^5.9.3",
       },
     },
     "examples/frontend": {
       "name": "frontend-examples",
       "version": "0.1.0",
       "dependencies": {
-        "@siilisolutions/ai-sdk-material": "file:../../packages/agent-sdk-material",
-        "@siilisolutions/ai-sdk-react": "file:../../packages/agent-sdk-hooks",
+        "@siilisolutions/ai-sdk-material": "workspace:*",
+        "@siilisolutions/ai-sdk-react": "workspace:*",
         "axios": "^1.12.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -68,7 +68,7 @@
         "remark-gfm": "^4.0.0",
       },
       "devDependencies": {
-        "@siilisolutions/ai-sdk-react": "file:../agent-sdk-hooks",
+        "@siilisolutions/ai-sdk-react": "workspace:*",
         "@types/react": "^18.2.47",
         "@types/react-dom": "^18.2.18",
         "@typescript-eslint/eslint-plugin": "^6.19.0",
