@@ -160,6 +160,7 @@ def show_getting_started() -> None:
     click.echo("  git/push           - Push changes")
     click.echo("  agents/claude_code - Claude Code CLI")
     click.echo("  agents/general     - General LLM agent")
+    click.echo("  agents/structured  - Structured JSON responses")
     click.echo("  audio/stt          - Speech-to-text")
     click.echo("  audio/tts          - Text-to-speech")
     click.echo()
@@ -367,14 +368,15 @@ def cli(
     \b
     AVAILABLE PLUGINS
     ─────────────────
-    terminal/run      - Run shell commands
-    terminal/script   - Run script files
-    git/download      - Clone/download from repos
-    git/push          - Push changes
+    terminal/run       - Run shell commands
+    terminal/script    - Run script files
+    git/download       - Clone/download from repos
+    git/push           - Push changes
     agents/claude_code - Claude Code CLI agent
-    agents/general    - General LLM agent
-    audio/stt         - Speech-to-text (record & transcribe)
-    audio/tts         - Text-to-speech
+    agents/general     - General LLM agent
+    agents/structured  - Structured JSON responses
+    audio/stt          - Speech-to-text (record & transcribe)
+    audio/tts          - Text-to-speech
 
     \b
     API KEYS

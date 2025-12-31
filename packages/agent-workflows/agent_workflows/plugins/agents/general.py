@@ -1,6 +1,7 @@
 """General LLM agent plugin.
 
 Runs a general-purpose LLM agent for text generation tasks.
+Returns only the final response text (no reasoning or tool calls).
 
 with:
   prompt: <str>          # required - The user prompt
@@ -25,7 +26,7 @@ async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
     """Execute general LLM agent with the given prompt.
 
     Returns:
-        Dict with 'response' key containing the agent's response text.
+        Dict with 'response' key containing the agent's response text only.
     """
     logger = ctx["logger"]
     step_with: Dict[str, Any] = ctx.get("with", {})
@@ -50,16 +51,23 @@ async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
     else:
         model = None
 
-    logger(f"🤖 General Agent: {prompt[:100]}{'...' if len(prompt) > 100 else ''}")
+    logger(f"🤖 Agent: {prompt[:100]}{'...' if len(prompt) > 100 else ''}")
 
     agent = GeneralAgent(
         system_prompt=system_prompt,
         llm_model=model,
     )
 
+    # get_response_text_async returns only the final text (no reasoning/tools)
     response = await agent.get_response_text_async(prompt)
 
-    logger(f"✅ Response: {response[:200]}{'...' if len(response) > 200 else ''}")
+    # Print response nicely
+    logger("")
+    logger("─" * 40)
+    display = response[:300] + ("..." if len(response) > 300 else "")
+    logger(f"🤖 {display}")
+    logger("─" * 40)
+    logger("")
 
     # Store in context if output_var specified
     output_var = step_with.get("output_var", "agent_response")

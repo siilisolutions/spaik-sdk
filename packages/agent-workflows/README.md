@@ -154,11 +154,30 @@ siili-agent-workflows apply-template --template agent --path ./my-agent
     prompt: "Implement feature X"
     cwd: "."                 # working directory
 
-# General LLM agent
+# General LLM agent (returns text response only)
 - uses: agents/general
   with:
     prompt: "Analyze this code"
     system_prompt: "You are a code reviewer"  # optional
+    output_var: analysis     # variable to store response
+
+# Structured JSON response
+- uses: agents/structured
+  with:
+    prompt: "Extract topics from this text: ..."
+    schema:
+      type: object
+      properties:
+        topics:
+          type: array
+          items:
+            type: string
+        summary:
+          type: string
+      required:
+        - topics
+        - summary
+    output_var: extracted_data
 ```
 
 ### Audio (Speech)

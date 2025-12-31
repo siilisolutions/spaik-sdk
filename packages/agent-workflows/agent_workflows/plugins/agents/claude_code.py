@@ -9,17 +9,77 @@ with:
 """
 
 import asyncio
+import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Callable, Dict
 
+from siili_ai_sdk import MessageBlock, MessageBlockType
 from siili_coding_agents import ClaudeAgent, ClaudeAgentOptions
+
+
+def format_block(block: MessageBlock, logger: Callable[[str], None]) -> str | None:
+    """Format a MessageBlock for display.
+
+    Returns the content if it's a plain response, None otherwise.
+    """
+    if block.type == MessageBlockType.PLAIN:
+        content = block.content or ""
+        if content.strip():
+            # Truncate very long content for display
+            display = content[:500] + ("..." if len(content) > 500 else "")
+            logger(f"   🤖 {display}")
+        return content
+
+    elif block.type == MessageBlockType.REASONING:
+        content = block.content or ""
+        if content.strip():
+            # Show truncated reasoning
+            display = content[:200] + ("..." if len(content) > 200 else "")
+            logger(f"   🧠 {display}")
+        return None
+
+    elif block.type == MessageBlockType.TOOL_USE:
+        tool_name = block.tool_name or "unknown"
+        args_str = ""
+        if block.tool_call_args:
+            try:
+                # Pretty format tool args, but keep it compact
+                args_str = json.dumps(block.tool_call_args, indent=2)
+                if len(args_str) > 200:
+                    args_str = args_str[:200] + "..."
+            except (TypeError, ValueError):
+                args_str = str(block.tool_call_args)[:200]
+        logger(f"   🔧 {tool_name}")
+        if args_str:
+            for line in args_str.split("\n")[:5]:  # Max 5 lines
+                logger(f"      {line}")
+        return None
+
+    elif block.type == MessageBlockType.TOOL_RESULT:
+        result = block.content or ""
+        if result.strip():
+            display = result[:150] + ("..." if len(result) > 150 else "")
+            logger(f"   ✅ {display}")
+        return None
+
+    elif block.type == MessageBlockType.ERROR:
+        content = block.content or "Unknown error"
+        logger(f"   ❌ {content}")
+        return None
+
+    else:
+        # Unknown type, just show it
+        content = block.content or ""
+        if content.strip():
+            logger(f"   📝 {content[:200]}")
+        return content
 
 
 async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
     """Execute Claude Code agent with the given prompt.
 
     Returns:
-        Dict with 'response' key containing the agent's full response text.
+        Dict with 'response' key containing the agent's final response text.
     """
     logger = ctx["logger"]
     workspace: Path = ctx["workspace"]
@@ -43,17 +103,13 @@ async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
         )
     )
 
-    # Collect streamed response
+    # Collect response parts (only plain text responses)
     response_parts: list[str] = []
 
     async for block in agent.stream_blocks(prompt):
-        # Log each block as it comes
-        block_str = str(block)
-        if block_str.strip():
-            # Truncate long blocks for logging
-            display = block_str[:200] + "..." if len(block_str) > 200 else block_str
-            logger(f"   📝 {display}")
-            response_parts.append(block_str)
+        content = format_block(block, logger)
+        if content:
+            response_parts.append(content)
 
     await asyncio.sleep(0.1)  # Allow final output to flush
 
