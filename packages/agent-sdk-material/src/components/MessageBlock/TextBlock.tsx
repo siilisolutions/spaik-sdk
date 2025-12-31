@@ -9,7 +9,8 @@ export function TextBlock({ content }: Props) {
 
     return (
         <Typography
-            variant="body2"
+            variant="body1"
+            color="text.primary"
             sx={{
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',

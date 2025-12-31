@@ -1,14 +1,17 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
 import { useThread, useThreadSelection } from '@siilisolutions/ai-sdk-react';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from '../MessageInput/MessageInput';
+import { MenuIcon } from '../../utils/icons';
 
 interface Props {
     filesBaseUrl?: string;
+    onMenuClick?: () => void;
+    showMenuButton?: boolean;
 }
 
-export function ChatPanel({ filesBaseUrl }: Props) {
+export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton }: Props) {
     const { selectedThreadId } = useThreadSelection();
     const { thread, loading } = useThread(selectedThreadId || '');
 
@@ -18,14 +21,29 @@ export function ChatPanel({ filesBaseUrl }: Props) {
                 sx={{
                     flex: 1,
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    flexDirection: 'column',
                     bgcolor: 'background.default',
                 }}
             >
-                <Typography color="text.secondary" variant="h6">
-                    Select or create a thread to start chatting
-                </Typography>
+                {showMenuButton && (
+                    <Box sx={{ p: 1 }}>
+                        <IconButton onClick={onMenuClick} edge="start">
+                            <MenuIcon />
+                        </IconButton>
+                    </Box>
+                )}
+                <Box
+                    sx={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <Typography color="text.secondary" variant="h6">
+                        Select or create a thread to start chatting
+                    </Typography>
+                </Box>
             </Box>
         );
     }
@@ -43,7 +61,11 @@ export function ChatPanel({ filesBaseUrl }: Props) {
                 bgcolor: 'background.default',
             }}
         >
-            <ChatHeader title={title} />
+            <ChatHeader 
+                title={title} 
+                onMenuClick={onMenuClick}
+                showMenuButton={showMenuButton}
+            />
             <MessageList
                 messages={thread?.messages}
                 isLoading={loading}
@@ -53,4 +75,3 @@ export function ChatPanel({ filesBaseUrl }: Props) {
         </Box>
     );
 }
-

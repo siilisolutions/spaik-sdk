@@ -1,26 +1,43 @@
-import { useEffect, useMemo } from 'react';
-import { Box } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
+import { Box, Drawer, useMediaQuery, useTheme } from '@mui/material';
 import {
     AgentSdkClientProvider,
     AgentSdkClient,
     createThreadsApiClient,
     useThreadListActions,
+    useThreadSelection,
 } from '@siilisolutions/ai-sdk-react';
 import { ThreadSidebar } from '../ThreadSidebar/ThreadSidebar';
 import { ChatPanel } from '../ChatPanel/ChatPanel';
 
 interface AgentChatContentProps {
     baseUrl: string;
-    sidebarWidth?: number | string;
-    showSidebar?: boolean;
+    sidebarWidth?: number;
 }
 
-function AgentChatContent({ baseUrl, sidebarWidth = 300, showSidebar = true }: AgentChatContentProps) {
+function AgentChatContent({ baseUrl, sidebarWidth = 300 }: AgentChatContentProps) {
     const { refresh } = useThreadListActions();
+    const { selectedThreadId } = useThreadSelection();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     useEffect(() => {
         refresh();
     }, [refresh]);
+
+    // Close drawer when thread is selected on mobile
+    useEffect(() => {
+        if (isMobile && selectedThreadId) {
+            setMobileOpen(false);
+        }
+    }, [selectedThreadId, isMobile]);
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
+
+    const sidebar = <ThreadSidebar width={sidebarWidth} />;
 
     return (
         <Box
@@ -31,19 +48,40 @@ function AgentChatContent({ baseUrl, sidebarWidth = 300, showSidebar = true }: A
                 overflow: 'hidden',
             }}
         >
-            {showSidebar && <ThreadSidebar width={sidebarWidth} />}
-            <ChatPanel filesBaseUrl={baseUrl} />
+            {/* Mobile drawer */}
+            {isMobile ? (
+                <Drawer
+                    variant="temporary"
+                    open={mobileOpen}
+                    onClose={handleDrawerToggle}
+                    ModalProps={{ keepMounted: true }}
+                    sx={{
+                        '& .MuiDrawer-paper': {
+                            width: sidebarWidth,
+                            boxSizing: 'border-box',
+                        },
+                    }}
+                >
+                    {sidebar}
+                </Drawer>
+            ) : (
+                sidebar
+            )}
+            <ChatPanel 
+                filesBaseUrl={baseUrl} 
+                onMenuClick={isMobile ? handleDrawerToggle : undefined}
+                showMenuButton={isMobile}
+            />
         </Box>
     );
 }
 
 export interface AgentChatProps {
     baseUrl: string;
-    sidebarWidth?: number | string;
-    showSidebar?: boolean;
+    sidebarWidth?: number;
 }
 
-export function AgentChat({ baseUrl, sidebarWidth, showSidebar }: AgentChatProps) {
+export function AgentChat({ baseUrl, sidebarWidth }: AgentChatProps) {
     const apiClient = useMemo(() => {
         const threadsApi = createThreadsApiClient({ baseUrl });
         return new AgentSdkClient(threadsApi);
@@ -51,8 +89,7 @@ export function AgentChat({ baseUrl, sidebarWidth, showSidebar }: AgentChatProps
 
     return (
         <AgentSdkClientProvider apiClient={apiClient}>
-            <AgentChatContent baseUrl={baseUrl} sidebarWidth={sidebarWidth} showSidebar={showSidebar} />
+            <AgentChatContent baseUrl={baseUrl} sidebarWidth={sidebarWidth} />
         </AgentSdkClientProvider>
     );
 }
-
