@@ -19,6 +19,13 @@ export const MessageBlockSchema = z.object({
     tool_call_error: z.string().optional(),
 });
 
+// Attachment schema (align with backend Attachment)
+export const AttachmentSchema = z.object({
+    file_id: z.string(),
+    mime_type: z.string(),
+    filename: z.string().optional(),
+});
+
 // Message schema (align with backend ThreadMessage)
 export const MessageSchema = z.object({
     id: IdSchema,
@@ -27,6 +34,7 @@ export const MessageSchema = z.object({
     author_name: z.string(),
     timestamp: z.number(),
     blocks: z.array(MessageBlockSchema),
+    attachments: z.array(AttachmentSchema).optional(),
 });
 
 // ToolCallResponse schema (align with backend ToolCallResponse)
@@ -45,6 +53,7 @@ export const ThreadSchema = z.object({
 export type Id = z.infer<typeof IdSchema>;
 export type BlockType = z.infer<typeof BlockTypeSchema>;
 export type MessageBlock = z.infer<typeof MessageBlockSchema>;
+export type Attachment = z.infer<typeof AttachmentSchema>;
 export type Message = z.infer<typeof MessageSchema>;
 export type ToolCallResponse = z.infer<typeof ToolCallResponseSchema>;
 export type Thread = z.infer<typeof ThreadSchema>;

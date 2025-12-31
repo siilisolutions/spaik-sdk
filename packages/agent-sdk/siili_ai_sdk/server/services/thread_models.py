@@ -29,6 +29,18 @@ class UpdateMessageRequest(BaseModel):
     blocks: Optional[List[MessageBlockRequest]] = None
 
 
+class AttachmentRequest(BaseModel):
+    file_id: str
+    mime_type: str
+    filename: Optional[str] = None
+
+
+class AttachmentResponse(BaseModel):
+    file_id: str
+    mime_type: str
+    filename: Optional[str] = None
+
+
 class MessageResponse(BaseModel):
     id: str
     ai: bool
@@ -36,11 +48,12 @@ class MessageResponse(BaseModel):
     author_name: str
     timestamp: int
     blocks: List[MessageBlockResponse]
+    attachments: Optional[List[AttachmentResponse]] = None
 
 
 class CreateMessageRequest(BaseModel):
     content: str
-    # TODO add metadata and whatnot
+    attachments: Optional[List[AttachmentRequest]] = None
 
 
 class CreateThreadRequest(BaseModel):

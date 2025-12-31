@@ -5,8 +5,9 @@ from typing import Callable, Dict, List, Optional
 
 from langchain_core.messages import BaseMessage, SystemMessage
 
+from siili_ai_sdk.attachments.storage.base_file_storage import BaseFileStorage
 from siili_ai_sdk.llm.consumption.token_usage import TokenUsage
-from siili_ai_sdk.llm.converters import convert_thread_message_to_langchain
+from siili_ai_sdk.llm.converters import convert_thread_message_to_langchain, convert_thread_message_to_langchain_multimodal
 from siili_ai_sdk.thread.models import (
     BlockAddedEvent,
     BlockFullyAddedEvent,
@@ -329,6 +330,14 @@ class ThreadContainer:
         """Get all messages as LangChain BaseMessages"""
         messages: List[BaseMessage] = [SystemMessage(content=self.get_system_prompt())]
         messages.extend([convert_thread_message_to_langchain(msg) for msg in self.messages])
+        return messages
+
+    async def get_langchain_messages_multimodal(self, file_storage: BaseFileStorage, provider_family: str = "openai") -> List[BaseMessage]:
+        """Get all messages as LangChain BaseMessages with multimodal content support"""
+        messages: List[BaseMessage] = [SystemMessage(content=self.get_system_prompt())]
+        for msg in self.messages:
+            converted = await convert_thread_message_to_langchain_multimodal(msg, file_storage, provider_family)
+            messages.append(converted)
         return messages
 
     def get_nof_messages_including_system(self) -> int:

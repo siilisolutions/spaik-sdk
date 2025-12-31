@@ -67,6 +67,19 @@ export abstract class BaseApiClient {
         const response = await this.axiosInstance.delete<T>(url, config);
         return this.parseResponse(response, responseSchema);
     }
+
+    protected async postFormData<T>(url: string, responseSchema: z.ZodSchema<T>, formData: FormData): Promise<T> {
+        const response = await this.axiosInstance.post<T>(url, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return this.parseResponse(response, responseSchema);
+    }
+
+    protected async getBlob(url: string): Promise<Blob> {
+        const response = await this.axiosInstance.get(url, { responseType: 'blob' });
+        return response.data as Blob;
+    }
+
     protected async postStream(
         url: string,
         data: unknown,

@@ -1,7 +1,10 @@
 import uuid
 from typing import List
 
+from siili_ai_sdk.attachments.models import Attachment
 from siili_ai_sdk.server.services.thread_models import (
+    AttachmentRequest,
+    AttachmentResponse,
     MessageBlockRequest,
     MessageBlockResponse,
     MessageResponse,
@@ -45,8 +48,29 @@ class ThreadConverters:
         )
 
     @staticmethod
+    def attachment_request_to_model(request: AttachmentRequest) -> Attachment:
+        """Convert AttachmentRequest to Attachment"""
+        return Attachment(
+            file_id=request.file_id,
+            mime_type=request.mime_type,
+            filename=request.filename,
+        )
+
+    @staticmethod
+    def attachment_model_to_response(attachment: Attachment) -> AttachmentResponse:
+        """Convert Attachment to AttachmentResponse"""
+        return AttachmentResponse(
+            file_id=attachment.file_id,
+            mime_type=attachment.mime_type,
+            filename=attachment.filename,
+        )
+
+    @staticmethod
     def message_model_to_response(message: ThreadMessage) -> MessageResponse:
         """Convert ThreadMessage to MessageResponse"""
+        attachments = None
+        if message.attachments:
+            attachments = [ThreadConverters.attachment_model_to_response(att) for att in message.attachments]
         return MessageResponse(
             id=message.id,
             ai=message.ai,
@@ -54,6 +78,7 @@ class ThreadConverters:
             author_name=message.author_name,
             timestamp=message.timestamp,
             blocks=[ThreadConverters.block_model_to_response(block) for block in message.blocks],
+            attachments=attachments,
         )
 
     @staticmethod

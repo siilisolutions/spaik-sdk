@@ -4,6 +4,10 @@ from typing import Awaitable, Optional
 from fastapi import APIRouter
 
 from siili_ai_sdk.agent.base_agent import BaseAgent
+from siili_ai_sdk.attachments.file_storage_provider import set_file_storage
+from siili_ai_sdk.attachments.storage.base_file_storage import BaseFileStorage
+from siili_ai_sdk.attachments.storage.impl.local_file_storage import LocalFileStorage
+from siili_ai_sdk.server.api.routers.file_router_factory import FileRouterFactory
 from siili_ai_sdk.server.api.routers.thread_router_factory import ThreadRouterFactory
 from siili_ai_sdk.server.api.streaming.streaming_negotiator import StreamingNegotiator
 from siili_ai_sdk.server.authorization.base_authorizer import BaseAuthorizer
@@ -33,6 +37,7 @@ class ApiBuilder:
         cancellation_publisher: Optional[CancellationPublisher] = None,
         response_generator: Optional[ResponseGenerator] = None,
         agent: Optional[BaseAgent] = None,
+        file_storage: Optional[BaseFileStorage] = None,
     ):
         self.repository = repository
         self.thread_service = ThreadService(repository)
@@ -41,10 +46,20 @@ class ApiBuilder:
         self.job_queue = job_queue
         self.cancellation_subscriber_provider = cancellation_subscriber_provider
         self.cancellation_publisher = cancellation_publisher
+        self.file_storage = file_storage
         if not response_generator and agent:
             self.response_generator: Optional[ResponseGenerator] = SimpleAgentResponseGenerator(agent)
         else:
             self.response_generator = response_generator
+
+    def build_file_router(self) -> APIRouter:
+        if not self.file_storage:
+            raise ValueError("File storage is required for file router")
+        factory = FileRouterFactory(
+            file_storage=self.file_storage,
+            authorizer=self.authorizer,
+        )
+        return factory.create_router()
 
     def build_thread_router(self) -> APIRouter:
         if not self.response_generator:
@@ -69,11 +84,16 @@ class ApiBuilder:
         authorizer: BaseAuthorizer[BaseUser],
         agent: Optional[BaseAgent] = None,
         response_generator: Optional[ResponseGenerator] = None,
+        file_storage: Optional[BaseFileStorage] = None,
     ) -> "ApiBuilder":
         cancellation_pubsub = get_local_cancellation_pubsub()
 
         async def cancellation_subscriber_provider(id: str) -> CancellationSubscriber:
             return cancellation_pubsub.create_subscriber(id)
+
+        # Set the singleton if file_storage is provided
+        if file_storage is not None:
+            set_file_storage(file_storage)
 
         return ApiBuilder(
             repository=repository,
@@ -82,15 +102,25 @@ class ApiBuilder:
             cancellation_publisher=cancellation_pubsub.get_publisher(),
             agent=agent,
             response_generator=response_generator,
+            file_storage=file_storage,
         )
 
     @classmethod
     def local(
-        cls, agent: Optional[BaseAgent] = None, response_generator: Optional[ResponseGenerator] = None, in_memory: bool = False
+        cls,
+        agent: Optional[BaseAgent] = None,
+        response_generator: Optional[ResponseGenerator] = None,
+        in_memory: bool = False,
+        file_storage: Optional[BaseFileStorage] = None,
     ) -> "ApiBuilder":
+        # Use provided file_storage or create a local one
+        storage = file_storage or LocalFileStorage()
+        # Also set the singleton so LangChainService can access it
+        set_file_storage(storage)
         return cls.stateful(
             repository=InMemoryThreadRepository() if in_memory else LocalFileThreadRepository(),
             authorizer=DummyAuthorizer(),
             agent=agent,
             response_generator=response_generator,
+            file_storage=storage,
         )

@@ -1,4 +1,5 @@
 import { Message } from '@siilisolutions/ai-sdk-react';
+import { AttachmentDisplay } from './AttachmentDisplay';
 import { MessageContent } from './MessageContent';
 import { MessageHeader } from './MessageHeader';
 
@@ -19,6 +20,9 @@ export function MessageRenderer({ message }: Props) {
         }}>
             <MessageHeader message={message} />
             <MessageContent message={message} />
+            {message.attachments && message.attachments.length > 0 && (
+                <AttachmentDisplay attachments={message.attachments} />
+            )}
         </div>
     );
 } 

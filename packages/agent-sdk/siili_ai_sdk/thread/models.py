@@ -6,6 +6,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 if TYPE_CHECKING:
+    from siili_ai_sdk.attachments.models import Attachment
     from siili_ai_sdk.llm.consumption.token_usage import TokenUsage
 
 
@@ -49,6 +50,7 @@ class ThreadMessage:
     timestamp: int  # UTC millis
     blocks: List[MessageBlock]
     consumption_metadata: Optional["TokenUsage"] = None
+    attachments: Optional[List["Attachment"]] = None
 
     def get_text_content(self) -> str:
         return "\n".join([(block.content or "") for block in self.blocks if block.type == MessageBlockType.PLAIN])
@@ -64,6 +66,8 @@ class ThreadMessage:
         }
         if self.consumption_metadata:
             result["consumption_metadata"] = self.consumption_metadata
+        if self.attachments:
+            result["attachments"] = [att.to_dict() for att in self.attachments]
         return result
 
     def __repr__(self) -> str:

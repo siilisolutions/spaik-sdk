@@ -1,11 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, Optional, TypeVar
 
 from fastapi import Request
 
 from siili_ai_sdk.server.authorization.base_user import BaseUser
 from siili_ai_sdk.thread.models import ThreadMessage
 from siili_ai_sdk.thread.thread_container import ThreadContainer
+
+if TYPE_CHECKING:
+    from siili_ai_sdk.attachments.models import FileMetadata
 
 TUser = TypeVar("TUser", bound=BaseUser)
 
@@ -44,3 +47,15 @@ class BaseAuthorizer(ABC, Generic[TUser]):
     def is_thread_owner(self, user: TUser, thread_container: ThreadContainer) -> bool:
         """Check if user is the owner of the thread"""
         return thread_container.messages[0].author_id == user.get_id()
+
+    async def can_upload_file(self, user: TUser) -> bool:
+        """Check if user has permission to upload files"""
+        return True
+
+    async def can_read_file(self, user: TUser, file_metadata: "FileMetadata") -> bool:
+        """Check if user has permission to read a file"""
+        return file_metadata.owner_id == user.get_id()
+
+    async def can_delete_file(self, user: TUser, file_metadata: "FileMetadata") -> bool:
+        """Check if user has permission to delete a file"""
+        return file_metadata.owner_id == user.get_id()
