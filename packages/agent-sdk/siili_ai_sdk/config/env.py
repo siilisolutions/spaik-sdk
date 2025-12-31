@@ -5,6 +5,7 @@ from siili_ai_sdk.models.llm_model import LLMModel
 from siili_ai_sdk.models.model_registry import ModelRegistry
 from siili_ai_sdk.models.providers.provider_type import ProviderType
 from siili_ai_sdk.prompt.prompt_loader_mode import PromptLoaderMode
+from siili_ai_sdk.tracing.trace_sink_mode import TraceSinkMode
 
 
 class EnvConfig:
@@ -44,6 +45,9 @@ class EnvConfig:
 
     def get_prompt_loader_mode(self) -> PromptLoaderMode:
         return PromptLoaderMode.from_name(self.get_key("PROMPT_LOADER_MODE", "local"))
+
+    def get_trace_sink_mode(self) -> TraceSinkMode:
+        return TraceSinkMode.from_name(self.get_key("TRACE_SINK_MODE", "local"))
 
     def get_credentials_provider_type(self) -> str:
         return self.get_key("CREDENTIALS_PROVIDER_TYPE", "env")
