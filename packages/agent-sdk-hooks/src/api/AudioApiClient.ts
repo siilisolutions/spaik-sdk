@@ -31,8 +31,7 @@ export class AudioApiClient extends BaseApiClient {
      * Get the streaming TTS URL for direct audio element usage.
      * This allows audio to start playing before the full response is received.
      */
-    getStreamingTTSUrl(request: TTSRequest): string {
-        // We'll use POST via fetch, but for streaming we construct the endpoint URL
+    getStreamingTTSUrl(): string {
         return `${this.axiosInstance.defaults.baseURL}/audio/speech/stream`;
     }
 

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { useMemo, useCallback, useRef } from 'react';
-import { AudioApiClient, createAudioApiClient, TTSRequest } from '../api/AudioApiClient';
+import { createAudioApiClient, TTSRequest } from '../api/AudioApiClient';
 
 // ============================================================================
 // Store Types
