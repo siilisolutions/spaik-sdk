@@ -133,7 +133,10 @@ async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
     response_model = schema_to_pydantic(schema)
 
     # Get structured response (sync method, run in executor)
-    result = await asyncio.to_thread(agent.get_structured_response, prompt, response_model)
+    def _call_structured() -> BaseModel:
+        return agent.get_structured_response(prompt, response_model)
+
+    result = await asyncio.to_thread(_call_structured)
 
     # Convert to dict
     response_dict = result.model_dump()
