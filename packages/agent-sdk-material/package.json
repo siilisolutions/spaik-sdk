@@ -1,0 +1,66 @@
+{
+    "name": "@siilisolutions/ai-sdk-material",
+    "version": "0.1.0",
+    "description": "Material UI components for Siili AI SDK - themeable chat UI for AI agents",
+    "type": "module",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "license": "MIT",
+    "author": {
+        "name": "Siili Solutions Oyj",
+        "email": "info@siili.com",
+        "url": "https://siili.com"
+    },
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "lint": "eslint src --ext .ts,.tsx",
+        "lint:fix": "eslint src --ext .ts,.tsx --fix",
+        "type-check": "tsc --noEmit"
+    },
+    "peerDependencies": {
+        "@siilisolutions/ai-sdk-react": "^0.1.0",
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.11.3",
+        "@emotion/styled": "^11.11.0",
+        "@mui/icons-material": "^5.15.6",
+        "@mui/material": "^5.15.6"
+    },
+    "devDependencies": {
+        "@siilisolutions/ai-sdk-react": "file:../agent-sdk-hooks",
+        "@types/react": "^18.2.47",
+        "@types/react-dom": "^18.2.18",
+        "@typescript-eslint/eslint-plugin": "^6.19.0",
+        "@typescript-eslint/parser": "^6.19.0",
+        "eslint": "^8.56.0",
+        "eslint-plugin-react": "^7.33.2",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "typescript": "^5.3.3"
+    },
+    "keywords": [
+        "react",
+        "material-ui",
+        "mui",
+        "agent",
+        "ai",
+        "llm",
+        "chat",
+        "ui",
+        "components",
+        "siili"
+    ]
+}
+
