@@ -108,17 +108,19 @@ export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
                     sx={{
                         display: 'flex',
                         alignItems: 'flex-end',
-                        gap: 1,
+                        gap: 1.5,
                         p: 1.5,
-                        borderRadius: 4,
+                        pl: 2,
+                        borderRadius: 5, // Fully rounded pill
                         border: '1px solid',
-                        borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                        bgcolor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : 'background.paper',
-                        backdropFilter: 'blur(10px)',
-                        transition: 'border-color 0.2s, box-shadow 0.2s',
+                        borderColor: theme.palette.mode === 'dark' ? alpha(theme.palette.common.white, 0.15) : alpha(theme.palette.common.black, 0.1),
+                        bgcolor: theme.palette.mode === 'dark' ? alpha(theme.palette.grey[900], 0.6) : '#fff',
+                        boxShadow: theme.shadows[4], // Add specific shadow for floating effect
+                        transition: 'all 0.2s ease',
                         '&:focus-within': {
                             borderColor: 'primary.main',
-                            boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`,
+                            transform: 'translateY(-1px)',
                         }
                     }}
                 >
@@ -135,27 +137,30 @@ export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
                         variant="standard"
                         InputProps={{
                             disableUnderline: true,
+                            style: { fontSize: '0.95rem', lineHeight: 1.5 }
                         }}
                         sx={{
-                            mb: 0.5, // Align with buttons
+                            mb: 0.5,
                         }}
                     />
                     <IconButton
                         onClick={handleSendMessage}
                         disabled={!canSend}
                         sx={{
-                            color: canSend ? 'primary.main' : 'action.disabled',
-                            bgcolor: canSend ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                            width: 40,
+                            height: 40,
+                            color: canSend ? 'common.white' : 'action.disabled',
+                            bgcolor: canSend ? 'primary.main' : alpha(theme.palette.action.disabledBackground, 0.1),
                             '&:hover': {
-                                bgcolor: canSend ? alpha(theme.palette.primary.main, 0.2) : 'transparent',
+                                bgcolor: canSend ? 'primary.dark' : alpha(theme.palette.action.disabledBackground, 0.1),
                             },
                             transition: 'all 0.2s',
                         }}
                     >
                         {isSending ? (
-                            <CircularProgress size={24} color="inherit" />
+                            <CircularProgress size={20} color="inherit" />
                         ) : (
-                            <SendIcon />
+                            <SendIcon sx={{ fontSize: 20, ml: 0.5 }} />
                         )}
                     </IconButton>
                 </Paper>

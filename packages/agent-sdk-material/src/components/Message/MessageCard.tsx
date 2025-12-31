@@ -1,8 +1,9 @@
-import { Paper, Box, alpha, useTheme } from '@mui/material';
+import { Paper, Box, alpha, useTheme, Avatar, Typography } from '@mui/material';
 import { Message } from '@siilisolutions/ai-sdk-react';
-import { MessageHeader } from './MessageHeader';
 import { MessageContent } from './MessageContent';
 import { AttachmentGallery } from './AttachmentGallery';
+import { SmartToyIcon, PersonIcon } from '../../utils/icons';
+import { formatTimestamp } from '../../utils/formatTime';
 
 interface Props {
     message: Message;
@@ -17,57 +18,89 @@ export function MessageCard({ message, filesBaseUrl }: Props) {
         <Box
             sx={{
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: isAi ? 'flex-start' : 'flex-end',
-                width: '100%',
-                mb: 3, // Increased spacing
+                flexDirection: isAi ? 'row' : 'row-reverse',
+                gap: 2,
+                mb: 4,
+                px: 2,
             }}
         >
-            <Paper
-                elevation={0}
+            {/* Avatar Column */}
+            <Box sx={{ flexShrink: 0, mt: 0.5 }}>
+                <Avatar
+                    sx={{
+                        width: 32,
+                        height: 32,
+                        bgcolor: isAi ? 'primary.main' : 'secondary.main',
+                        boxShadow: 2,
+                    }}
+                >
+                    {isAi ? <SmartToyIcon sx={{ fontSize: 18 }} /> : <PersonIcon sx={{ fontSize: 18 }} />}
+                </Avatar>
+            </Box>
+
+            {/* Message Column */}
+            <Box
                 sx={{
-                    p: 2.5,
-                    maxWidth: isAi ? '100%' : '85%', // Limit user message width
-                    borderRadius: 3, // 12px -> 24px equivalent roughly
-                    borderTopLeftRadius: isAi ? 4 : 24, // Chat bubble effect
-                    borderTopRightRadius: isAi ? 24 : 4,
-                    bgcolor: isAi 
-                        ? 'transparent' // AI messages blend in
-                        : theme.palette.mode === 'dark' 
-                            ? alpha(theme.palette.primary.main, 0.1) 
-                            : alpha(theme.palette.primary.main, 0.05),
-                    border: isAi ? 'none' : '1px solid',
-                    borderColor: isAi 
-                        ? 'transparent' 
-                        : theme.palette.mode === 'dark'
-                            ? alpha(theme.palette.primary.main, 0.2)
-                            : alpha(theme.palette.primary.main, 0.1),
-                    // For AI messages, we might want a background if it helps reading code blocks
-                    ...(isAi && {
-                        width: '100%',
-                        pl: 0, // Align with edge
-                    }),
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: isAi ? 'flex-start' : 'flex-end',
+                    maxWidth: '85%',
+                    minWidth: 0, // Flexbox fix for text overflow
                 }}
             >
-                <MessageHeader
-                    authorName={message.author_name}
-                    isAi={message.ai}
-                    timestamp={message.timestamp}
-                    align={isAi ? 'left' : 'right'}
-                />
-                
-                <Box sx={{ mt: 1 }}>
+                {/* Name & Time Row */}
+                <Box 
+                    sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1, 
+                        mb: 0.5,
+                        flexDirection: isAi ? 'row' : 'row-reverse',
+                        opacity: 0.7,
+                        px: 0.5
+                    }}
+                >
+                    <Typography variant="caption" fontWeight={600} color="text.primary">
+                        {message.author_name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                        {formatTimestamp(message.timestamp)}
+                    </Typography>
+                </Box>
+
+                {/* The Bubble / Content Area */}
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: isAi ? 0 : 2, // No padding for AI (text flow), Bubble for User
+                        px: isAi ? 0 : 2.5,
+                        borderRadius: isAi ? 0 : 3,
+                        borderTopRightRadius: isAi ? 0 : 4,
+                        bgcolor: isAi 
+                            ? 'transparent' 
+                            : theme.palette.mode === 'dark' 
+                                ? 'primary.dark' 
+                                : 'primary.main',
+                        color: isAi ? 'text.primary' : 'primary.contrastText',
+                        backgroundImage: 'none',
+                        // Styles for user message text to ensure contrast
+                        '& .MuiTypography-root': {
+                            color: isAi ? 'text.primary' : 'inherit',
+                        }
+                    }}
+                >
                     <MessageContent blocks={message.blocks} />
+                    
                     {message.attachments && message.attachments.length > 0 && (
-                        <Box sx={{ mt: 2 }}>
+                        <Box sx={{ mt: 1.5 }}>
                             <AttachmentGallery
                                 attachments={message.attachments}
                                 filesBaseUrl={filesBaseUrl}
                             />
                         </Box>
                     )}
-                </Box>
-            </Paper>
+                </Paper>
+            </Box>
         </Box>
     );
 }

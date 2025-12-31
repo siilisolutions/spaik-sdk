@@ -13,56 +13,55 @@ export function ReasoningBlock({ content }: Props) {
     if (!content) return null;
 
     return (
-        <Box
-            sx={{
-                borderRadius: 2,
-                overflow: 'hidden',
-                my: 1,
-                bgcolor: alpha(theme.palette.secondary.main, 0.05),
-                borderLeft: '3px solid',
-                borderColor: alpha(theme.palette.secondary.main, 0.3),
-            }}
-        >
+        <Box sx={{ my: 1.5 }}>
             <Box
                 onClick={() => setExpanded(!expanded)}
                 sx={{
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 1.5,
-                    px: 1.5,
-                    py: 1,
+                    gap: 1,
                     cursor: 'pointer',
-                    userSelect: 'none',
+                    borderRadius: 1,
+                    px: 1,
+                    py: 0.5,
+                    color: 'text.secondary',
+                    transition: 'all 0.2s',
                     '&:hover': {
-                        bgcolor: alpha(theme.palette.secondary.main, 0.08),
+                        color: 'text.primary',
+                        bgcolor: alpha(theme.palette.text.primary, 0.05),
                     },
                 }}
             >
-                <PsychologyIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ flex: 1, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Reasoning Process
+                <PsychologyIcon sx={{ fontSize: 16 }} />
+                <Typography variant="caption" fontWeight={600} sx={{ letterSpacing: '0.02em' }}>
+                    {expanded ? 'Hide Reasoning' : 'View Reasoning'}
                 </Typography>
-                <IconButton
-                    size="small"
-                    sx={{
-                        p: 0.5,
+                <ExpandMoreIcon 
+                    sx={{ 
+                        fontSize: 16,
                         transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s',
+                        transition: 'transform 0.2s'
+                    }} 
+                />
+            </Box>
+            
+            <Collapse in={expanded}>
+                <Box 
+                    sx={{ 
+                        mt: 1, 
+                        pl: 2, 
+                        borderLeft: '2px solid',
+                        borderColor: 'divider',
                     }}
                 >
-                    <ExpandMoreIcon fontSize="small" />
-                </IconButton>
-            </Box>
-            <Collapse in={expanded}>
-                <Box sx={{ p: 2, pt: 0 }}>
                     <Typography
                         variant="body2"
                         sx={{
                             whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-word',
                             color: 'text.secondary',
-                            fontFamily: 'monospace',
-                            fontSize: '0.85rem',
+                            fontSize: '0.9rem',
+                            fontFamily: theme.typography.fontFamily,
+                            lineHeight: 1.6,
                         }}
                     >
                         {content}
