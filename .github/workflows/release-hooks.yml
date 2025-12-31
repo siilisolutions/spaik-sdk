@@ -19,25 +19,26 @@ jobs:
     permissions:
       contents: write
       id-token: write
-    defaults:
-      run:
-        working-directory: packages/agent-sdk-hooks
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Get current version
         id: current_version
+        working-directory: packages/agent-sdk-hooks
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -64,24 +65,29 @@ jobs:
           echo "Bumping version from $CURRENT to $NEW_VERSION"
 
       - name: Update version in package.json
+        working-directory: packages/agent-sdk-hooks
         run: |
           npm version ${{ steps.new_version.outputs.version }} --no-git-tag-version
 
       - name: Run checks
+        working-directory: packages/agent-sdk-hooks
         run: |
-          yarn lint
-          yarn type-check
+          bun run lint
+          bun run type-check
 
       - name: Build package
-        run: yarn build
+        working-directory: packages/agent-sdk-hooks
+        run: bun run build
 
       - name: Publish to npm
+        working-directory: packages/agent-sdk-hooks
         # To make the package public, change to: npm publish --provenance --access public
         run: |
           echo "📦 Publishing as PRIVATE package. To make public, update this workflow."
           npm publish --provenance
 
       - name: Commit and tag
+        working-directory: packages/agent-sdk-hooks
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

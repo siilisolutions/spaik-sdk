@@ -31,19 +31,20 @@
         "dist"
     ],
     "scripts": {
-        "build": "tsc",
-        "dev": "tsc --watch",
-        "lint": "eslint src --ext .ts,.tsx",
-        "lint:fix": "eslint src --ext .ts,.tsx --fix",
-        "type-check": "tsc --noEmit"
+        "build": "bun run tsc",
+        "dev": "bun run tsc --watch",
+        "lint": "bun run eslint src --ext .ts,.tsx",
+        "lint:fix": "bun run eslint src --ext .ts,.tsx --fix",
+        "type-check": "bun run tsc --noEmit"
     },
     "peerDependencies": {
         "react": "^18.0.0",
         "react-dom": "^18.0.0"
     },
     "dependencies": {
-        "zustand": "^4.4.7",
-        "zod": "^3.22.4"
+        "axios": "^1.13.2",
+        "zod": "^3.22.4",
+        "zustand": "^4.4.7"
     },
     "devDependencies": {
         "@types/react": "^18.2.47",

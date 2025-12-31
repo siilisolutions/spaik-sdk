@@ -22,11 +22,11 @@
         "dist"
     ],
     "scripts": {
-        "build": "tsc",
-        "dev": "tsc --watch",
-        "lint": "eslint src --ext .ts,.tsx",
-        "lint:fix": "eslint src --ext .ts,.tsx --fix",
-        "type-check": "tsc --noEmit"
+        "build": "bun run tsc",
+        "dev": "bun run tsc --watch",
+        "lint": "bun run eslint src --ext .ts,.tsx",
+        "lint:fix": "bun run eslint src --ext .ts,.tsx --fix",
+        "type-check": "bun run tsc --noEmit"
     },
     "peerDependencies": {
         "@siilisolutions/ai-sdk-react": "^0.1.0",
@@ -42,7 +42,7 @@
         "remark-gfm": "^4.0.0"
     },
     "devDependencies": {
-        "@siilisolutions/ai-sdk-react": "file:../agent-sdk-hooks",
+        "@siilisolutions/ai-sdk-react": "workspace:*",
         "@types/react": "^18.2.47",
         "@types/react-dom": "^18.2.18",
         "react": "^18.2.0",

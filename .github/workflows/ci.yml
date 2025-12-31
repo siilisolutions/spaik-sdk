@@ -156,21 +156,19 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.agent-sdk-hooks == 'true' }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/agent-sdk-hooks
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: '20'
-          cache: 'yarn'
+          bun-version: latest
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
       - name: Lint
-        run: yarn lint
+        run: bun run lint
+        working-directory: packages/agent-sdk-hooks
       - name: Type check
-        run: yarn type-check
+        run: bun run type-check
+        working-directory: packages/agent-sdk-hooks
 
   agent-sdk-material:
     needs: [changes, agent-sdk-hooks]
@@ -178,54 +176,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: '20'
-          cache: 'yarn'
-      - name: Install hooks dependencies
-        run: yarn install --frozen-lockfile
-        working-directory: packages/agent-sdk-hooks
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
       - name: Build hooks
-        run: yarn build
+        run: bun run build
         working-directory: packages/agent-sdk-hooks
-      - name: Install material dependencies
-        run: yarn install --frozen-lockfile
-        working-directory: packages/agent-sdk-material
       - name: Type check
-        run: yarn type-check
+        run: bun run type-check
         working-directory: packages/agent-sdk-material
       - name: Build
-        run: yarn build
+        run: bun run build
         working-directory: packages/agent-sdk-material
 
   examples-frontend:
     needs: [changes, agent-sdk-hooks, agent-sdk-material]
     if: ${{ always() && needs.changes.outputs.examples-frontend == 'true' }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: examples/frontend
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: '20'
-          cache: 'yarn'
-      - name: Install hooks dependencies
-        run: yarn install --frozen-lockfile
-        working-directory: packages/agent-sdk-hooks
-      - name: Build hooks
-        run: yarn build
-        working-directory: packages/agent-sdk-hooks
-      - name: Install material dependencies
-        run: yarn install --frozen-lockfile
-        working-directory: packages/agent-sdk-material
-      - name: Build material
-        run: yarn build
-        working-directory: packages/agent-sdk-material
+          bun-version: latest
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
+      - name: Build hooks
+        run: bun run build
+        working-directory: packages/agent-sdk-hooks
+      - name: Build material
+        run: bun run build
+        working-directory: packages/agent-sdk-material
       - name: Lint
-        run: yarn lint
+        run: bun run lint
+        working-directory: examples/frontend
       - name: Type check
-        run: yarn tsc --noEmit
+        run: bun run tsc --noEmit
+        working-directory: examples/frontend
