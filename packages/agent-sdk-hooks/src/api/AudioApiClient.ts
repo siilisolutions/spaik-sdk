@@ -93,13 +93,14 @@ export class AudioApiClient extends BaseApiClient {
         const filename = request.filename || 'audio.webm';
         formData.append('file', request.audio, filename);
         
-        if (request.language) {
-            formData.append('language', request.language);
-        }
+        // Always send language - default to 'en' to prevent auto-detect issues
+        formData.append('language', request.language || 'en');
+        
         if (request.prompt) {
             formData.append('prompt', request.prompt);
         }
 
+        console.log('[STT] Sending request with language:', request.language || 'en');
         return this.postFormData('/audio/transcribe', STTResponseSchema, formData);
     }
 }

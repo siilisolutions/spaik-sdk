@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
 
@@ -166,8 +166,8 @@ class AudioRouterFactory:
         @router.post("/transcribe", response_model=STTResponse)
         async def speech_to_text(
             file: UploadFile = File(...),
-            language: Optional[str] = None,
-            prompt: Optional[str] = None,
+            language: Optional[str] = Form(None),
+            prompt: Optional[str] = Form(None),
             user: BaseUser = Depends(get_current_user),
         ):
             """
@@ -178,6 +178,8 @@ class AudioRouterFactory:
             try:
                 audio_bytes = await file.read()
                 filename = file.filename or "audio.webm"
+                
+                logger.info(f"STT request: language={language}, filename={filename}, size={len(audio_bytes)}")
 
                 options = STTOptions(
                     language=language,

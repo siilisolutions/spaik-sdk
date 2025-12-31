@@ -139,15 +139,11 @@ export function useTextToSpeech(options: UseTextToSpeechOptions): UseTextToSpeec
                 format: format ?? 'mp3',
             };
 
-            // Use streaming endpoint - server streams from OpenAI without full buffering
-            const response = await client.textToSpeechStream(request, abortController.signal);
-            
-            if (abortController.signal.aborted) {
-                return;
-            }
-
-            // Convert stream to blob
-            const audioBlob = await response.blob();
+            // Use non-streaming endpoint for now (streaming has issues)
+            console.log('[TTS] Starting synthesis...');
+            const startTime = Date.now();
+            const audioBlob = await client.textToSpeech(request);
+            console.log(`[TTS] Got audio in ${Date.now() - startTime}ms`);
             
             if (abortController.signal.aborted) {
                 return;
