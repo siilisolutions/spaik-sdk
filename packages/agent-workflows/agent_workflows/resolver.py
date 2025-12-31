@@ -31,12 +31,15 @@ def get_global_config_dir() -> Path:
 
 
 def get_workflow_extensions() -> list[str]:
-    """Get all supported workflow file extensions."""
+    """Get all supported workflow file extensions.
+
+    Ordered longest-first so stripping works correctly.
+    """
     return [
-        ".yml",
-        ".yaml",
         ".agent-workflow.yml",
         ".agent-workflow.yaml",
+        ".yml",
+        ".yaml",
     ]
 
 

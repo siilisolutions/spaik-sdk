@@ -1,0 +1,30 @@
+name: example
+# A simple example workflow demonstrating various plugins
+#
+# Usage:
+#   siili-agent-workflows example --greeting Hello
+
+env:
+  ENVIRONMENT: demo
+
+jobs:
+  greet:
+    steps:
+      - uses: terminal/run
+        with:
+          command: "echo '${{ greeting }}, world!'"
+          shell: true
+
+      - uses: agents/general
+        with:
+          prompt: "Say '${{ greeting }}' in 5 different languages"
+          output_var: greetings
+
+  # Example of Claude Code usage (uncomment to use)
+  # code_gen:
+  #   needs: greet
+  #   steps:
+  #     - uses: agents/claude_code
+  #       with:
+  #         prompt: "Create a hello.py that prints a greeting"
+  #         cwd: "."

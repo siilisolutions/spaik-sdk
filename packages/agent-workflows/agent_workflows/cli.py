@@ -139,6 +139,20 @@ def validate_workflow_file(workflow_name: str) -> None:
         sys.exit(1)
 
 
+def show_env_hint() -> None:
+    """Show hint about where to put API keys."""
+    global_dir = get_global_config_dir()
+    global_env = global_dir / ".env"
+    click.echo()
+    click.echo("💡 To set API keys, create a .env file at one of:", err=True)
+    click.echo(f"   • {global_env} (global, recommended)", err=True)
+    click.echo("   • ./.env (current directory)", err=True)
+    click.echo()
+    click.echo("   Example .env contents:", err=True)
+    click.echo("   OPENAI_API_KEY=sk-...", err=True)
+    click.echo("   ANTHROPIC_API_KEY=sk-ant-...", err=True)
+
+
 def run_workflow_by_name(
     workflow_name: str,
     extra_args: list[str],
@@ -160,6 +174,10 @@ def run_workflow_by_name(
     step_overrides = _parse_overrides(set_kv, dest)
     vars_overrides = {**_parse_vars(vars_kv), **_parse_extra_vars(extra_args)}
 
+    # Show where env files are loaded from
+    global_dir = get_global_config_dir()
+    click.echo(f"📁 Config: {global_dir}")
+
     try:
         run_result = asyncio.run(
             run_workflow(workflow_path, workspace_path, step_overrides, vars_overrides)
@@ -180,13 +198,21 @@ def run_workflow_by_name(
         click.echo(f"❌ Workflow parse error: {e}", err=True)
         sys.exit(1)
     except WorkflowExecutionError as e:
+        error_msg = str(e)
         click.echo(f"❌ Workflow execution error: {e}", err=True)
+        # Check for common API key errors
+        if "API_KEY" in error_msg or "api_key" in error_msg.lower():
+            show_env_hint()
         sys.exit(1)
     except KeyboardInterrupt:
         click.echo("\n🛑 Workflow cancelled by user", err=True)
         sys.exit(130)
     except Exception as e:
+        error_msg = str(e)
         click.echo(f"💀 Unexpected error: {e}", err=True)
+        # Check for common API key errors
+        if "API_KEY" in error_msg or "api_key" in error_msg.lower():
+            show_env_hint()
         sys.exit(1)
 
 

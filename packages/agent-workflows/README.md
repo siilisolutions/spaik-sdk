@@ -5,100 +5,229 @@ YAML-driven workflow engine for AI agents.
 ## Installation
 
 ```bash
-pip install -e .
+# Install globally with uvx (recommended)
+uvx siili-agent-workflows --help
+
+# Or install with pip
+pip install siili-agent-workflows
+
+# Or install locally for development
+cd packages/agent-workflows
+uv sync
 ```
 
-## Usage
+## Quick Start
 
 ```bash
-# Run workflow
-agent-workflow run
+# Run a workflow by name
+siili-agent-workflows my-workflow --param value
 
-# Custom file
-agent-workflow run -f my-workflow.yml
+# List all available workflows
+siili-agent-workflows --list
 
-# Validate
-agent-workflow validate .agent-workflow.yml
+# Validate a workflow without running
+siili-agent-workflows my-workflow --validate
 
-# History
-agent-workflow history
+# Show help
+siili-agent-workflows --help
 ```
+
+## Workflow Discovery
+
+Workflows are discovered from multiple locations (in order):
+
+1. **Current directory**: `./workflow-name.yml`, `./workflow-name.yaml`, etc.
+2. **Local workflows dir**: `./.agent_workflows/workflow-name.yml`
+3. **Global config**: `~/.config/siili-agent-workflows/workflow-name.yml`
+4. **Bundled**: Workflows shipped with the package
+
+Supported extensions: `.yml`, `.yaml`, `.agent-workflow.yml`, `.agent-workflow.yaml`
+
+## Environment Variables
+
+Environment files are loaded in order (later overrides earlier):
+
+1. `~/.config/siili-agent-workflows/.env` (global)
+2. `./.env` (current directory)
+3. `--env-file <path>` (explicit)
 
 ## Workflow Format
 
-Create `.agent-workflow.yml`:
+Create `my-workflow.yml`:
 
 ```yaml
 name: my-workflow
 env:
-  KEY: value
+  API_KEY: ${{ env.MY_API_KEY }}
+
+vars:
+  project_name: my-project
 
 jobs:
-  build:
+  setup:
     steps:
-      - uses: terminal/run@v1
+      - uses: terminal/run
         with:
           command: npm install
-      - uses: agents/claude_code@v1
+
+  generate:
+    needs: setup
+    steps:
+      - uses: agents/claude_code
         with:
-          prompt: "Generate unit tests"
+          prompt: "Create a README for ${{ vars.project_name }}"
+          cwd: "."
 
   test:
-    needs: build
+    needs: generate
     steps:
-      - uses: terminal/run@v1
+      - uses: terminal/run
         with:
           command: npm test
 ```
 
-## Plugins
+## CLI Options
 
-### Built-in Plugins
+| Option | Description |
+|--------|-------------|
+| `--list` | List available workflows |
+| `--validate` | Validate workflow without running |
+| `--env-file PATH` | Load environment from file |
+| `-w, --workspace DIR` | Set workspace directory |
+| `--set PLUGIN.KEY=VALUE` | Override step values |
+| `--var KEY=VALUE` | Set workflow variables |
+| `--dest PATH` | Shorthand for git/download.dest |
 
-- `terminal/run` - Run shell commands
-- `terminal/script` - Run script files
-- `git/push` - Push changes
-- `git/download` - Clone repos
-- `templates/match` - Template matching
-- `agents/claude_code` - Claude Code agent
-- `agents/smol_dev` - Smol Dev agent
-- `agents/general` - General agent
+You can also pass variables as positional args:
 
-### Custom Plugins
+```bash
+siili-agent-workflows apply-template --template agent --path ./my-agent
+```
+
+## Built-in Plugins
+
+### Terminal
+
+```yaml
+# Run shell commands
+- uses: terminal/run
+  with:
+    command: "echo hello"
+    shell: true              # optional, default true
+    continue_on_error: false # optional
+    timeout: 30              # optional, seconds
+
+# Run scripts
+- uses: terminal/script
+  with:
+    path: "./scripts/setup.sh"
+    args: ["--verbose"]      # optional
+    interpreter: "/bin/bash" # optional
+    cwd: "."                 # optional
+```
+
+### Git
+
+```yaml
+# Clone/download from repository
+- uses: git/download
+  with:
+    repo: "https://github.com/user/repo.git"
+    ref: "main"              # optional branch/tag
+    files:                   # optional, specific files/dirs
+      - "templates/agent"
+    dest: "./output"         # destination directory
+
+# Push changes
+- uses: git/push
+  with:
+    message: "chore: automated update"
+    branch: "main"           # optional
+```
+
+### Agents
+
+```yaml
+# Claude Code agent (requires ANTHROPIC_API_KEY)
+- uses: agents/claude_code
+  with:
+    prompt: "Implement feature X"
+    cwd: "."                 # working directory
+
+# General LLM agent
+- uses: agents/general
+  with:
+    prompt: "Analyze this code"
+    system_prompt: "You are a code reviewer"  # optional
+```
+
+### Audio (Speech)
+
+```yaml
+# Speech-to-text recording
+- uses: audio/stt
+  with:
+    language: "en"           # optional
+    output_var: "user_input" # variable to store result
+
+# Text-to-speech
+- uses: audio/tts
+  with:
+    text: "Hello, world!"
+    voice: "alloy"           # optional
+    output: "./output.mp3"   # optional
+```
+
+## Variable Interpolation
+
+Supports two syntaxes:
+
+```yaml
+# GitHub Actions style
+prompt: "${{ vars.name }} - ${{ env.API_KEY }}"
+
+# Python format style
+prompt: "{name} - {API_KEY}"
+```
+
+## Custom Plugins
 
 Create `agent_workflows/plugins/my_namespace/my_plugin.py`:
 
 ```python
-async def execute(ctx: dict) -> None:
+from typing import Any, Dict
+
+async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
     logger = ctx['logger']
     workspace = ctx['workspace']
     params = ctx.get('with', {})
     
     logger("Running my plugin...")
-    # Plugin logic
+    
+    # Do work...
+    result = "some output"
+    
+    # Return values are available to subsequent steps
+    return {"output": result}
 ```
 
 ## Features
 
-- DAG execution with parallel jobs
-- Environment variable inheritance
-- Run history tracking
-- Async plugin system
-- Fail-fast error handling
-
-## CLI Commands
-
-| Command | Description |
-|---------|-------------|
-| `run [-f FILE] [-w WORKSPACE]` | Run workflow |
-| `validate FILE` | Validate syntax |
-| `history [-l LIMIT]` | Show history |
+- **Parallel Execution**: Jobs without dependencies run concurrently
+- **DAG Support**: Declare dependencies with `needs:`
+- **Variable Interpolation**: Use `${{ vars.x }}` or `{x}` syntax
+- **Environment Inheritance**: Global → Job → Step
+- **Run History**: Track execution history in `.agent-workflows/history/`
+- **Fail-fast**: Stop on first error (configurable per step)
 
 ## Development
 
 ```bash
-pip install -e ".[dev]"
-pytest
+cd packages/agent-workflows
+uv sync --dev
+uv run pytest tests/
+uv run ruff check .
+uv run ty check agent_workflows
 ```
 
 ## License

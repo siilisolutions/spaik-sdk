@@ -1,0 +1,76 @@
+name: speech-input
+# Voice-to-task workflow: Record speech, transcribe, and create structured task
+#
+# Usage:
+#   siili-agent-workflows speech-input
+#   siili-agent-workflows speech-input --language fi
+#
+# This workflow:
+# 1. Records audio from microphone (press Enter to stop)
+# 2. Transcribes the speech to text
+# 3. Uses Claude Code to analyze and create SPEECH_INPUT.md
+#
+# Requirements:
+#   - OPENAI_API_KEY (for Whisper STT)
+#   - ANTHROPIC_API_KEY (for Claude Code)
+
+vars:
+  language: en
+
+jobs:
+  record:
+    steps:
+      # Step 1: Record and transcribe speech
+      - uses: audio/stt
+        with:
+          language: "${{ language }}"
+          output_var: user_speech
+          prompt_hint: "Developer giving instructions for a coding task"
+
+  process:
+    needs: record
+    steps:
+      # Step 2: Use Claude Code to process the transcription
+      - uses: agents/claude_code
+        with:
+          prompt: |
+            I just recorded a voice memo about a task I want to do in this repository.
+            The speech has been transcribed but may contain errors or be in a non-English language.
+
+            <raw_transcription>
+            ${{ user_speech }}
+            </raw_transcription>
+
+            ## Context
+            - This is the siili-agent-workflows repository
+            - I'm likely describing a coding task, feature request, or bug to fix
+            - The speech may be informal, contain filler words, or be stream-of-consciousness
+
+            ## Your Task
+            1. First, print the raw transcription so I can see what was captured
+            2. If not in English, translate it to English
+            3. Clean it up - fix transcription errors, remove filler words like "um", "uh", "so", etc.
+            4. Understand the intent - what am I actually trying to accomplish?
+            5. Create a file called SPEECH_INPUT.md with this structure:
+
+            ```markdown
+            # Voice Input Task
+
+            ## Raw Transcription
+            [The exact transcription as captured]
+
+            ## Cleaned/Translated
+            [Cleaned up English version]
+
+            ## Task Description
+            [Clear, actionable description of what needs to be done]
+
+            ## Suggested Next Steps
+            [Concrete steps to accomplish the task]
+
+            ## Questions (if any)
+            [Any clarifying questions if the intent is ambiguous]
+            ```
+
+            Be concise but thorough. The goal is to turn messy voice input into a clear task specification.
+          cwd: "."
