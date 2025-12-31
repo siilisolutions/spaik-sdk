@@ -24,4 +24,8 @@ export class AgentSdkClient {
         await this.threadsApiClient.sendMessageWithStream(threadId, request);
     }
 
+    async cancelGeneration(threadId: Id): Promise<void> {
+        await this.threadsApiClient.cancelGeneration(threadId);
+    }
+
 }

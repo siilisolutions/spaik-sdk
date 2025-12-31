@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Box, TextField, IconButton, Paper, CircularProgress, alpha, useTheme } from '@mui/material';
+import { Box, TextField, IconButton, Paper, alpha, useTheme } from '@mui/material';
 import {
     useThreadActions,
     useFileUploadStore,
@@ -8,18 +8,18 @@ import {
 } from '@siilisolutions/ai-sdk-react';
 import { AttachButton } from './AttachButton';
 import { PendingAttachments } from './PendingAttachments';
-import { SendIcon } from '../../utils/icons';
+import { SendIcon, StopIcon } from '../../utils/icons';
 
 interface Props {
     threadId: string;
     filesBaseUrl?: string;
-    onMessageSent?: () => void;
+    isGenerating?: boolean;
+    onCancelGeneration?: () => void;
 }
 
-export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
+export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGeneration }: Props) {
     const theme = useTheme();
     const [inputMessage, setInputMessage] = useState('');
-    const [isSending, setIsSending] = useState(false);
     const { sendMessage } = useThreadActions();
 
     const {
@@ -60,7 +60,7 @@ export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
     };
 
     const handleSendMessage = async () => {
-        if ((!inputMessage.trim() && completedUploads.length === 0) || isSending || hasInProgress) {
+        if ((!inputMessage.trim() && completedUploads.length === 0) || isGenerating || hasInProgress) {
             return;
         }
 
@@ -71,11 +71,9 @@ export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
             filename: u.file.name,
         }));
 
-        // Clear input and show typing indicator immediately
+        // Clear input immediately
         setInputMessage('');
         clearCompleted();
-        setIsSending(true);
-        onMessageSent?.();
 
         try {
             await sendMessage(threadId, {
@@ -84,8 +82,6 @@ export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
             });
         } catch (error) {
             console.error('Failed to send message:', error);
-        } finally {
-            setIsSending(false);
         }
     };
 
@@ -97,7 +93,7 @@ export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
     };
 
     const canSend =
-        (inputMessage.trim() || completedUploads.length > 0) && !isSending && !hasInProgress;
+        (inputMessage.trim() || completedUploads.length > 0) && !isGenerating && !hasInProgress;
 
     return (
         <Box sx={{ p: 2, bgcolor: 'background.default' }}>
@@ -111,11 +107,11 @@ export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
                         gap: 1.5,
                         p: 1.5,
                         pl: 2,
-                        borderRadius: 5, // Fully rounded pill
+                        borderRadius: 5,
                         border: '1px solid',
                         borderColor: theme.palette.mode === 'dark' ? alpha(theme.palette.common.white, 0.15) : alpha(theme.palette.common.black, 0.1),
                         bgcolor: theme.palette.mode === 'dark' ? alpha(theme.palette.grey[900], 0.6) : '#fff',
-                        boxShadow: theme.shadows[4], // Add specific shadow for floating effect
+                        boxShadow: theme.shadows[4],
                         transition: 'all 0.2s ease',
                         '&:focus-within': {
                             borderColor: 'primary.main',
@@ -124,13 +120,13 @@ export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
                         }
                     }}
                 >
-                    <AttachButton onFilesSelected={handleFilesSelected} disabled={isSending} />
+                    <AttachButton onFilesSelected={handleFilesSelected} disabled={isGenerating} />
                     <TextField
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Type your message..."
-                        disabled={isSending}
+                        disabled={isGenerating}
                         multiline
                         maxRows={5}
                         fullWidth
@@ -143,26 +139,40 @@ export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
                             mb: 0.5,
                         }}
                     />
-                    <IconButton
-                        onClick={handleSendMessage}
-                        disabled={!canSend}
-                        sx={{
-                            width: 40,
-                            height: 40,
-                            color: canSend ? 'common.white' : 'action.disabled',
-                            bgcolor: canSend ? 'primary.main' : alpha(theme.palette.action.disabledBackground, 0.1),
-                            '&:hover': {
-                                bgcolor: canSend ? 'primary.dark' : alpha(theme.palette.action.disabledBackground, 0.1),
-                            },
-                            transition: 'all 0.2s',
-                        }}
-                    >
-                        {isSending ? (
-                            <CircularProgress size={20} color="inherit" />
-                        ) : (
+                    {isGenerating ? (
+                        <IconButton
+                            onClick={onCancelGeneration}
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                color: 'common.white',
+                                bgcolor: 'error.main',
+                                '&:hover': {
+                                    bgcolor: 'error.dark',
+                                },
+                                transition: 'all 0.2s',
+                            }}
+                        >
+                            <StopIcon sx={{ fontSize: 20 }} />
+                        </IconButton>
+                    ) : (
+                        <IconButton
+                            onClick={handleSendMessage}
+                            disabled={!canSend}
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                color: canSend ? 'common.white' : 'action.disabled',
+                                bgcolor: canSend ? 'primary.main' : alpha(theme.palette.action.disabledBackground, 0.1),
+                                '&:hover': {
+                                    bgcolor: canSend ? 'primary.dark' : alpha(theme.palette.action.disabledBackground, 0.1),
+                                },
+                                transition: 'all 0.2s',
+                            }}
+                        >
                             <SendIcon sx={{ fontSize: 20, ml: 0.5 }} />
-                        )}
-                    </IconButton>
+                        </IconButton>
+                    )}
                 </Paper>
             </Box>
         </Box>

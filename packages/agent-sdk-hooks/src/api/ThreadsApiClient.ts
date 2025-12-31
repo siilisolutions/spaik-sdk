@@ -51,6 +51,10 @@ export class ThreadsApiClient extends BaseApiClient {
         }, signal);
     }
 
+    async cancelGeneration(threadId: Id): Promise<CancelResponse> {
+        return this.post(`/threads/${threadId}/cancel`, CancelResponseSchema, {});
+    }
+
 }
 
 export function createThreadsApiClient(config: BaseApiClientConfig): ThreadsApiClient {
@@ -64,6 +68,11 @@ export const CreateThreadRequestSchema = z.object({
 
 
 export const DeleteResponseSchema = z.object({
+    message: z.string(),
+});
+
+export const CancelResponseSchema = z.object({
+    success: z.boolean(),
     message: z.string(),
 });
 
@@ -121,4 +130,5 @@ export type DeleteResponse = z.infer<typeof DeleteResponseSchema>;
 export type ListThreadsFilters = z.infer<typeof ListThreadsFiltersSchema>;
 export type ThreadSummary = z.infer<typeof ThreadSummarySchema>;
 export type ListThreadsResponse = z.infer<typeof ListThreadsResponseSchema>;
-export type ThreadMessage = z.infer<typeof ThreadMessageSchema>; 
+export type ThreadMessage = z.infer<typeof ThreadMessageSchema>;
+export type CancelResponse = z.infer<typeof CancelResponseSchema>; 

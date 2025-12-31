@@ -264,4 +264,21 @@ class ThreadRouterFactory:
             await self.job_queue.push(job)
             return ThreadConverters.message_model_to_response(message)
 
+        @router.post("/{thread_id}/cancel")
+        async def cancel_generation(thread_id: str, user: BaseUser = Depends(get_current_user)):
+            """Cancel the current generation for a thread"""
+            thread = await self.service.get_thread(thread_id)
+            if not thread:
+                raise HTTPException(status_code=404, detail="Thread not found")
+
+            if not await self.authorizer.can_post_message(user, thread):
+                raise HTTPException(status_code=403, detail="Access denied")
+
+            if self.cancellation_publisher:
+                self.cancellation_publisher.publish_cancellation(thread_id)
+                logger.info(f"Cancellation published for thread {thread_id}")
+                return {"success": True, "message": "Cancellation signal sent"}
+            else:
+                raise HTTPException(status_code=501, detail="Cancellation not supported")
+
         return router

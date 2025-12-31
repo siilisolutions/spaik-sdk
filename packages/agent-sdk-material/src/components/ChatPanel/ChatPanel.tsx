@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
-import { useThread, useThreadSelection } from '@siilisolutions/ai-sdk-react';
+import { useThread, useThreadSelection, useThreadActions } from '@siilisolutions/ai-sdk-react';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from '../MessageInput/MessageInput';
@@ -14,31 +14,20 @@ interface Props {
 
 export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton }: Props) {
     const { selectedThreadId } = useThreadSelection();
-    const { thread, loading } = useThread(selectedThreadId || '');
-    const [waitingForResponse, setWaitingForResponse] = useState(false);
+    const { thread, loading, isGenerating } = useThread(selectedThreadId || '');
+    const { cancelGeneration } = useThreadActions();
     const prevMessageCountRef = useRef(0);
 
-    // Clear waiting state when we get new messages (AI started responding)
+    // Reset message count ref when thread changes
     useEffect(() => {
-        const currentCount = thread?.messages?.length ?? 0;
-        if (currentCount > prevMessageCountRef.current) {
-            // New message arrived, check if it's from AI
-            const lastMessage = thread?.messages?.[currentCount - 1];
-            if (lastMessage?.ai) {
-                setWaitingForResponse(false);
-            }
-        }
-        prevMessageCountRef.current = currentCount;
-    }, [thread?.messages]);
-
-    // Clear waiting state when thread changes
-    useEffect(() => {
-        setWaitingForResponse(false);
         prevMessageCountRef.current = thread?.messages?.length ?? 0;
     }, [selectedThreadId]);
 
-    const handleMessageSent = () => {
-        setWaitingForResponse(true);
+    const handleCancelGeneration = () => {
+        if (selectedThreadId) {
+            console.log('Cancelling generation for thread:', selectedThreadId);
+            cancelGeneration(selectedThreadId);
+        }
     };
 
     if (!selectedThreadId) {
@@ -96,12 +85,13 @@ export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton }: Props) 
                 messages={thread?.messages}
                 isLoading={loading}
                 filesBaseUrl={filesBaseUrl}
-                showTypingIndicator={waitingForResponse}
+                showTypingIndicator={isGenerating}
             />
             <MessageInput 
                 threadId={selectedThreadId} 
                 filesBaseUrl={filesBaseUrl}
-                onMessageSent={handleMessageSent}
+                isGenerating={isGenerating}
+                onCancelGeneration={handleCancelGeneration}
             />
         </Box>
     );
