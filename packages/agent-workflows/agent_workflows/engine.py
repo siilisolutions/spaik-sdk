@@ -2,12 +2,12 @@
 
 import json
 import time
-from pathlib import Path
-from typing import Dict, Any, Set, Optional
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Optional, Set
 
 from .dag import DAG
-from .parser import load_workflow, get_job_dependencies
+from .parser import get_job_dependencies, load_workflow
 from .plugins import load_plugin
 
 
@@ -19,7 +19,12 @@ class WorkflowExecutionError(Exception):
 class WorkflowEngine:
     """Executes workflows with parallel job support"""
     
-    def __init__(self, workspace: Optional[Path] = None, step_overrides: Optional[Dict[str, Dict[str, Any]]] = None, vars_overrides: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        workspace: Optional[Path] = None,
+        step_overrides: Optional[Dict[str, Dict[str, Any]]] = None,
+        vars_overrides: Optional[Dict[str, Any]] = None,
+    ):
         self.workspace = workspace or Path.cwd()
         self.history_dir = self.workspace / '.agent-workflows' / 'history'
         self.history_dir.mkdir(parents=True, exist_ok=True)
@@ -71,7 +76,7 @@ class WorkflowEngine:
                 for job_name in level:
                     if job_name not in completed_jobs:
                         task = self._execute_job(
-                            job_name, 
+                            job_name,
                             workflow['jobs'][job_name],
                             workflow['env'],
                             run_metadata
@@ -118,7 +123,7 @@ class WorkflowEngine:
             await self._save_run_metadata(run_metadata)
             raise
     
-    async def _execute_job(self, job_name: str, job_config: Dict[str, Any], 
+    async def _execute_job(self, job_name: str, job_config: Dict[str, Any],
                           global_env: Dict[str, Any], run_metadata: Dict[str, Any]):
         """Execute a single job with its steps"""
         job_start = time.time()
@@ -167,8 +172,14 @@ class WorkflowEngine:
             })
             raise
     
-    async def _execute_step(self, step: Dict[str, Any], env: Dict[str, Any], vars_map: Dict[str, Any],
-                           job_name: str, step_index: int):
+    async def _execute_step(
+        self,
+        step: Dict[str, Any],
+        env: Dict[str, Any],
+        vars_map: Dict[str, Any],
+        job_name: str,
+        step_index: int,
+    ):
         """Execute a single step"""
         plugin_path = step['uses']
         # Start from step's with-config, then apply CLI-provided overrides for this plugin
@@ -254,7 +265,12 @@ class WorkflowEngine:
         print(f"[{timestamp}] {message}")
 
 
-async def run_workflow(workflow_path: Path, workspace: Optional[Path] = None, step_overrides: Optional[Dict[str, Dict[str, Any]]] = None, vars_overrides: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+async def run_workflow(
+    workflow_path: Path,
+    workspace: Optional[Path] = None,
+    step_overrides: Optional[Dict[str, Dict[str, Any]]] = None,
+    vars_overrides: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     """Convenience function to run a workflow"""
     engine = WorkflowEngine(workspace, step_overrides, vars_overrides)
     return await engine.run(workflow_path)

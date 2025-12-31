@@ -1,7 +1,7 @@
 """DAG utilities for workflow execution"""
 
-from typing import Dict, List, Set
 from collections import defaultdict, deque
+from typing import Dict, List, Set
 
 
 class CyclicDependencyError(Exception):

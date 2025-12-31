@@ -1,7 +1,9 @@
 """Generic agent"""
 
-from typing import Dict, Any
+from typing import Any, Dict
+
 from siili_ai_sdk.agent.base_agent import BaseAgent
+
 
 async def execute(ctx: Dict[str, Any]) -> None:
     logger = ctx['logger']

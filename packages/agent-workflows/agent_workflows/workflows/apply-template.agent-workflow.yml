@@ -1,0 +1,40 @@
+name: simple-workflow
+env:
+  ENVIRONMENT: demo
+
+jobs:
+  generate:
+    env:
+      AI_MODEL: gpt-4
+    steps:
+      - uses: git/download
+        with:
+          repo: "git@gitlab.siilicloud.com:siili-ai-labs/siili-ai-sdk.git"
+          ref: "main"         # optional
+          files:
+            - "templates/${{template}}"
+            # add more paths or globs if needed
+          dest: "${{path}}"
+      - uses: terminal/script
+        with:
+          path: "testicle/init_template.sh"
+          cwd: "testicle"
+      # - uses: terminal/run
+      #   with:
+      #     cmd: ["echo", "${{greeting}}, world!"]
+      # # - uses: agents/claude_code
+      #   with:
+      #     prompt: "/init take a look at .cursor/rules and also the project, then create your own instructions"
+      #     cwd: "testicle"
+      # - uses: agents/general
+      #   with: 
+      #     prompt: "say hello"
+      # - uses: terminal/run
+      #   with:
+      #     cmd: ["echo", "Running a quick command..."]
+      # - uses: terminal/script
+      #   with:
+      #     path: "testicle/templates/agent/hello_agent.py"
+      #     interpreter: "python3"
+      #     args: ["--demo"]
+      

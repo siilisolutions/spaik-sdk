@@ -1,7 +1,7 @@
 """Agent Workflows Plugin system"""
 
 import importlib
-from typing import Any, Dict, Protocol, Awaitable, cast
+from typing import Any, Awaitable, Dict, Protocol, cast
 
 
 class PluginModule(Protocol):

@@ -1,7 +1,7 @@
 """Git push plugin"""
 
 import asyncio
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 async def execute(ctx: Dict[str, Any]) -> None:

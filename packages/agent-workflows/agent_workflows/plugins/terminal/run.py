@@ -30,7 +30,12 @@ async def _run_subprocess(
     logger(f"  💻 {display}")
 
     if use_shell:
-        cmd_str = " ".join(argv_or_str) if isinstance(argv_or_str, list) else argv_or_str
+        cmd_str: str
+        if isinstance(argv_or_str, list):
+            cmd_str = " ".join(argv_or_str)
+        else:
+            assert isinstance(argv_or_str, str)  # for type checker
+            cmd_str = argv_or_str
         process = await asyncio.create_subprocess_shell(
             cmd_str,
             cwd=str(cwd) if cwd else None,
@@ -105,7 +110,10 @@ async def execute(ctx: Dict[str, Any]) -> None:
     continue_on_error: bool = bool(step_with.get("continue_on_error", False))
 
     logger("🧨 Running command")
-    exit_code = await _run_subprocess(cmd, cwd=cwd, env=base_env, use_shell=shell, logger=logger, timeout_seconds=timeout_seconds)
+    exit_code = await _run_subprocess(
+        cmd, cwd=cwd, env=base_env, use_shell=shell, logger=logger,
+        timeout_seconds=timeout_seconds,
+    )
     if exit_code != 0 and not continue_on_error:
         raise RuntimeError(f"Command failed with exit code {exit_code}")
     logger("✅ Command finished")

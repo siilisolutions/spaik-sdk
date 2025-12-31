@@ -1,7 +1,7 @@
 """Smol developer agent plugin"""
 
 import asyncio
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 async def execute(ctx: Dict[str, Any]) -> None:
@@ -18,7 +18,7 @@ async def execute(ctx: Dict[str, Any]) -> None:
     # Simulate AI coding agent
     phases = [
         "🧠 Analyzing requirements",
-        "📋 Planning implementation", 
+        "📋 Planning implementation",
         "⚡ Generating code",
         "🔍 Reviewing & optimizing",
         "✅ Finalizing implementation"
