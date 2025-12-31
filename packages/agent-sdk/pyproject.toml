@@ -1,6 +1,6 @@
 [project]
 name = "siili-ai-sdk"
-version = "0.5.2"
+version = "0.6.0"
 description = "Python SDK for building AI agents with multi-LLM support, streaming, and production-ready infrastructure"
 readme = "README.md"
 license = "MIT"
