@@ -105,7 +105,10 @@ async def execute(ctx: Dict[str, Any]) -> None:
     continue_on_error: bool = bool(step_with.get("continue_on_error", False))
 
     logger("🧨 Running command")
-    exit_code = await _run_subprocess(cmd, cwd=cwd, env=base_env, use_shell=shell, logger=logger, timeout_seconds=timeout_seconds)
+    exit_code = await _run_subprocess(
+        cmd, cwd=cwd, env=base_env, use_shell=shell, logger=logger,
+        timeout_seconds=timeout_seconds,
+    )
     if exit_code != 0 and not continue_on_error:
         raise RuntimeError(f"Command failed with exit code {exit_code}")
     logger("✅ Command finished")

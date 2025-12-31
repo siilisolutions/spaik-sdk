@@ -21,7 +21,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
-async def _run(argv: List[str], cwd: Path, env: Dict[str, str], timeout_seconds: Optional[int], logger) -> int:
+async def _run(
+    argv: List[str], cwd: Path, env: Dict[str, str], timeout_seconds: Optional[int], logger
+) -> int:
     logger(f"  💻 {' '.join(argv)}")
     process = await asyncio.create_subprocess_exec(
         *argv,
@@ -60,7 +62,10 @@ async def execute(ctx: Dict[str, Any]) -> None:
         raise ValueError("'with.path' is required and must be a string")
 
     cwd_override = step_with.get("cwd")
-    base_dir = (workspace / cwd_override).resolve() if isinstance(cwd_override, str) and cwd_override else workspace
+    if isinstance(cwd_override, str) and cwd_override:
+        base_dir = (workspace / cwd_override).resolve()
+    else:
+        base_dir = workspace
 
     script_path = (base_dir / path_str).resolve()
     if not script_path.exists():
@@ -104,8 +109,13 @@ async def execute(ctx: Dict[str, Any]) -> None:
         argv = [str(script_path), *[str(a) for a in args]]
 
     logger("🧨 Running script")
-    working_dir = script_path.parent if not isinstance(cwd_override, str) or not cwd_override else base_dir
-    exit_code = await _run(argv, cwd=working_dir, env=base_env, timeout_seconds=timeout_seconds, logger=logger)
+    if isinstance(cwd_override, str) and cwd_override:
+        working_dir = base_dir
+    else:
+        working_dir = script_path.parent
+    exit_code = await _run(
+        argv, cwd=working_dir, env=base_env, timeout_seconds=timeout_seconds, logger=logger
+    )
     if exit_code != 0 and not continue_on_error:
         raise RuntimeError(f"Script failed with exit code {exit_code}")
     logger("✅ Script finished")

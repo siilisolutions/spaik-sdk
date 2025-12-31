@@ -11,8 +11,10 @@ with:
 
 Behavior:
 - If files are provided, only those files (or glob matches) are copied from the repo checkout.
-  - For files, only the filename is placed under `dest` (the repo's directory path is not preserved).
-  - For directories, the directory's CONTENTS are copied under `dest` (the top-level directory name is not included), while preserving the sub-structure inside that directory.
+  - For files, only the filename is placed under `dest` (the repo's directory path is
+    not preserved).
+  - For directories, the directory's CONTENTS are copied under `dest` (the top-level
+    directory name is not included), while preserving the sub-structure inside.
 - If files are omitted, the entire repository contents (excluding .git) are copied into dest.
 """
 
