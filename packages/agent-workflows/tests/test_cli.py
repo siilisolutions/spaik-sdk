@@ -32,11 +32,13 @@ def test_cli_list_flag():
 
 
 def test_cli_no_args_shows_help():
-    """Test that no args shows help"""
+    """Test that no args shows getting started guide"""
     runner = CliRunner()
     result = runner.invoke(cli, [])
     assert result.exit_code == 0
-    assert "YAML-driven workflow engine" in result.output
+    assert "SIILI AGENT WORKFLOWS" in result.output
+    assert "BUNDLED WORKFLOWS" in result.output
+    assert "API KEYS SETUP" in result.output
 
 
 def test_cli_workflow_not_found():
