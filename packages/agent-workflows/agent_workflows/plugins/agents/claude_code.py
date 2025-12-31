@@ -2,7 +2,7 @@
 
 import asyncio
 from typing import Dict, Any
-from siili_coding_agents import ClaudeAgent, ClaudeCodeOptions
+from siili_coding_agents import ClaudeAgent, ClaudeAgentOptions
 
 
 async def execute(ctx: Dict[str, Any]) -> None:
@@ -10,12 +10,12 @@ async def execute(ctx: Dict[str, Any]) -> None:
     _workspace = ctx["workspace"]  # kept for parity with other agents
     step_with = ctx.get("with", {})
     prompt = step_with["prompt"]
-    
 
     agent = ClaudeAgent(
-        options=ClaudeCodeOptions(
-            cwd=step_with.get("cwd", ".")
-        ), yolo=True
+        options=ClaudeAgentOptions(
+            working_directory=step_with.get("cwd", "."),
+            yolo=True,
+        )
     )
 
     # Collect streamed response text into a single string

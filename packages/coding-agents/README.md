@@ -16,12 +16,14 @@ Wrapper for Claude Code SDK with streaming support.
 
 ```python
 import anyio
-from siili_coding_agents import ClaudeAgent, ClaudeCodeOptions
+from siili_coding_agents import ClaudeAgent, ClaudeAgentOptions
 
 async def main():
     agent = ClaudeAgent(
-        options=ClaudeCodeOptions(cwd="."),
-        yolo=True  # Bypass permission prompts
+        options=ClaudeAgentOptions(
+            working_directory=".",
+            yolo=True,  # Bypass permission prompts
+        )
     )
     
     async for block in agent.stream_blocks("Create a hello world script"):
