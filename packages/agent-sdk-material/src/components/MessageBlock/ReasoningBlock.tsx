@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Collapse, IconButton, Typography, alpha } from '@mui/material';
+import { Box, Collapse, IconButton, Typography, alpha, useTheme } from '@mui/material';
 import { PsychologyIcon, ExpandMoreIcon } from '../../utils/icons';
 
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
 }
 
 export function ReasoningBlock({ content }: Props) {
+    const theme = useTheme();
     const [expanded, setExpanded] = useState(false);
 
     if (!content) return null;
@@ -15,9 +16,11 @@ export function ReasoningBlock({ content }: Props) {
         <Box
             sx={{
                 borderRadius: 2,
-                bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.08),
-                border: 1,
-                borderColor: (theme) => alpha(theme.palette.secondary.main, 0.2),
+                overflow: 'hidden',
+                my: 1,
+                bgcolor: alpha(theme.palette.secondary.main, 0.05),
+                borderLeft: '3px solid',
+                borderColor: alpha(theme.palette.secondary.main, 0.3),
             }}
         >
             <Box
@@ -25,22 +28,24 @@ export function ReasoningBlock({ content }: Props) {
                 sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 1,
-                    px: 2,
+                    gap: 1.5,
+                    px: 1.5,
                     py: 1,
                     cursor: 'pointer',
+                    userSelect: 'none',
                     '&:hover': {
-                        bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.04),
+                        bgcolor: alpha(theme.palette.secondary.main, 0.08),
                     },
                 }}
             >
-                <PsychologyIcon fontSize="small" color="secondary" />
-                <Typography variant="body2" color="secondary" fontWeight={500} sx={{ flex: 1 }}>
-                    Reasoning
+                <PsychologyIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ flex: 1, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Reasoning Process
                 </Typography>
                 <IconButton
                     size="small"
                     sx={{
+                        p: 0.5,
                         transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
                         transition: 'transform 0.2s',
                     }}
@@ -49,19 +54,20 @@ export function ReasoningBlock({ content }: Props) {
                 </IconButton>
             </Box>
             <Collapse in={expanded}>
-                <Typography
-                    variant="body2"
-                    sx={{
-                        px: 2,
-                        pb: 2,
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                        color: 'text.secondary',
-                        fontStyle: 'italic',
-                    }}
-                >
-                    {content}
-                </Typography>
+                <Box sx={{ p: 2, pt: 0 }}>
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
+                            color: 'text.secondary',
+                            fontFamily: 'monospace',
+                            fontSize: '0.85rem',
+                        }}
+                    >
+                        {content}
+                    </Typography>
+                </Box>
             </Collapse>
         </Box>
     );

@@ -16,8 +16,8 @@ export function PendingAttachments({ uploads, onRemove }: Props) {
                 display: 'flex',
                 flexWrap: 'wrap',
                 gap: 1,
-                px: 2,
-                pt: 2,
+                mb: 1.5,
+                px: 1,
             }}
         >
             {uploads.map((upload) => {
@@ -49,7 +49,8 @@ export function PendingAttachments({ uploads, onRemove }: Props) {
                                 textOverflow: 'ellipsis',
                             },
                             ...(isCompleted && {
-                                bgcolor: (theme) => alpha(theme.palette.success.main, 0.1),
+                                bgcolor: (theme) => alpha(theme.palette.success.main, 0.15),
+                                color: 'success.main',
                                 borderColor: 'success.main',
                             }),
                         }}

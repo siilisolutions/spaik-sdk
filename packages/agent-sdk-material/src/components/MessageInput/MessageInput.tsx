@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Box, TextField, IconButton, Paper, CircularProgress } from '@mui/material';
+import { Box, TextField, IconButton, Paper, CircularProgress, alpha, useTheme } from '@mui/material';
 import {
     useThreadActions,
     useFileUploadStore,
@@ -17,6 +17,7 @@ interface Props {
 }
 
 export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
+    const theme = useTheme();
     const [inputMessage, setInputMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
     const { sendMessage } = useThreadActions();
@@ -99,62 +100,66 @@ export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
         (inputMessage.trim() || completedUploads.length > 0) && !isSending && !hasInProgress;
 
     return (
-        <Paper
-            elevation={0}
-            sx={{
-                borderTop: 1,
-                borderColor: 'divider',
-                bgcolor: 'background.paper',
-            }}
-        >
-            <PendingAttachments uploads={allUploads} onRemove={removeUpload} />
-            <Box
-                sx={{
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    gap: 1,
-                    p: 2,
-                }}
-            >
-                <AttachButton onFilesSelected={handleFilesSelected} disabled={isSending} />
-                <TextField
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Type your message..."
-                    disabled={isSending}
-                    multiline
-                    maxRows={4}
-                    fullWidth
-                    size="small"
+        <Box sx={{ p: 2, bgcolor: 'background.default' }}>
+            <Box sx={{ maxWidth: '900px', mx: 'auto', width: '100%' }}>
+                <PendingAttachments uploads={allUploads} onRemove={removeUpload} />
+                <Paper
+                    elevation={0}
                     sx={{
-                        '& .MuiOutlinedInput-root': {
-                            borderRadius: 3,
-                        },
-                    }}
-                />
-                <IconButton
-                    onClick={handleSendMessage}
-                    disabled={!canSend}
-                    color="primary"
-                    sx={{
-                        bgcolor: canSend ? 'primary.main' : 'action.disabledBackground',
-                        color: canSend ? 'primary.contrastText' : 'action.disabled',
-                        '&:hover': {
-                            bgcolor: 'primary.dark',
-                        },
-                        '&.Mui-disabled': {
-                            bgcolor: 'action.disabledBackground',
-                        },
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        gap: 1,
+                        p: 1.5,
+                        borderRadius: 4,
+                        border: '1px solid',
+                        borderColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                        bgcolor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.paper, 0.6) : 'background.paper',
+                        backdropFilter: 'blur(10px)',
+                        transition: 'border-color 0.2s, box-shadow 0.2s',
+                        '&:focus-within': {
+                            borderColor: 'primary.main',
+                            boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+                        }
                     }}
                 >
-                    {isSending ? (
-                        <CircularProgress size={24} color="inherit" />
-                    ) : (
-                        <SendIcon />
-                    )}
-                </IconButton>
+                    <AttachButton onFilesSelected={handleFilesSelected} disabled={isSending} />
+                    <TextField
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Type your message..."
+                        disabled={isSending}
+                        multiline
+                        maxRows={5}
+                        fullWidth
+                        variant="standard"
+                        InputProps={{
+                            disableUnderline: true,
+                        }}
+                        sx={{
+                            mb: 0.5, // Align with buttons
+                        }}
+                    />
+                    <IconButton
+                        onClick={handleSendMessage}
+                        disabled={!canSend}
+                        sx={{
+                            color: canSend ? 'primary.main' : 'action.disabled',
+                            bgcolor: canSend ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                            '&:hover': {
+                                bgcolor: canSend ? alpha(theme.palette.primary.main, 0.2) : 'transparent',
+                            },
+                            transition: 'all 0.2s',
+                        }}
+                    >
+                        {isSending ? (
+                            <CircularProgress size={24} color="inherit" />
+                        ) : (
+                            <SendIcon />
+                        )}
+                    </IconButton>
+                </Paper>
             </Box>
-        </Paper>
+        </Box>
     );
 }
