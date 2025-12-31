@@ -2,19 +2,45 @@ import { useEffect, useRef } from 'react';
 import { Box, Skeleton } from '@mui/material';
 import { Message } from '@siilisolutions/ai-sdk-react';
 import { MessageCard } from '../Message/MessageCard';
+import { TypingIndicator } from './TypingIndicator';
 
 interface Props {
     messages: Message[] | undefined;
     isLoading?: boolean;
     filesBaseUrl?: string;
+    showTypingIndicator?: boolean;
 }
 
-export function MessageList({ messages, isLoading, filesBaseUrl }: Props) {
+export function MessageList({ messages, isLoading, filesBaseUrl, showTypingIndicator }: Props) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
+    const scrollToBottom = () => {
+        // Use setTimeout to ensure DOM is fully updated
+        setTimeout(() => {
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 50);
+    };
+
+    // Scroll when message count changes
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+        scrollToBottom();
+    }, [messages?.length]);
+
+    // Scroll when typing indicator appears
+    useEffect(() => {
+        if (showTypingIndicator) {
+            scrollToBottom();
+        }
+    }, [showTypingIndicator]);
+
+    // Also scroll when last message content changes (streaming)
+    const lastMessage = messages?.[messages.length - 1];
+    const lastBlockContent = lastMessage?.blocks?.[lastMessage.blocks.length - 1]?.content;
+    useEffect(() => {
+        if (lastBlockContent) {
+            scrollToBottom();
+        }
+    }, [lastBlockContent]);
 
     if (isLoading || !messages) {
         return (
@@ -31,7 +57,7 @@ export function MessageList({ messages, isLoading, filesBaseUrl }: Props) {
         );
     }
 
-    if (messages.length === 0) {
+    if (messages.length === 0 && !showTypingIndicator) {
         return (
             <Box
                 sx={{
@@ -62,8 +88,8 @@ export function MessageList({ messages, isLoading, filesBaseUrl }: Props) {
                     filesBaseUrl={filesBaseUrl}
                 />
             ))}
+            {showTypingIndicator && <TypingIndicator />}
             <div ref={bottomRef} />
         </Box>
     );
 }
-

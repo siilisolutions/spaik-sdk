@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
 import { useThread, useThreadSelection } from '@siilisolutions/ai-sdk-react';
 import { ChatHeader } from './ChatHeader';
@@ -14,6 +15,31 @@ interface Props {
 export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton }: Props) {
     const { selectedThreadId } = useThreadSelection();
     const { thread, loading } = useThread(selectedThreadId || '');
+    const [waitingForResponse, setWaitingForResponse] = useState(false);
+    const prevMessageCountRef = useRef(0);
+
+    // Clear waiting state when we get new messages (AI started responding)
+    useEffect(() => {
+        const currentCount = thread?.messages?.length ?? 0;
+        if (currentCount > prevMessageCountRef.current) {
+            // New message arrived, check if it's from AI
+            const lastMessage = thread?.messages?.[currentCount - 1];
+            if (lastMessage?.ai) {
+                setWaitingForResponse(false);
+            }
+        }
+        prevMessageCountRef.current = currentCount;
+    }, [thread?.messages]);
+
+    // Clear waiting state when thread changes
+    useEffect(() => {
+        setWaitingForResponse(false);
+        prevMessageCountRef.current = thread?.messages?.length ?? 0;
+    }, [selectedThreadId]);
+
+    const handleMessageSent = () => {
+        setWaitingForResponse(true);
+    };
 
     if (!selectedThreadId) {
         return (
@@ -70,8 +96,13 @@ export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton }: Props) 
                 messages={thread?.messages}
                 isLoading={loading}
                 filesBaseUrl={filesBaseUrl}
+                showTypingIndicator={waitingForResponse}
             />
-            <MessageInput threadId={selectedThreadId} filesBaseUrl={filesBaseUrl} />
+            <MessageInput 
+                threadId={selectedThreadId} 
+                filesBaseUrl={filesBaseUrl}
+                onMessageSent={handleMessageSent}
+            />
         </Box>
     );
 }

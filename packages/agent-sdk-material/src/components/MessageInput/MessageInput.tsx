@@ -13,9 +13,10 @@ import { SendIcon } from '../../utils/icons';
 interface Props {
     threadId: string;
     filesBaseUrl?: string;
+    onMessageSent?: () => void;
 }
 
-export function MessageInput({ threadId, filesBaseUrl }: Props) {
+export function MessageInput({ threadId, filesBaseUrl, onMessageSent }: Props) {
     const [inputMessage, setInputMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
     const { sendMessage } = useThreadActions();
@@ -62,20 +63,24 @@ export function MessageInput({ threadId, filesBaseUrl }: Props) {
             return;
         }
 
-        setIsSending(true);
-        try {
-            const attachments = completedUploads.map((u) => ({
-                file_id: u.fileId!,
-                mime_type: u.mimeType!,
-                filename: u.file.name,
-            }));
+        const messageContent = inputMessage.trim();
+        const attachments = completedUploads.map((u) => ({
+            file_id: u.fileId!,
+            mime_type: u.mimeType!,
+            filename: u.file.name,
+        }));
 
+        // Clear input and show typing indicator immediately
+        setInputMessage('');
+        clearCompleted();
+        setIsSending(true);
+        onMessageSent?.();
+
+        try {
             await sendMessage(threadId, {
-                content: inputMessage.trim(),
+                content: messageContent,
                 attachments: attachments.length > 0 ? attachments : undefined,
             });
-            setInputMessage('');
-            clearCompleted();
         } catch (error) {
             console.error('Failed to send message:', error);
         } finally {
