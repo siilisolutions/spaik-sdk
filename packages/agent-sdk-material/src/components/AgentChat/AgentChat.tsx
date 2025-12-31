@@ -16,9 +16,12 @@ interface AgentChatContentProps {
     sidebarWidth?: number;
     sidebarHeader?: ReactNode;
     sidebarTitle?: string;
+    enableTTS?: boolean;
+    enableSTT?: boolean;
+    enableCopy?: boolean;
 }
 
-function AgentChatContent({ baseUrl, sidebarWidth = 300, sidebarHeader, sidebarTitle }: AgentChatContentProps) {
+function AgentChatContent({ baseUrl, sidebarWidth = 300, sidebarHeader, sidebarTitle, enableTTS, enableSTT, enableCopy }: AgentChatContentProps) {
     const { refresh } = useThreadListActions();
     const { selectedThreadId } = useThreadSelection();
     const theme = useTheme();
@@ -74,6 +77,9 @@ function AgentChatContent({ baseUrl, sidebarWidth = 300, sidebarHeader, sidebarT
                 filesBaseUrl={baseUrl} 
                 onMenuClick={isMobile ? handleDrawerToggle : undefined}
                 showMenuButton={isMobile}
+                enableTTS={enableTTS}
+                enableSTT={enableSTT}
+                enableCopy={enableCopy}
             />
         </Box>
     );
@@ -94,6 +100,12 @@ export interface AgentChatProps {
      * Use in AI responses as: <MyCard prop="value" />
      */
     customComponents?: CustomComponentRegistry;
+    /** Enable text-to-speech (listen button) on AI messages. Requires /audio/speech endpoint. */
+    enableTTS?: boolean;
+    /** Enable speech-to-text (push-to-talk button) in message input. Requires /audio/transcribe endpoint. */
+    enableSTT?: boolean;
+    /** Enable copy button on AI messages (default: true) */
+    enableCopy?: boolean;
 }
 
 export function AgentChat({ 
@@ -102,6 +114,9 @@ export function AgentChat({
     sidebarHeader, 
     sidebarTitle,
     customComponents = {},
+    enableTTS = false,
+    enableSTT = false,
+    enableCopy = true,
 }: AgentChatProps) {
     const apiClient = useMemo(() => {
         const threadsApi = createThreadsApiClient({ baseUrl });
@@ -116,6 +131,9 @@ export function AgentChat({
                     sidebarWidth={sidebarWidth}
                     sidebarHeader={sidebarHeader}
                     sidebarTitle={sidebarTitle}
+                    enableTTS={enableTTS}
+                    enableSTT={enableSTT}
+                    enableCopy={enableCopy}
                 />
             </MarkdownProvider>
         </AgentSdkClientProvider>

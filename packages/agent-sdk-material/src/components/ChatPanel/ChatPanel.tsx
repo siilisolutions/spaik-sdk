@@ -10,9 +10,12 @@ interface Props {
     filesBaseUrl?: string;
     onMenuClick?: () => void;
     showMenuButton?: boolean;
+    enableTTS?: boolean;
+    enableSTT?: boolean;
+    enableCopy?: boolean;
 }
 
-export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton }: Props) {
+export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton, enableTTS = false, enableSTT = false, enableCopy = true }: Props) {
     const { selectedThreadId } = useThreadSelection();
     const { thread, loading, isGenerating } = useThread(selectedThreadId || '');
     const { cancelGeneration } = useThreadActions();
@@ -86,12 +89,15 @@ export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton }: Props) 
                 isLoading={loading}
                 filesBaseUrl={filesBaseUrl}
                 showTypingIndicator={isGenerating}
+                enableTTS={enableTTS}
+                enableCopy={enableCopy}
             />
             <MessageInput 
                 threadId={selectedThreadId} 
                 filesBaseUrl={filesBaseUrl}
                 isGenerating={isGenerating}
                 onCancelGeneration={handleCancelGeneration}
+                enableSTT={enableSTT}
             />
         </Box>
     );

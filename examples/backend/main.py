@@ -125,8 +125,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     api_builder = ApiBuilder.local(agent=agent)
     thread_router = api_builder.build_thread_router()
     file_router = api_builder.build_file_router()
+    audio_router = api_builder.build_audio_router()  # TTS/STT endpoints
     app.include_router(thread_router)
     app.include_router(file_router)
+    app.include_router(audio_router)
     yield
 
 

@@ -4,6 +4,22 @@ export { useThreadList, useThreadSelection, useThreadListActions } from './store
 export { useFileUploadStore } from './stores/fileUploadStore';
 export type { PendingUpload, UploadStatus } from './stores/fileUploadStore';
 
+// Audio hooks (TTS/STT)
+export { 
+    useAudioStore,
+    useTextToSpeech,
+    useSpeechToText,
+    usePushToTalk,
+} from './stores/audioStore';
+export type {
+    UseTextToSpeechOptions,
+    UseTextToSpeechReturn,
+    UseSpeechToTextOptions,
+    UseSpeechToTextReturn,
+    UsePushToTalkOptions,
+    UsePushToTalkReturn,
+} from './stores/audioStore';
+
 // Client and provider
 export { AgentSdkClientProvider, useAgentSdkClient } from './client/AgentSdkClientProvider';
 export { AgentSdkClient } from './client/AgentSdkClient';
@@ -11,6 +27,7 @@ export { AgentSdkClient } from './client/AgentSdkClient';
 // API client factory
 export { createThreadsApiClient, ThreadsApiClient } from './api/ThreadsApiClient';
 export { createFilesApiClient, FilesApiClient } from './api/FilesApiClient';
+export { createAudioApiClient, AudioApiClient } from './api/AudioApiClient';
 export type { BaseApiClientConfig } from './api/BaseApiClient';
 export { BaseApiClient } from './api/BaseApiClient';
 
@@ -23,6 +40,7 @@ export type {
 } from './api/ThreadsApiClient';
 
 export type { FileMetadata } from './api/FilesApiClient';
+export type { TTSRequest, STTRequest, STTResponse } from './api/AudioApiClient';
 
 // Core types
 export type {

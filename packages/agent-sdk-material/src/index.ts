@@ -34,10 +34,24 @@ export { MessageInput } from './components/MessageInput/MessageInput';
 export { AttachButton } from './components/MessageInput/AttachButton';
 export { PendingAttachments } from './components/MessageInput/PendingAttachments';
 
+// Audio Controls
+export { SpeakButton, PushToTalkButton, CopyButton, ImageActions } from './components/AudioControls';
+
 // Markdown
 export { MarkdownProvider, useMarkdownContext, MarkdownRenderer, StoredImage } from './markdown';
 export type { CustomComponentProps, CustomComponentRegistry } from './markdown';
 
 // Utilities
 export { formatTimestamp, formatFullTimestamp } from './utils/formatTime';
+
+// Icons (for custom usage)
+export {
+    VolumeUpIcon,
+    VolumeOffIcon,
+    MicIcon,
+    MicOffIcon,
+    ContentCopyIcon,
+    CheckIcon,
+    DownloadIcon,
+} from './utils/icons';
 

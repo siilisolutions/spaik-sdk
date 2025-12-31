@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Box, TextField, IconButton, Paper, alpha, useTheme } from '@mui/material';
 import {
     useThreadActions,
@@ -8,6 +8,7 @@ import {
 } from '@siilisolutions/ai-sdk-react';
 import { AttachButton } from './AttachButton';
 import { PendingAttachments } from './PendingAttachments';
+import { PushToTalkButton } from '../AudioControls/PushToTalkButton';
 import { SendIcon, StopIcon } from '../../utils/icons';
 
 interface Props {
@@ -15,9 +16,10 @@ interface Props {
     filesBaseUrl?: string;
     isGenerating?: boolean;
     onCancelGeneration?: () => void;
+    enableSTT?: boolean;
 }
 
-export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGeneration }: Props) {
+export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGeneration, enableSTT = false }: Props) {
     const theme = useTheme();
     const [inputMessage, setInputMessage] = useState('');
     const { sendMessage } = useThreadActions();
@@ -92,6 +94,17 @@ export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGen
         }
     };
 
+    // Handler for voice input (push-to-talk)
+    const handleSendVoice = useCallback(async (text: string) => {
+        if (!text.trim() || isGenerating) return;
+        
+        try {
+            await sendMessage(threadId, { content: text.trim() });
+        } catch (error) {
+            console.error('Failed to send voice message:', error);
+        }
+    }, [threadId, isGenerating, sendMessage]);
+
     const canSend =
         (inputMessage.trim() || completedUploads.length > 0) && !isGenerating && !hasInProgress;
 
@@ -121,6 +134,13 @@ export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGen
                     }}
                 >
                     <AttachButton onFilesSelected={handleFilesSelected} disabled={isGenerating} />
+                    {enableSTT && filesBaseUrl && (
+                        <PushToTalkButton
+                            baseUrl={filesBaseUrl}
+                            onSend={handleSendVoice}
+                            disabled={isGenerating}
+                        />
+                    )}
                     <TextField
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}

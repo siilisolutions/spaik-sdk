@@ -1,27 +1,48 @@
-import { Paper, Box, useTheme, Avatar, Typography } from '@mui/material';
+import { Paper, Box, useTheme, Avatar, Typography, alpha } from '@mui/material';
 import { Message } from '@siilisolutions/ai-sdk-react';
 import { MessageContent } from './MessageContent';
 import { AttachmentGallery } from './AttachmentGallery';
 import { SmartToyIcon, PersonIcon } from '../../utils/icons';
 import { formatTimestamp } from '../../utils/formatTime';
+import { SpeakButton } from '../AudioControls/SpeakButton';
+import { CopyButton } from '../AudioControls/CopyButton';
 
 interface Props {
     message: Message;
     filesBaseUrl?: string;
+    enableTTS?: boolean;
+    enableCopy?: boolean;
 }
 
-export function MessageCard({ message, filesBaseUrl }: Props) {
+/**
+ * Extract plain text from message blocks for TTS/copy.
+ */
+function getMessageText(message: Message): string {
+    return message.blocks
+        .filter(block => block.type === 'plain' || block.type === 'reasoning')
+        .map(block => block.content || '')
+        .join('\n\n')
+        .trim();
+}
+
+export function MessageCard({ message, filesBaseUrl, enableTTS = false, enableCopy = true }: Props) {
     const theme = useTheme();
     const isAi = message.ai;
+    const messageText = getMessageText(message);
+    const showActions = isAi && messageText.length > 0;
 
     return (
         <Box
+            className="message-card"
             sx={{
                 display: 'flex',
                 flexDirection: isAi ? 'row' : 'row-reverse',
                 gap: 2,
                 mb: 4,
                 px: 2,
+                '&:hover .message-actions': {
+                    opacity: 1,
+                },
             }}
         >
             {/* Avatar Column */}
@@ -100,6 +121,34 @@ export function MessageCard({ message, filesBaseUrl }: Props) {
                         </Box>
                     )}
                 </Paper>
+
+                {/* Action buttons for AI messages */}
+                {showActions && (
+                    <Box 
+                        className="message-actions"
+                        sx={{ 
+                            display: 'flex', 
+                            gap: 0.5, 
+                            mt: 0.5,
+                            opacity: 0,
+                            transition: 'opacity 0.2s',
+                            bgcolor: alpha(theme.palette.background.paper, 0.8),
+                            borderRadius: 1,
+                            p: 0.25,
+                        }}
+                    >
+                        {enableCopy && (
+                            <CopyButton text={messageText} size="small" />
+                        )}
+                        {enableTTS && filesBaseUrl && (
+                            <SpeakButton 
+                                text={messageText} 
+                                baseUrl={filesBaseUrl}
+                                size="small"
+                            />
+                        )}
+                    </Box>
+                )}
             </Box>
         </Box>
     );
