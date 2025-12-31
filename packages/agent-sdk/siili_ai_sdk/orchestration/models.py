@@ -65,12 +65,12 @@ class OrchestratorEvent(Generic[T]):
         return OrchestratorEvent(message=message)
 
     @staticmethod
-    def state_update(state: T) -> "OrchestratorEvent[T]":
+    def state_update(state: T) -> "OrchestratorEvent[Any]":
         """Emit intermediate state from a step"""
         return OrchestratorEvent(state=state)
 
     @staticmethod
-    def ok(result: T) -> "OrchestratorEvent[T]":
+    def ok(result: T) -> "OrchestratorEvent[Any]":
         """Emit final result"""
         return OrchestratorEvent(result=result)
 

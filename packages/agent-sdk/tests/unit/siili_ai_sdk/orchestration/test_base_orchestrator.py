@@ -144,13 +144,17 @@ class TestBaseOrchestrator:
         step_b_events = [e for e in events if e.step and e.step.step_id == "step_b"]
 
         assert len(step_b_events) == 2
+        assert step_b_events[0].step is not None
         assert step_b_events[0].step.status == StepStatus.RUNNING
+        assert step_b_events[1].step is not None
         assert step_b_events[1].step.status == StepStatus.FAILED
+        assert step_b_events[1].step.detail is not None
         assert "Intentional failure" in step_b_events[1].step.detail
 
         # Should also have an error event
         error_events = [e for e in events if e.error is not None]
         assert len(error_events) == 1
+        assert error_events[0].error is not None
         assert "Intentional failure" in error_events[0].error
 
     def test_run_sync_returns_final_event(self):
