@@ -1,3 +1,5 @@
+from collections.abc import AsyncIterator
+
 from siili_ai_sdk.audio.options import TTSOptions
 from siili_ai_sdk.audio.providers import google_tts, openai_tts
 from siili_ai_sdk.config.env import env_config
@@ -79,5 +81,44 @@ class TextToSpeech:
                 endpoint=self.endpoint,
                 headers=self.headers,
             )
+        else:
+            raise ValueError(f"Unsupported TTS provider: {provider}")
+
+    async def synthesize_stream(
+        self,
+        text: str,
+        options: TTSOptions | None = None,
+    ) -> AsyncIterator[bytes]:
+        """
+        Stream synthesized speech from text.
+
+        Yields audio chunks as they arrive, allowing playback to start immediately.
+        Currently only supported for OpenAI models.
+
+        Args:
+            text: The text to convert to speech.
+            options: TTS options (voice, speed, format, etc.)
+
+        Yields:
+            Audio bytes chunks.
+        """
+        opts = options or TTSOptions()
+        provider = self._get_provider()
+
+        if provider == "openai":
+            api_key = credentials_provider.get_provider_key("openai")
+            async for chunk in openai_tts.synthesize_stream(
+                text=text,
+                model=self.model,
+                api_key=api_key,
+                options=opts,
+                endpoint=self.endpoint,
+                headers=self.headers,
+            ):
+                yield chunk
+        elif provider == "google":
+            # Google doesn't support streaming, fall back to full synthesis
+            audio_bytes = await self.synthesize(text, options)
+            yield audio_bytes
         else:
             raise ValueError(f"Unsupported TTS provider: {provider}")

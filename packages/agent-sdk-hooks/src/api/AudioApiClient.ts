@@ -28,7 +28,45 @@ export class AudioApiClient extends BaseApiClient {
     }
 
     /**
-     * Convert text to speech audio.
+     * Get the streaming TTS URL for direct audio element usage.
+     * This allows audio to start playing before the full response is received.
+     */
+    getStreamingTTSUrl(request: TTSRequest): string {
+        // We'll use POST via fetch, but for streaming we construct the endpoint URL
+        return `${this.axiosInstance.defaults.baseURL}/audio/speech/stream`;
+    }
+
+    /**
+     * Stream text to speech audio using fetch.
+     * Returns a Response that can be used to get a ReadableStream.
+     */
+    async textToSpeechStream(request: TTSRequest, signal?: AbortSignal): Promise<Response> {
+        const url = `${this.axiosInstance.defaults.baseURL}/audio/speech/stream`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text: request.text,
+                model: request.model,
+                voice: request.voice ?? 'alloy',
+                speed: request.speed ?? 1.0,
+                format: request.format ?? 'mp3',
+            }),
+            signal,
+        });
+
+        if (!response.ok) {
+            throw new Error(`TTS stream error: ${response.status}`);
+        }
+
+        return response;
+    }
+
+    /**
+     * Convert text to speech audio (non-streaming, waits for full response).
      * @param request TTS request with text and optional voice/model settings
      * @returns Audio blob in the specified format
      */

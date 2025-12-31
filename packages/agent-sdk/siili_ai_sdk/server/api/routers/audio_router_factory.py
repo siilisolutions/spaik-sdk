@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
 
 from siili_ai_sdk.audio import AudioFormat, SpeechToText, STTOptions, TextToSpeech, TTSOptions
@@ -103,6 +103,64 @@ class AudioRouterFactory:
                 )
             except Exception as e:
                 logger.error(f"TTS error: {e}")
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @router.post("/speech/stream")
+        async def text_to_speech_stream(
+            request: TTSRequest,
+            user: BaseUser = Depends(get_current_user),
+        ):
+            """
+            Stream text to speech audio.
+
+            Streams audio chunks as they are generated, allowing playback to start immediately.
+            This is faster for the user as audio begins playing before full generation is complete.
+            """
+            try:
+                # Map format string to enum
+                format_map = {
+                    "mp3": AudioFormat.MP3,
+                    "opus": AudioFormat.OPUS,
+                    "aac": AudioFormat.AAC,
+                    "flac": AudioFormat.FLAC,
+                    "wav": AudioFormat.WAV,
+                    "pcm": AudioFormat.PCM,
+                }
+                output_format = format_map.get(request.format.lower(), AudioFormat.MP3)
+
+                options = TTSOptions(
+                    voice=request.voice,
+                    speed=request.speed,
+                    output_format=output_format,
+                )
+
+                tts = TextToSpeech(model=request.model or self.tts_model)
+
+                # Determine content type
+                content_type_map = {
+                    AudioFormat.MP3: "audio/mpeg",
+                    AudioFormat.OPUS: "audio/opus",
+                    AudioFormat.AAC: "audio/aac",
+                    AudioFormat.FLAC: "audio/flac",
+                    AudioFormat.WAV: "audio/wav",
+                    AudioFormat.PCM: "audio/pcm",
+                }
+                content_type = content_type_map.get(output_format, "audio/mpeg")
+
+                async def generate():
+                    async for chunk in tts.synthesize_stream(text=request.text, options=options):
+                        yield chunk
+
+                return StreamingResponse(
+                    generate(),
+                    media_type=content_type,
+                    headers={
+                        "Content-Disposition": f'inline; filename="speech.{request.format}"',
+                        "Cache-Control": "no-cache",
+                    },
+                )
+            except Exception as e:
+                logger.error(f"TTS stream error: {e}")
                 raise HTTPException(status_code=500, detail=str(e))
 
         @router.post("/transcribe", response_model=STTResponse)

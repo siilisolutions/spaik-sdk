@@ -139,15 +139,21 @@ export function useTextToSpeech(options: UseTextToSpeechOptions): UseTextToSpeec
                 format: format ?? 'mp3',
             };
 
-            const audioBlob = await client.textToSpeech(request);
+            // Use streaming endpoint - server streams from OpenAI without full buffering
+            const response = await client.textToSpeechStream(request, abortController.signal);
             
-            // Check if we were aborted
+            if (abortController.signal.aborted) {
+                return;
+            }
+
+            // Convert stream to blob
+            const audioBlob = await response.blob();
+            
             if (abortController.signal.aborted) {
                 return;
             }
             
             const audioUrl = URL.createObjectURL(audioBlob);
-            
             setCurrentAudioUrl(audioUrl);
 
             // Create and play audio
@@ -170,6 +176,10 @@ export function useTextToSpeech(options: UseTextToSpeechOptions): UseTextToSpeec
             await audio.play();
             setPlaying(true);
         } catch (err) {
+            // Ignore abort errors
+            if (err instanceof Error && err.name === 'AbortError') {
+                return;
+            }
             setTtsError(err instanceof Error ? err.message : 'TTS failed');
         } finally {
             setTtsLoading(false);
