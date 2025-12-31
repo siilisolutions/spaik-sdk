@@ -37,7 +37,8 @@ jobs:
         run: |
           # Export and filter out local/editable packages (lines starting with . or #)
           uv export --no-dev --no-editable --no-hashes --format requirements-txt 2>/dev/null | grep -E "^[a-zA-Z]" > requirements-audit.txt
-          uv run python -m pip_audit -r requirements-audit.txt --strict --desc on --progress-spinner off
+          # --disable-pip and --no-deps avoid venv creation issues with uv-installed Python
+          uv run python -m pip_audit -r requirements-audit.txt --strict --desc on --progress-spinner off --disable-pip --no-deps
 
   audit-coding-agents:
     name: Audit coding-agents (Python)
@@ -60,7 +61,8 @@ jobs:
         run: |
           # Export and filter out local/editable packages (lines starting with . or #)
           uv export --no-dev --no-editable --no-hashes --format requirements-txt 2>/dev/null | grep -E "^[a-zA-Z]" > requirements-audit.txt
-          uv run python -m pip_audit -r requirements-audit.txt --strict --desc on --progress-spinner off
+          # --disable-pip and --no-deps avoid venv creation issues with uv-installed Python
+          uv run python -m pip_audit -r requirements-audit.txt --strict --desc on --progress-spinner off --disable-pip --no-deps
 
   audit-agent-workflows:
     name: Audit agent-workflows (Python)
@@ -83,7 +85,8 @@ jobs:
         run: |
           # Export and filter out local/editable packages (lines starting with . or #)
           uv export --no-dev --no-editable --no-hashes --format requirements-txt 2>/dev/null | grep -E "^[a-zA-Z]" > requirements-audit.txt
-          uv run python -m pip_audit -r requirements-audit.txt --strict --desc on --progress-spinner off
+          # --disable-pip and --no-deps avoid venv creation issues with uv-installed Python
+          uv run python -m pip_audit -r requirements-audit.txt --strict --desc on --progress-spinner off --disable-pip --no-deps
 
   # JavaScript/TypeScript packages - bun audit on entire monorepo lockfile
   audit-js-packages:
