@@ -4,7 +4,8 @@ from siili_ai_sdk.llm.cancellation_handle import CancellationHandle
 
 
 class CancellationSubscriberHandler(CancellationHandle):
-    cancelled: bool = False
+    def __init__(self) -> None:
+        self.cancelled: bool = False
 
     async def is_cancelled(self) -> bool:
         return self.cancelled

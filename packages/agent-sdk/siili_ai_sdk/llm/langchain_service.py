@@ -176,6 +176,7 @@ class LangChainService:
         # Let MessageHandler handle the token stream processing
         async for token_data in self.message_handler.process_agent_token_stream(agent_stream):
             if self.cancellation_handle and await self.cancellation_handle.is_cancelled():
+                logger.info("Cancellation detected, stopping stream")
                 self.message_handler.handle_cancellation()
                 return
             yield token_data

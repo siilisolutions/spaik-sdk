@@ -9,9 +9,12 @@ interface ThreadStore {
     threads: Map<Id, Thread>;
     loading: Map<Id, boolean>;
     error: Map<Id, string | undefined>;
+    generating: Map<Id, boolean>;
     createThread: (client: AgentSdkClient, request: CreateThreadRequest) => Promise<Thread>;
     loadThread: (client: AgentSdkClient, threadId: Id) => Promise<void>;
     sendMessage: (client: AgentSdkClient, threadId: Id, message: CreateMessageRequest) => Promise<void>;
+    cancelGeneration: (client: AgentSdkClient, threadId: Id) => Promise<void>;
+    setGenerating: (threadId: Id, isGenerating: boolean) => void;
     appendStreamingContent: (threadId: Id, blockId: Id, content: string) => void;
     completeBlockStreaming: (threadId: Id, blockId: Id) => void;
     completeMessageStreaming: (threadId: Id, messageId: Id) => void;
@@ -84,6 +87,10 @@ const useThreadStore = create<ThreadStore>()((set, get) => {
         threads: new Map(),
         loading: new Map(),
         error: new Map(),
+        generating: new Map(),
+        setGenerating(threadId: Id, isGenerating: boolean) {
+            set({ generating: new Map(get().generating.set(threadId, isGenerating)) });
+        },
         async loadThread(client: AgentSdkClient, threadId: Id) {
             set({
                 loading: new Map(get().loading.set(threadId, true)),
@@ -103,7 +110,20 @@ const useThreadStore = create<ThreadStore>()((set, get) => {
             return updateThread(newThread);
         },
         async sendMessage(client: AgentSdkClient, threadId: Id, request: CreateMessageRequest) {
-            await client.sendMessage(threadId, request);
+            get().setGenerating(threadId, true);
+            try {
+                await client.sendMessage(threadId, request);
+            } finally {
+                get().setGenerating(threadId, false);
+            }
+        },
+        async cancelGeneration(client: AgentSdkClient, threadId: Id) {
+            try {
+                await client.cancelGeneration(threadId);
+            } catch (error) {
+                console.error('Failed to cancel generation:', error);
+            }
+            get().setGenerating(threadId, false);
         },
         appendStreamingContent(threadId: Id, blockId: Id, content: string) {
             updateBlock(threadId, blockId, (block) => {
@@ -150,6 +170,7 @@ export function useThread(threadId: Id) {
     const thread = useThreadStore(state => state.threads.get(threadId));
     const loading = useThreadStore(state => state.loading.get(threadId));
     const error = useThreadStore(state => state.error.get(threadId));
+    const isGenerating = useThreadStore(state => state.generating.get(threadId) ?? false);
 
     const loadThread = useThreadStore(state => state.loadThread);
     useEffect(() => {
@@ -161,6 +182,7 @@ export function useThread(threadId: Id) {
         thread,
         loading,
         error,
+        isGenerating,
     };
 }
 
@@ -168,9 +190,11 @@ export function useThreadActions() {
     const client = useAgentSdkClient();
     const createThread = useThreadStore(state => state.createThread);
     const sendMessage = useThreadStore(state => state.sendMessage);
+    const cancelGeneration = useThreadStore(state => state.cancelGeneration);
     return {
         createThread: (request: CreateThreadRequest) => createThread(client, request),
         sendMessage: (threadId: Id, request: CreateMessageRequest) => sendMessage(client, threadId, request),
+        cancelGeneration: (threadId: Id) => cancelGeneration(client, threadId),
     }
 }
 
