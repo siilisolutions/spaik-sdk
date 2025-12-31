@@ -28,6 +28,7 @@ Example usage in workflow:
       output_var: extracted_data
 """
 
+import asyncio
 import json
 from typing import Any, Dict, Type
 
@@ -131,8 +132,8 @@ async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
     # Convert schema to Pydantic model
     response_model = schema_to_pydantic(schema)
 
-    # Get structured response
-    result = await agent.get_structured_response_async(prompt, response_model)
+    # Get structured response (sync method, run in executor)
+    result = await asyncio.to_thread(agent.get_structured_response, prompt, response_model)
 
     # Convert to dict
     response_dict = result.model_dump()

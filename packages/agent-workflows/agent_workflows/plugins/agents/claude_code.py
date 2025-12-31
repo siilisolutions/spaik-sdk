@@ -55,13 +55,6 @@ def format_block(block: MessageBlock, logger: Callable[[str], None]) -> str | No
                 logger(f"      {line}")
         return None
 
-    elif block.type == MessageBlockType.TOOL_RESULT:
-        result = block.content or ""
-        if result.strip():
-            display = result[:150] + ("..." if len(result) > 150 else "")
-            logger(f"   ✅ {display}")
-        return None
-
     elif block.type == MessageBlockType.ERROR:
         content = block.content or "Unknown error"
         logger(f"   ❌ {content}")
