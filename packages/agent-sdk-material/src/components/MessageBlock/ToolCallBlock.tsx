@@ -13,12 +13,18 @@ interface Props {
 export function ToolCallBlock({ toolName, args, response, error, streaming }: Props) {
     const [expanded, setExpanded] = useState(false);
 
-    const isComplete = !streaming && (response || error);
+    // If there's a response or error, consider it complete regardless of streaming flag
+    const isComplete = !!(response || error);
     const hasError = !!error;
+    const isLoading = !isComplete && streaming;
 
     return (
         <Box
             sx={{
+                display: 'inline-block',
+                maxWidth: '100%',
+                minWidth: 200,
+                width: 'fit-content',
                 borderRadius: 2,
                 bgcolor: (theme) => alpha(theme.palette.info.main, 0.08),
                 border: 1,
@@ -26,6 +32,7 @@ export function ToolCallBlock({ toolName, args, response, error, streaming }: Pr
                     hasError
                         ? alpha(theme.palette.error.main, 0.3)
                         : alpha(theme.palette.info.main, 0.2),
+                my: 1,
             }}
         >
             <Box
@@ -51,7 +58,7 @@ export function ToolCallBlock({ toolName, args, response, error, streaming }: Pr
                     sx={{ fontFamily: 'monospace', fontWeight: 500 }}
                 />
                 <Box sx={{ flex: 1 }} />
-                {streaming && <CircularProgress size={16} />}
+                {isLoading && <CircularProgress size={16} />}
                 {isComplete && !hasError && (
                     <CheckCircleIcon fontSize="small" color="success" />
                 )}
