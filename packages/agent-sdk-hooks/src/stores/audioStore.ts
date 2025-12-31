@@ -131,46 +131,134 @@ export function useTextToSpeech(options: UseTextToSpeechOptions): UseTextToSpeec
         abortControllerRef.current = abortController;
 
         try {
-            const request: TTSRequest = {
-                text,
-                model,
-                voice,
-                speed,
-                format: format ?? 'mp3',
-            };
-
-            // Use non-streaming endpoint for now (streaming has issues)
-            console.log('[TTS] Starting synthesis...');
-            const startTime = Date.now();
-            const audioBlob = await client.textToSpeech(request);
-            console.log(`[TTS] Got audio in ${Date.now() - startTime}ms`);
+            // Split text into sentences for progressive playback
+            // This way first sentence plays while others are still generating
+            const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
             
-            if (abortController.signal.aborted) {
-                return;
+            // If text is short (1-2 sentences), just play it directly
+            if (sentences.length <= 2 || text.length < 200) {
+                const request: TTSRequest = {
+                    text,
+                    model,
+                    voice,
+                    speed,
+                    format: format ?? 'mp3',
+                };
+
+                console.log('[TTS] Short text, direct synthesis...');
+                const audioBlob = await client.textToSpeech(request);
+                
+                if (abortController.signal.aborted) return;
+                
+                const audioUrl = URL.createObjectURL(audioBlob);
+                setCurrentAudioUrl(audioUrl);
+
+                const audio = new Audio(audioUrl);
+                audioRef.current = audio;
+
+                audio.onended = () => {
+                    setPlaying(false);
+                    URL.revokeObjectURL(audioUrl);
+                    setCurrentAudioUrl(null);
+                };
+
+                audio.onerror = () => {
+                    setTtsError('Failed to play audio');
+                    setPlaying(false);
+                };
+
+                await audio.play();
+                setPlaying(true);
+                setTtsLoading(false);
+            } else {
+                // Progressive playback: generate and play sentences in sequence
+                console.log(`[TTS] Long text (${sentences.length} sentences), using progressive playback...`);
+                
+                const audioQueue: Blob[] = [];
+                let isPlaying = false;
+                let currentIndex = 0;
+                
+                const playNext = async () => {
+                    if (abortController.signal.aborted) return;
+                    if (currentIndex >= audioQueue.length) {
+                        // Wait for more audio or finish
+                        if (currentIndex >= sentences.length) {
+                            setPlaying(false);
+                            setCurrentAudioUrl(null);
+                            return;
+                        }
+                        // Wait a bit and try again
+                        setTimeout(playNext, 100);
+                        return;
+                    }
+                    
+                    const blob = audioQueue[currentIndex];
+                    const url = URL.createObjectURL(blob);
+                    const audio = new Audio(url);
+                    audioRef.current = audio;
+                    
+                    audio.onended = () => {
+                        URL.revokeObjectURL(url);
+                        currentIndex++;
+                        playNext();
+                    };
+                    
+                    audio.onerror = () => {
+                        URL.revokeObjectURL(url);
+                        currentIndex++;
+                        playNext();
+                    };
+                    
+                    try {
+                        await audio.play();
+                        if (!isPlaying) {
+                            isPlaying = true;
+                            setPlaying(true);
+                            setTtsLoading(false);
+                        }
+                    } catch {
+                        currentIndex++;
+                        playNext();
+                    }
+                };
+                
+                // Start generating sentences in parallel (but limit concurrency)
+                const generateSentence = async (sentence: string, index: number) => {
+                    if (abortController.signal.aborted) return;
+                    
+                    const request: TTSRequest = {
+                        text: sentence.trim(),
+                        model,
+                        voice,
+                        speed,
+                        format: format ?? 'mp3',
+                    };
+                    
+                    try {
+                        const blob = await client.textToSpeech(request);
+                        audioQueue[index] = blob;
+                        
+                        // Start playing when first chunk is ready
+                        if (index === 0 && !isPlaying) {
+                            playNext();
+                        }
+                    } catch (err) {
+                        console.error(`[TTS] Failed to generate sentence ${index}:`, err);
+                    }
+                };
+                
+                // Generate first 2 sentences immediately, then batch the rest
+                await Promise.all([
+                    generateSentence(sentences[0], 0),
+                    sentences[1] ? generateSentence(sentences[1], 1) : Promise.resolve(),
+                ]);
+                
+                // Generate remaining sentences
+                for (let i = 2; i < sentences.length; i++) {
+                    if (abortController.signal.aborted) break;
+                    await generateSentence(sentences[i], i);
+                }
             }
-            
-            const audioUrl = URL.createObjectURL(audioBlob);
-            setCurrentAudioUrl(audioUrl);
-
-            // Create and play audio
-            const audio = new Audio(audioUrl);
-            audioRef.current = audio;
-
-            audio.onended = () => {
-                setPlaying(false);
-                URL.revokeObjectURL(audioUrl);
-                setCurrentAudioUrl(null);
-            };
-
-            audio.onerror = () => {
-                setTtsError('Failed to play audio');
-                setPlaying(false);
-                URL.revokeObjectURL(audioUrl);
-                setCurrentAudioUrl(null);
-            };
-
-            await audio.play();
-            setPlaying(true);
         } catch (err) {
             // Ignore abort errors
             if (err instanceof Error && err.name === 'AbortError') {
