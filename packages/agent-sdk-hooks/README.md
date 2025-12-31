@@ -1,95 +1,46 @@
 # Siili AI SDK React
 
-A React hooks library for building AI agent chat interfaces with real-time streaming capabilities. Built with Zustand for state management and Zod for type safety.
-
-## TLDR
-
-This library provides React hooks to easily integrate AI chat interfaces with siili-ai-sdk based backends. Just wrap your app in the provider, use the hooks to manage threads and messages, and get real-time streaming chat with minimal setup.
-
-```tsx
-// 1. Setup provider
-<AgentSdkClientProvider apiClient={apiClient}>
-  <YourChatApp />
-</AgentSdkClientProvider>
-
-// 2. Use hooks in components
-const { threadSummaries } = useThreadList();
-const { thread } = useThread(selectedThreadId);
-const { sendMessage } = useThreadActions();
-```
-
-## Purpose
-
-This library wraps and streamlines integration with siili-ai-sdk based backends, handling API connections out of the box even in complex serverless environments. It abstracts away the complexity of:
-
-- WebSocket connections and reconnection logic
-- Real-time message streaming
-- Thread and message state management  
-- Error handling and retry logic
-- Type-safe API interactions
-
-Perfect for building production-ready AI chat applications without dealing with the underlying infrastructure complexity.
+React hooks for building AI chat interfaces with real-time streaming.
 
 ## Installation
 
 ```bash
-bun add @siilisolutions/ai-sdk-react
-# or
 npm install @siilisolutions/ai-sdk-react
+# or
+bun add @siilisolutions/ai-sdk-react
 ```
 
 ## Quick Start
 
-### 1. Setup the Provider
-
 ```tsx
-import { AgentSdkClientProvider, createThreadsApiClient } from '@siilisolutions/ai-sdk-react';
+import {
+  AgentSdkClientProvider,
+  AgentSdkClient,
+  useThreadList,
+  useThread,
+  useThreadActions,
+  useThreadSelection,
+} from '@siilisolutions/ai-sdk-react';
 
-// Create API client
-const apiClient = createThreadsApiClient({
-  baseUrl: 'https://your-agent-api.com',
-  headers: {
-    'Authorization': 'Bearer your-token'
-  }
-});
+const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 
-// Wrap your app
 function App() {
   return (
-    <AgentSdkClientProvider apiClient={apiClient}>
-      <ChatInterface />
+    <AgentSdkClientProvider apiClient={client}>
+      <ChatApp />
     </AgentSdkClientProvider>
   );
 }
-```
 
-### 2. Build Chat Interface
-
-```tsx
-import {
-  useThreadList,
-  useThreadSelection, 
-  useThread,
-  useThreadActions
-} from '@siilisolutions/ai-sdk-react';
-
-function ChatInterface() {
-  // Get list of threads
-  const { threadSummaries, loading, refresh } = useThreadList();
-  
-  // Handle thread selection
+function ChatApp() {
+  const { threadSummaries, loading } = useThreadList();
   const { selectedThreadId, selectThread } = useThreadSelection();
-  
-  // Get current thread data
-  const { thread, loading: threadLoading } = useThread(selectedThreadId);
-  
-  // Actions for creating/messaging
+  const { thread } = useThread(selectedThreadId);
   const { createThread, sendMessage } = useThreadActions();
 
-  const handleSendMessage = async (content: string) => {
+  const handleSend = async (content: string) => {
     if (!selectedThreadId) {
-      // Create new thread first
-      const newThread = await createThread({ metadata: {} });
+      const newThread = await createThread({});
       selectThread(newThread.id);
       await sendMessage(newThread.id, { content });
     } else {
@@ -98,155 +49,291 @@ function ChatInterface() {
   };
 
   return (
-    <div className="chat-interface">
-      {/* Thread list */}
+    <div>
       <aside>
-        {threadSummaries.map(summary => (
-          <button
-            key={summary.thread_id}
-            onClick={() => selectThread(summary.thread_id)}
-            className={selectedThreadId === summary.thread_id ? 'active' : ''}
-          >
-            {summary.title}
+        {threadSummaries.map(t => (
+          <button key={t.thread_id} onClick={() => selectThread(t.thread_id)}>
+            {t.title}
           </button>
         ))}
       </aside>
-
-      {/* Chat area */}
       <main>
-        {thread?.messages.map(message => (
-          <div key={message.id} className={message.ai ? 'ai-message' : 'user-message'}>
-            <strong>{message.author_name}</strong>
-            {message.blocks.map(block => (
-              <div key={block.id} className={`block-${block.type}`}>
-                {block.content}
-                {block.streaming && <span className="cursor">▋</span>}
-              </div>
+        {thread?.messages.map(msg => (
+          <div key={msg.id}>
+            <strong>{msg.ai ? 'AI' : 'User'}</strong>
+            {msg.blocks.map(block => (
+              <p key={block.id}>{block.content}</p>
             ))}
           </div>
         ))}
-        
-        <MessageInput onSend={handleSendMessage} />
       </main>
     </div>
   );
 }
 ```
 
-## API Reference
+## Hooks
 
-### Hooks
+### useThreadList
 
-#### `useThreadList()`
 Manages the list of conversation threads.
 
-**Returns:**
-- `threadSummaries: ThreadSummary[]` - Array of thread summaries
-- `loading: boolean` - Loading state
-- `error?: string` - Error message if any
-- `refresh: () => Promise<void>` - Refresh thread list
+```tsx
+const {
+  threadSummaries,  // ThreadSummary[]
+  loading,          // boolean
+  error,            // string | undefined
+  refresh,          // () => Promise<void>
+} = useThreadList();
+```
 
-#### `useThread(threadId: string)`
-Loads and manages a specific thread's messages.
+### useThread
 
-**Returns:**
-- `thread?: Thread` - Thread data with messages
-- `loading?: boolean` - Loading state for this thread
-- `error?: string` - Error message if any
+Loads a specific thread with all messages.
 
-#### `useThreadActions()`
-Provides actions for creating threads and sending messages.
+```tsx
+const {
+  thread,   // Thread | undefined
+  loading,  // boolean | undefined
+  error,    // string | undefined
+} = useThread(threadId);
+```
 
-**Returns:**
-- `createThread: (request: CreateThreadRequest) => Promise<Thread>`
-- `sendMessage: (threadId: string, request: CreateMessageRequest) => Promise<void>`
+### useThreadActions
 
-#### `useThreadSelection()`
+Actions for creating threads and sending messages.
+
+```tsx
+const {
+  createThread,  // (request: CreateThreadRequest) => Promise<Thread>
+  sendMessage,   // (threadId: string, request: CreateMessageRequest) => Promise<void>
+} = useThreadActions();
+```
+
+### useThreadSelection
+
 Manages which thread is currently selected.
 
-**Returns:**
-- `selectedThreadId?: string` - Currently selected thread ID
-- `selectThread: (threadId?: string) => void` - Select a thread
+```tsx
+const {
+  selectedThreadId,  // string | undefined
+  selectThread,      // (threadId?: string) => void
+} = useThreadSelection();
+```
 
-### Components
+### useFileUploadStore
 
-#### `AgentSdkClientProvider`
-Context provider that makes the API client available to hooks.
+File upload management.
 
-**Props:**
-- `apiClient: AgentSdkClient` - The configured API client
-- `children: ReactNode` - Child components
+```tsx
+const {
+  pendingUploads,  // PendingUpload[]
+  addFiles,        // (files: File[]) => void
+  removeFile,      // (id: string) => void
+  clearAll,        // () => void
+} = useFileUploadStore();
+```
 
-### API Client
+### useTextToSpeech
 
-#### `createThreadsApiClient(config)`
-Creates a configured API client instance.
+Text-to-speech functionality.
 
-**Config:**
+```tsx
+const {
+  speak,     // (text: string) => Promise<void>
+  stop,      // () => void
+  speaking,  // boolean
+} = useTextToSpeech({ model: 'tts-1' });
+```
+
+### useSpeechToText
+
+Speech-to-text functionality.
+
+```tsx
+const {
+  startRecording,   // () => void
+  stopRecording,    // () => Promise<string>
+  recording,        // boolean
+  transcription,    // string
+} = useSpeechToText({ model: 'whisper-1' });
+```
+
+### usePushToTalk
+
+Combined voice input with callback.
+
+```tsx
+const {
+  isRecording,
+  startRecording,
+  stopRecording,
+} = usePushToTalk({
+  onTranscription: (text) => sendMessage(threadId, { content: text }),
+});
+```
+
+## API Client
+
+### AgentSdkClient
+
+Main client that combines all API functionality.
+
+```tsx
+const client = new AgentSdkClient({
+  baseUrl: 'http://localhost:8000',
+  timeout: 30000,
+  headers: {
+    'Authorization': 'Bearer token',
+  },
+});
+```
+
+### Individual API Clients
+
+```tsx
+import {
+  createThreadsApiClient,
+  createFilesApiClient,
+  createAudioApiClient,
+} from '@siilisolutions/ai-sdk-react';
+
+const threadsApi = createThreadsApiClient({ baseUrl: '...' });
+const filesApi = createFilesApiClient({ baseUrl: '...' });
+const audioApi = createAudioApiClient({ baseUrl: '...' });
+```
+
+## Types
+
+### Thread
+
 ```typescript
-{
-  baseUrl: string;           // API base URL
-  timeout?: number;          // Request timeout (default: 30s)
-  headers?: Record<string, string>; // Additional headers
+interface Thread {
+  id: string;
+  messages: Message[];
+  metadata?: Record<string, unknown>;
 }
 ```
 
-## Message Structure
-
-Messages are organized into blocks with different types:
+### Message
 
 ```typescript
-type MessageBlock = {
+interface Message {
+  id: string;
+  ai: boolean;
+  author_id: string;
+  author_name: string;
+  timestamp: number;
+  blocks: MessageBlock[];
+  attachments?: Attachment[];
+}
+```
+
+### MessageBlock
+
+```typescript
+interface MessageBlock {
   id: string;
   type: 'plain' | 'reasoning' | 'tool_use' | 'error';
   content?: string;
   streaming: boolean;
-  
-  // Tool-related fields
-  tool_call_id?: string;
-  tool_call_args?: Record<string, any>;
   tool_name?: string;
+  tool_call_id?: string;
+  tool_call_args?: Record<string, unknown>;
   tool_call_response?: string;
   tool_call_error?: string;
-};
+}
+```
+
+### ThreadSummary
+
+```typescript
+interface ThreadSummary {
+  thread_id: string;
+  title: string;
+  created_at: number;
+  updated_at: number;
+  message_count: number;
+}
 ```
 
 ## Streaming
 
-The library automatically handles real-time streaming updates:
-
-- New messages appear as they're created
-- Content streams in block by block  
-- Tool calls and responses are tracked
-- Streaming state is managed automatically
-
-## Error Handling
-
-All hooks provide error states and the API client includes built-in error handling:
+The library handles SSE streaming automatically:
 
 ```tsx
-const { thread, loading, error } = useThread(threadId);
+function Chat({ threadId }) {
+  const { thread } = useThread(threadId);
+  
+  return (
+    <>
+      {thread?.messages.map(msg => (
+        <div key={msg.id}>
+          {msg.blocks.map(block => (
+            <span key={block.id}>
+              {block.content}
+              {block.streaming && <span className="cursor">▋</span>}
+            </span>
+          ))}
+        </div>
+      ))}
+    </>
+  );
+}
+```
 
-if (error) {
-  return <div>Error: {error}</div>;
+SSE events handled:
+- `streaming_updated` - Content delta
+- `block_added` - New block started
+- `block_fully_added` - Block completed
+- `message_fully_added` - Message completed
+- `tool_response_received` - Tool result
+
+## File Attachments
+
+```tsx
+function FileInput({ threadId }) {
+  const { sendMessage } = useThreadActions();
+  const filesApi = useAgentSdkClient().files;
+
+  const handleFiles = async (files: FileList) => {
+    const attachments = await Promise.all(
+      Array.from(files).map(async (file) => {
+        const metadata = await filesApi.upload(file);
+        return { file_id: metadata.file_id };
+      })
+    );
+    
+    await sendMessage(threadId, {
+      content: 'Here are some files',
+      attachments,
+    });
+  };
+
+  return <input type="file" onChange={e => handleFiles(e.target.files!)} />;
 }
 ```
 
 ## Development
 
 ```bash
-# Install dependencies
+# Install
 bun install
 
-# Build library
+# Build
 bun run build
 
+# Watch mode
+bun run dev
+
 # Type check
-bun run tsc
+bun run type-check
 
-# Lint and fix
-bun run lint --fix
-
-# Run tests
-bun test
+# Lint
+bun run lint
+bun run lint:fix
 ```
+
+## License
+
+MIT - Copyright (c) 2025 Siili Solutions Oyj

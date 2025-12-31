@@ -1,12 +1,6 @@
 # Siili Coding Agents
 
-Pre-built coding agents powered by [siili-ai-sdk](https://pypi.org/project/siili-ai-sdk/) for AI-assisted software development.
-
-## Features
-
-- **Claude Code Agent**: Wrapper for Claude Code SDK with streaming support
-- **Cursor Agent**: Integration with Cursor AI editor
-- **SDK Integration**: Built on siili-ai-sdk for consistent streaming and message handling
+Pre-built coding agents for AI-assisted software development.
 
 ## Installation
 
@@ -14,9 +8,11 @@ Pre-built coding agents powered by [siili-ai-sdk](https://pypi.org/project/siili
 pip install siili-coding-agents
 ```
 
-## Quick Start
+## Agents
 
 ### Claude Code Agent
+
+Wrapper for Claude Code SDK with streaming support.
 
 ```python
 import anyio
@@ -43,13 +39,23 @@ agent = ClaudeAgent()
 agent.run("Fix the bug in main.py")
 ```
 
+### Cursor Agent
+
+Integration with Cursor AI editor.
+
+```python
+from siili_coding_agents import CursorAgent
+
+agent = CursorAgent()
+result = agent.run("Refactor this function")
+```
+
 ## Requirements
 
 - Python 3.10+
-- [siili-ai-sdk](https://pypi.org/project/siili-ai-sdk/) >= 0.2.0
-- Claude Code SDK
+- siili-ai-sdk >= 0.2.0
+- Claude Code SDK (for ClaudeAgent)
 
 ## License
 
-MIT License - Copyright (c) 2025 Siili Solutions Oyj
-
+MIT - Copyright (c) 2025 Siili Solutions Oyj
