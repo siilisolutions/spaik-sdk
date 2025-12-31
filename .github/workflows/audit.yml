@@ -35,7 +35,7 @@ jobs:
         run: uv pip install pip-audit
       - name: Run security audit
         run: |
-          uv run python -m pip_audit --strict --desc on --progress-spinner off
+          uv run python -m pip_audit --strict --desc on --progress-spinner off --skip-editable
 
   audit-coding-agents:
     name: Audit coding-agents (Python)
@@ -56,7 +56,7 @@ jobs:
         run: uv pip install pip-audit
       - name: Run security audit
         run: |
-          uv run python -m pip_audit --strict --desc on --progress-spinner off
+          uv run python -m pip_audit --strict --desc on --progress-spinner off --skip-editable
 
   audit-agent-workflows:
     name: Audit agent-workflows (Python)
@@ -77,7 +77,7 @@ jobs:
         run: uv pip install pip-audit
       - name: Run security audit
         run: |
-          uv run python -m pip_audit --strict --desc on --progress-spinner off
+          uv run python -m pip_audit --strict --desc on --progress-spinner off --skip-editable
 
   # JavaScript/TypeScript packages - run in parallel
   audit-agent-sdk-hooks:
@@ -94,12 +94,8 @@ jobs:
         working-directory: packages/agent-sdk-hooks
         run: |
           # bun doesn't have native audit, use npm audit with package-lock generation
-          # First generate a package-lock.json for npm audit
-          npm i --package-lock-only --legacy-peer-deps 2>/dev/null || true
-          npm audit --audit-level=${{ inputs.fail_on_severity || 'high' }} || {
-            echo "::error::Security vulnerabilities found in agent-sdk-hooks"
-            exit 1
-          }
+          npm i --package-lock-only --legacy-peer-deps
+          npm audit --audit-level=${{ inputs.fail_on_severity || 'high' }}
 
   audit-agent-sdk-material:
     name: Audit agent-sdk-material (JS)
@@ -115,11 +111,8 @@ jobs:
         working-directory: packages/agent-sdk-material
         run: |
           # bun doesn't have native audit, use npm audit with package-lock generation
-          npm i --package-lock-only --legacy-peer-deps 2>/dev/null || true
-          npm audit --audit-level=${{ inputs.fail_on_severity || 'high' }} || {
-            echo "::error::Security vulnerabilities found in agent-sdk-material"
-            exit 1
-          }
+          npm i --package-lock-only --legacy-peer-deps
+          npm audit --audit-level=${{ inputs.fail_on_severity || 'high' }}
 
   # Summary job that depends on all audit jobs
   audit-summary:
