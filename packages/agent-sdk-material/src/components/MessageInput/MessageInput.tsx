@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Box, TextField, IconButton, Paper, CircularProgress } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
 import {
     useThreadActions,
     useFileUploadStore,
@@ -9,6 +8,7 @@ import {
 } from '@siilisolutions/ai-sdk-react';
 import { AttachButton } from './AttachButton';
 import { PendingAttachments } from './PendingAttachments';
+import { SendIcon } from '../../utils/icons';
 
 interface Props {
     threadId: string;
@@ -153,4 +153,3 @@ export function MessageInput({ threadId, filesBaseUrl }: Props) {
         </Paper>
     );
 }
-

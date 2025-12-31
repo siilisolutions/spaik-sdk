@@ -1,7 +1,6 @@
 import { Box, Chip, CircularProgress, alpha } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
 import { PendingUpload } from '@siilisolutions/ai-sdk-react';
+import { CheckCircleIcon, ErrorIcon } from '../../utils/icons';
 
 interface Props {
     uploads: PendingUpload[];
@@ -60,4 +59,3 @@ export function PendingAttachments({ uploads, onRemove }: Props) {
         </Box>
     );
 }
-

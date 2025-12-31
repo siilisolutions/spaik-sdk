@@ -1,5 +1,5 @@
 import { Box, Typography, alpha } from '@mui/material';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { ErrorOutlineIcon } from '../../utils/icons';
 
 interface Props {
     content: string;
@@ -28,4 +28,3 @@ export function ErrorBlock({ content }: Props) {
         </Box>
     );
 }
-

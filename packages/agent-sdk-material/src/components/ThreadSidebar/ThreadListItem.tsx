@@ -1,6 +1,6 @@
 import { ListItemButton, ListItemText, Typography, Box } from '@mui/material';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { formatTimestamp } from '../../utils/formatTime';
+import { ChatBubbleOutlineIcon } from '../../utils/icons';
 
 interface Props {
     title: string;
@@ -62,4 +62,3 @@ export function ThreadListItem({ title, messageCount, lastActivity, isSelected, 
         </ListItemButton>
     );
 }
-

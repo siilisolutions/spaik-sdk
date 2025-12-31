@@ -1,11 +1,8 @@
-import { Box, Button, List, Typography, Skeleton, Divider } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import IconButton from '@mui/material/IconButton';
+import { Box, Button, List, Typography, Skeleton, Divider, IconButton } from '@mui/material';
 import { useThreadList, useThreadSelection, useThreadActions } from '@siilisolutions/ai-sdk-react';
 import { ThreadListItem } from './ThreadListItem';
 import { useAgentTheme } from '../../theme/useAgentTheme';
+import { AddIcon, DarkModeIcon, LightModeIcon } from '../../utils/icons';
 
 interface Props {
     width?: number | string;
@@ -102,4 +99,3 @@ export function ThreadSidebar({ width = 300 }: Props) {
         </Box>
     );
 }
-

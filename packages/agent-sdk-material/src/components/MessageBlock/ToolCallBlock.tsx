@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { Box, Collapse, IconButton, Typography, CircularProgress, alpha, Chip } from '@mui/material';
-import BuildIcon from '@mui/icons-material/Build';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
+import { BuildIcon, ExpandMoreIcon, CheckCircleIcon, ErrorIcon } from '../../utils/icons';
 
 interface Props {
     toolName?: string;
@@ -136,4 +133,3 @@ export function ToolCallBlock({ toolName, args, response, error, streaming }: Pr
         </Box>
     );
 }
-

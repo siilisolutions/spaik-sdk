@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
+import { AttachFileIcon } from '../../utils/icons';
 
 interface Props {
     onFilesSelected: (files: File[]) => void;
@@ -55,4 +55,3 @@ export function AttachButton({ onFilesSelected, disabled, accept = 'image/*,.pdf
         </>
     );
 }
-

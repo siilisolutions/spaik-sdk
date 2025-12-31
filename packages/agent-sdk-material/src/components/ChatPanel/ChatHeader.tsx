@@ -1,6 +1,5 @@
 import { Box, Typography, IconButton, Tooltip } from '@mui/material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { DeleteOutlineIcon, RefreshIcon } from '../../utils/icons';
 
 interface Props {
     title?: string;
@@ -44,4 +43,3 @@ export function ChatHeader({ title, onDelete, onRefresh }: Props) {
         </Box>
     );
 }
-

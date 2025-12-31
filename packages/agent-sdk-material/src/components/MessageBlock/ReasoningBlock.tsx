@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Box, Collapse, IconButton, Typography, alpha } from '@mui/material';
-import PsychologyIcon from '@mui/icons-material/Psychology';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { PsychologyIcon, ExpandMoreIcon } from '../../utils/icons';
 
 interface Props {
     content: string;
@@ -67,4 +66,3 @@ export function ReasoningBlock({ content }: Props) {
         </Box>
     );
 }
-

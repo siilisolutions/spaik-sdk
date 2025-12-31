@@ -1,7 +1,6 @@
 import { Box, Typography, Chip } from '@mui/material';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import PersonIcon from '@mui/icons-material/Person';
 import { formatTimestamp, formatFullTimestamp } from '../../utils/formatTime';
+import { SmartToyIcon, PersonIcon } from '../../utils/icons';
 
 interface Props {
     authorName: string;
@@ -42,4 +41,3 @@ export function MessageHeader({ authorName, isAi, timestamp }: Props) {
         </Box>
     );
 }
-

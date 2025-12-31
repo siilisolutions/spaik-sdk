@@ -1,10 +1,6 @@
 import { Box, Paper, Typography, Link } from '@mui/material';
-import ImageIcon from '@mui/icons-material/Image';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import AudioFileIcon from '@mui/icons-material/AudioFile';
-import VideoFileIcon from '@mui/icons-material/VideoFile';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import { Attachment } from '@siilisolutions/ai-sdk-react';
+import { ImageIcon, PictureAsPdfIcon, AudioFileIcon, VideoFileIcon, InsertDriveFileIcon } from '../../utils/icons';
 
 interface Props {
     attachments: Attachment[];
@@ -117,4 +113,3 @@ export function AttachmentGallery({ attachments, filesBaseUrl }: Props) {
         </Box>
     );
 }
-
