@@ -91,6 +91,12 @@ export const ListThreadsResponseSchema = z.object({
     total_count: z.number(),
 });
 
+export const AttachmentRequestSchema = z.object({
+    file_id: z.string(),
+    mime_type: z.string(),
+    filename: z.string().optional(),
+});
+
 // Full message schema for API responses (matches the API documentation)
 export const ThreadMessageSchema = z.object({
     id: IdSchema,
@@ -99,15 +105,18 @@ export const ThreadMessageSchema = z.object({
     author_name: z.string(),
     timestamp: z.number(),
     blocks: z.array(MessageBlockSchema),
+    attachments: z.array(AttachmentRequestSchema).optional(),
 });
 
 export const CreateMessageRequestSchema = z.object({
     content: z.string(),
+    attachments: z.array(AttachmentRequestSchema).optional(),
 });
 
 // Type exports
 export type CreateThreadRequest = z.infer<typeof CreateThreadRequestSchema>;
 export type CreateMessageRequest = z.infer<typeof CreateMessageRequestSchema>;
+export type AttachmentRequest = z.infer<typeof AttachmentRequestSchema>;
 export type DeleteResponse = z.infer<typeof DeleteResponseSchema>;
 export type ListThreadsFilters = z.infer<typeof ListThreadsFiltersSchema>;
 export type ThreadSummary = z.infer<typeof ThreadSummarySchema>;
