@@ -53,8 +53,11 @@ class BaseAuthorizer(ABC, Generic[TUser]):
         return True
 
     async def can_read_file(self, user: TUser, file_metadata: "FileMetadata") -> bool:
-        """Check if user has permission to read a file"""
-        return file_metadata.owner_id == user.get_id()
+        """Check if user has permission to read a file.
+        
+        By default, users can read files they own, or files owned by 'system' (agent-generated).
+        """
+        return file_metadata.owner_id == user.get_id() or file_metadata.owner_id == "system"
 
     async def can_delete_file(self, user: TUser, file_metadata: "FileMetadata") -> bool:
         """Check if user has permission to delete a file"""

@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Paper } from '@mui/material';
+import { Box, CircularProgress, Paper, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useMarkdownContext, CustomComponentProps } from './MarkdownContext';
 
@@ -26,11 +26,10 @@ export function StoredImage({ id, alt, width, height }: StoredImageProps) {
                     p: 2, 
                     display: 'inline-block', 
                     color: 'error.main',
-                    bgcolor: 'error.main',
                     borderColor: 'error.main',
                 }}
             >
-                StoredImage: missing id prop
+                <Typography variant="body2">StoredImage: missing id prop</Typography>
             </Paper>
         );
     }
@@ -45,9 +44,15 @@ export function StoredImage({ id, alt, width, height }: StoredImageProps) {
                     p: 2, 
                     display: 'inline-block',
                     color: 'text.secondary',
+                    borderColor: 'divider',
                 }}
             >
-                Failed to load image
+                <Typography variant="body2" color="text.secondary">
+                    Failed to load image
+                </Typography>
+                <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.5 }}>
+                    URL: {imageUrl}
+                </Typography>
             </Paper>
         );
     }
@@ -83,7 +88,8 @@ export function StoredImage({ id, alt, width, height }: StoredImageProps) {
                 src={imageUrl}
                 alt={alt || 'Generated image'}
                 onLoad={() => setLoading(false)}
-                onError={() => {
+                onError={(e) => {
+                    console.error('StoredImage load error:', { id, imageUrl, event: e });
                     setLoading(false);
                     setError(true);
                 }}

@@ -74,7 +74,7 @@ class ImageGeneratorTool(ToolProvider):
             image_bytes = image_path.read_bytes()
             
             # Store in file service
-            # Use "system" as owner for agent-generated images
+            # Use "system" as owner for agent-generated content (readable by all users)
             metadata = await file_storage.store(
                 data=image_bytes,
                 mime_type="image/png",
