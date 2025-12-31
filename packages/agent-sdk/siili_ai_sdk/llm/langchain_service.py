@@ -13,6 +13,8 @@ from langchain_core.tools import BaseTool
 from langgraph.prebuilt import create_react_agent
 from pydantic import BaseModel
 
+from siili_ai_sdk.attachments.file_storage_provider import get_file_storage
+from siili_ai_sdk.attachments.models import Attachment
 from siili_ai_sdk.config.env import env_config
 from siili_ai_sdk.llm.cancellation_handle import CancellationHandle
 from siili_ai_sdk.llm.extract_error_message import extract_error_message
@@ -107,7 +109,12 @@ class LangChainService:
         self._on_request_completed()
         return ret
 
-    async def execute_stream_tokens(self, user_input: Optional[str] = None, tools: List[BaseTool] = []):
+    async def execute_stream_tokens(
+        self,
+        user_input: Optional[str] = None,
+        tools: List[BaseTool] = [],
+        attachments: Optional[List[Attachment]] = None,
+    ):
         """Execute agent and yield individual tokens as they arrive.
 
         Gemini models have weird hickups regarding event loops and require a hack.
@@ -121,10 +128,12 @@ class LangChainService:
         try:
             if should_use_loop_manager(self.llm_config):
                 logger.debug("Using loop manager for Google model in standalone context")
-                async for token_data in get_langchain_loop_manager().stream_in_loop(self._execute_stream_tokens_direct(user_input, tools)):
+                async for token_data in get_langchain_loop_manager().stream_in_loop(
+                    self._execute_stream_tokens_direct(user_input, tools, attachments)
+                ):
                     yield token_data
             else:
-                async for token_data in self._execute_stream_tokens_direct(user_input, tools):
+                async for token_data in self._execute_stream_tokens_direct(user_input, tools, attachments):
                     yield token_data
 
         except Exception as e:
@@ -132,7 +141,12 @@ class LangChainService:
         finally:
             self._on_request_completed()
 
-    async def _execute_stream_tokens_direct(self, user_input: Optional[str] = None, tools: List[BaseTool] = []):
+    async def _execute_stream_tokens_direct(
+        self,
+        user_input: Optional[str] = None,
+        tools: List[BaseTool] = [],
+        attachments: Optional[List[Attachment]] = None,
+    ):
         """Direct execution of stream tokens (core logic)"""
         if self.playback is not None:
             # Playback mode - yield recorded tokens
@@ -146,10 +160,18 @@ class LangChainService:
 
         agent = self.create_executor(tools)
         if user_input is not None:
-            self.message_handler.add_user_message(user_input, "user", "user")  # TODO proper user ids
+            self.message_handler.add_user_message(user_input, "user", "user", attachments)
+
+        # Get messages - use multimodal converter if file_storage is available
+        file_storage = get_file_storage()
+        if file_storage is not None:
+            provider_family = self.llm_config.model.family
+            messages = await self.thread_container.get_langchain_messages_multimodal(file_storage, provider_family)
+        else:
+            messages = self.thread_container.get_langchain_messages()
 
         # Use astream_events to get individual token events
-        agent_stream = agent.astream_events({"messages": self.thread_container.get_langchain_messages()}, version="v2", config=config)
+        agent_stream = agent.astream_events({"messages": messages}, version="v2", config=config)
 
         # Let MessageHandler handle the token stream processing
         async for token_data in self.message_handler.process_agent_token_stream(agent_stream):

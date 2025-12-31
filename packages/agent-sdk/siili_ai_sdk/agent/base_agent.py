@@ -5,6 +5,7 @@ from typing import Any, AsyncGenerator, Dict, List, Optional, Type, TypeVar
 from langchain_core.tools import BaseTool
 from pydantic import BaseModel
 
+from siili_ai_sdk.attachments.models import Attachment
 from siili_ai_sdk.config.env import env_config
 from siili_ai_sdk.llm.cancellation_handle import CancellationHandle
 from siili_ai_sdk.llm.cost.builtin_cost_provider import BuiltinCostProvider
@@ -64,36 +65,60 @@ class BaseAgent(ABC):
         self.cancellation_handle = cancellation_handle
         self.cost_provider = cost_provider or BuiltinCostProvider()
 
-    def get_response_stream(self, user_input: Optional[str] = None) -> AsyncGenerator[Dict[str, Any], None]:
+    def get_response_stream(
+        self,
+        user_input: Optional[str] = None,
+        attachments: Optional[List[Attachment]] = None,
+    ) -> AsyncGenerator[Dict[str, Any], None]:
         self.trace.add_input(user_input)
         langchain_service = self._create_langchain_service()
-        return langchain_service.execute_stream_tokens(user_input, self.tools)
+        return langchain_service.execute_stream_tokens(user_input, self.tools, attachments)
 
-    async def get_event_stream(self, user_input: Optional[str] = None) -> AsyncGenerator[ThreadEvent, None]:
+    async def get_event_stream(
+        self,
+        user_input: Optional[str] = None,
+        attachments: Optional[List[Attachment]] = None,
+    ) -> AsyncGenerator[ThreadEvent, None]:
         event_adapter = EventAdapter(self.thread_container)
-        async for _event in self.get_response_stream(user_input):
+        async for _event in self.get_response_stream(user_input, attachments):
             new_events = event_adapter.flush()
             for new_event in new_events:
                 yield new_event
         event_adapter.cleanup()
 
-    def get_response(self, user_input: Optional[str] = None) -> ThreadMessage:
-        return asyncio.run(self.get_response_async(user_input))
+    def get_response(
+        self,
+        user_input: Optional[str] = None,
+        attachments: Optional[List[Attachment]] = None,
+    ) -> ThreadMessage:
+        return asyncio.run(self.get_response_async(user_input, attachments))
 
-    async def get_response_async(self, user_input: Optional[str] = None) -> ThreadMessage:
+    async def get_response_async(
+        self,
+        user_input: Optional[str] = None,
+        attachments: Optional[List[Attachment]] = None,
+    ) -> ThreadMessage:
         sync_adapter = SyncAdapter(self.thread_container)
-        await sync_adapter.run_async(self.get_response_stream(user_input))
+        await sync_adapter.run_async(self.get_response_stream(user_input, attachments))
         ret = await sync_adapter.wait_for_completion_async()
         if ret is None:
             raise ValueError("No response received")
         self.thread_container.complete_generation()
         return ret
 
-    def get_response_text(self, user_input: Optional[str] = None) -> str:
-        return self.get_response(user_input).get_text_content()
+    def get_response_text(
+        self,
+        user_input: Optional[str] = None,
+        attachments: Optional[List[Attachment]] = None,
+    ) -> str:
+        return self.get_response(user_input, attachments).get_text_content()
 
-    async def get_response_text_async(self, user_input: Optional[str] = None) -> str:
-        return (await self.get_response_async(user_input)).get_text_content()
+    async def get_response_text_async(
+        self,
+        user_input: Optional[str] = None,
+        attachments: Optional[List[Attachment]] = None,
+    ) -> str:
+        return (await self.get_response_async(user_input, attachments)).get_text_content()
 
     def get_structured_response(self, prompt: str, output_schema: Type[T]) -> T:
         self.trace.add_structured_response_input(prompt, output_schema)

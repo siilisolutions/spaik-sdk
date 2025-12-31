@@ -1,7 +1,8 @@
 import time
 import uuid
-from typing import Any, AsyncGenerator, Dict, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
+from siili_ai_sdk.attachments.models import Attachment
 from siili_ai_sdk.llm.streaming.streaming_event_handler import EventType, StreamingEventHandler
 from siili_ai_sdk.recording.base_recorder import BaseRecorder
 from siili_ai_sdk.thread.models import MessageBlock, MessageBlockType, ThreadMessage
@@ -30,7 +31,13 @@ class MessageHandler:
     def _update_previous_message_count(self) -> None:
         self._previous_message_count = self.thread_container.get_nof_messages_including_system() + 1
 
-    def add_user_message(self, user_input: str, author_id: str, author_name: str) -> None:
+    def add_user_message(
+        self,
+        user_input: str,
+        author_id: str,
+        author_name: str,
+        attachments: Optional[List[Attachment]] = None,
+    ) -> None:
         """Add a user message to both thread container and LangChain messages."""
 
         # Add to thread container
@@ -49,6 +56,7 @@ class MessageHandler:
                     content=user_input,
                 )
             ],
+            attachments=attachments,
         )
         self.thread_container.add_message(user_message)
 

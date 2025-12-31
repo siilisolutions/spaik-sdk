@@ -187,6 +187,10 @@ class ThreadRouterFactory:
             if not await self.authorizer.can_post_message(user, thread):
                 raise HTTPException(status_code=403, detail="Access denied")
 
+            attachments = None
+            if request.attachments:
+                attachments = [ThreadConverters.attachment_request_to_model(att) for att in request.attachments]
+
             message = ThreadMessage(
                 id=str(uuid.uuid4()),
                 author_id=user.get_id(),
@@ -194,6 +198,7 @@ class ThreadRouterFactory:
                 timestamp=int(time.time() * 1000),
                 ai=False,
                 blocks=[MessageBlock(content=request.content, type=MessageBlockType.PLAIN, id=str(uuid.uuid4()), streaming=False)],
+                attachments=attachments,
             )
             thread.add_message(message)
             await self.service.update_thread(thread)
