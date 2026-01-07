@@ -119,14 +119,12 @@ print(agent.get_response_text("What's the weather in Tokyo?"))
 
 ```python
 from siili_ai_sdk.tools.impl.search_tool_provider import SearchToolProvider
-from siili_ai_sdk.tools.impl.crawl_tool_provider import CrawlToolProvider
 from siili_ai_sdk.tools.impl.mcp_tool_provider import MCPToolProvider
 
 class MyAgent(BaseAgent):
     def get_tool_providers(self):
         return [
             SearchToolProvider(),      # Web search (Tavily)
-            CrawlToolProvider(),       # Web crawling
             MCPToolProvider(server),   # MCP server tools
         ]
 ```
