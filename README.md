@@ -2,6 +2,15 @@
 
 Build production-ready AI agents with multi-LLM support, streaming, and a complete frontend/backend stack.
 
+Siili AI SDK is an open-source project developed and maintained by Siili Solutions Oyj.
+
+**Early Release**  
+This project is an early release. While it is functional and actively used,
+some APIs may continue to evolve and occasional issues may exist.
+
+Licensed under the MIT License. Provided "as is", without warranty of any kind.  
+Siili Solutions Oyj assumes no liability for the use of this software.
+
 ## Features
 
 **Python SDK**
@@ -238,3 +247,9 @@ bun run build:material
 ## License
 
 MIT - Copyright (c) 2025 Siili Solutions Oyj
+
+## Security and Compliance Notice
+
+Users are solely responsible for ensuring that their use of this software complies with applicable laws, regulations, and third-party service terms, including but not limited to data protection, privacy, and AI governance requirements.
+
+Siili Solutions Oyj does not assume responsibility for how this software is configured or used in downstream applications.
