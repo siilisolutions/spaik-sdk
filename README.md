@@ -41,8 +41,8 @@ Siili Solutions Oyj assumes no liability for the use of this software.
 | Package | Description | npm/PyPI |
 |---------|-------------|----------|
 | `spaik-sdk` | Python SDK | [PyPI](https://pypi.org/project/spaik-sdk/) |
-| `@spaik/react` | React hooks | npm |
-| `@spaik/material` | Material UI components | npm |
+| `spaik-sdk-react` | React hooks | npm |
+| `spaik-sdk-material` | Material UI components | npm |
 | `spaik-coding-agents` | Pre-built coding agents | [PyPI](https://pypi.org/project/spaik-coding-agents/) |
 
 ## Quick Start
@@ -108,7 +108,7 @@ import {
   AgentSdkClient,
   useThread,
   useThreadActions,
-} from '@spaik/react';
+} from 'spaik-sdk-react';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 
@@ -152,15 +152,15 @@ pip install spaik-sdk
 ### React Hooks
 
 ```bash
-npm install @spaik/react
+npm install spaik-sdk-react
 # or
-bun add @spaik/react
+bun add spaik-sdk-react
 ```
 
 ### Material UI Components
 
 ```bash
-npm install @spaik/material
+npm install spaik-sdk-material
 ```
 
 ## Running Examples

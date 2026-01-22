@@ -1,4 +1,4 @@
-import { MessageBlock } from '@spaik/react';
+import { MessageBlock } from 'spaik-sdk-react';
 import { MessageText } from './MessageText';
 import { ToolCallResponse } from '../ToolCallResponse';
 

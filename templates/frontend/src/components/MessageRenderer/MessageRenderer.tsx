@@ -1,4 +1,4 @@
-import { Message } from '@spaik/react';
+import { Message } from 'spaik-sdk-react';
 import { MessageContent } from './MessageContent';
 import { MessageHeader } from './MessageHeader';
 

@@ -6,7 +6,7 @@ import {
     createThreadsApiClient,
     useThreadListActions,
     useThreadSelection,
-} from '@spaik/react';
+} from 'spaik-sdk-react';
 import { ThreadSidebar } from '../ThreadSidebar/ThreadSidebar';
 import { ChatPanel } from '../ChatPanel/ChatPanel';
 import { MarkdownProvider, CustomComponentRegistry } from '../../markdown';

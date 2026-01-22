@@ -5,9 +5,9 @@ React hooks for building AI chat interfaces with real-time streaming.
 ## Installation
 
 ```bash
-npm install @spaik/react
+npm install spaik-sdk-react
 # or
-bun add @spaik/react
+bun add spaik-sdk-react
 ```
 
 ## Quick Start
@@ -20,7 +20,7 @@ import {
   useThread,
   useThreadActions,
   useThreadSelection,
-} from '@spaik/react';
+} from 'spaik-sdk-react';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 
@@ -196,7 +196,7 @@ import {
   createThreadsApiClient,
   createFilesApiClient,
   createAudioApiClient,
-} from '@spaik/react';
+} from 'spaik-sdk-react';
 
 const threadsApi = createThreadsApiClient({ baseUrl: '...' });
 const filesApi = createFilesApiClient({ baseUrl: '...' });

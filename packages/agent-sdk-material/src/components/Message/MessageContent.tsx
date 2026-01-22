@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { MessageBlock } from '@spaik/react';
+import { MessageBlock } from 'spaik-sdk-react';
 import { TextBlock } from '../MessageBlock/TextBlock';
 import { ReasoningBlock } from '../MessageBlock/ReasoningBlock';
 import { ToolCallBlock } from '../MessageBlock/ToolCallBlock';

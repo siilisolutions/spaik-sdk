@@ -1,4 +1,4 @@
-import type { Attachment } from '@spaik/react';
+import type { Attachment } from 'spaik-sdk-react';
 
 interface Props {
     attachments: Attachment[];

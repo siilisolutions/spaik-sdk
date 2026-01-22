@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Box, Skeleton } from '@mui/material';
-import { Message } from '@spaik/react';
+import { Message } from 'spaik-sdk-react';
 import { MessageCard } from '../Message/MessageCard';
 import { TypingIndicator } from './TypingIndicator';
 

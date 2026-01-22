@@ -140,7 +140,7 @@ import {
   useThread,
   useThreadActions,
   useThreadSelection,
-} from '@spaik/react';
+} from 'spaik-sdk-react';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 

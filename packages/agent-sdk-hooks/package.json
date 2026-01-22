@@ -1,5 +1,5 @@
 {
-    "name": "@spaik/react",
+    "name": "spaik-sdk-react",
     "version": "0.1.0",
     "description": "React library for Spaik SDK - state management and streaming for AI agent frontends",
     "type": "module",

@@ -1,4 +1,4 @@
-import { MessageBlock } from '@spaik/react';
+import { MessageBlock } from 'spaik-sdk-react';
 
 interface Props {
     block: MessageBlock

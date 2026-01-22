@@ -1,4 +1,4 @@
-import { MessageBlock } from '@spaik/react';
+import { MessageBlock } from 'spaik-sdk-react';
 import { getBlockTypeStyle } from './blockStyles';
 import { BlockTypeHeader } from './BlockTypeHeader';
 import { ToolNameDisplay } from './ToolNameDisplay';

@@ -42,7 +42,7 @@ frontend/
 ### Provider Setup
 
 ```tsx
-import { AgentSdkClientProvider, AgentSdkClient } from '@spaik/react';
+import { AgentSdkClientProvider, AgentSdkClient } from 'spaik-sdk-react';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 
@@ -58,7 +58,7 @@ function App() {
 ### Thread List
 
 ```tsx
-import { useThreadList, useThreadSelection } from '@spaik/react';
+import { useThreadList, useThreadSelection } from 'spaik-sdk-react';
 
 function ThreadList() {
   const { threadSummaries } = useThreadList();
@@ -79,7 +79,7 @@ function ThreadList() {
 ### Message Input
 
 ```tsx
-import { useThreadActions, useThreadSelection } from '@spaik/react';
+import { useThreadActions, useThreadSelection } from 'spaik-sdk-react';
 
 function MessageInput() {
   const { selectedThreadId } = useThreadSelection();
@@ -109,7 +109,7 @@ function MessageInput() {
 ### Message Display
 
 ```tsx
-import { useThread, useThreadSelection } from '@spaik/react';
+import { useThread, useThreadSelection } from 'spaik-sdk-react';
 
 function Messages() {
   const { selectedThreadId } = useThreadSelection();

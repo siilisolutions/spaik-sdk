@@ -1,4 +1,4 @@
-import type { PendingUpload } from '@spaik/react';
+import type { PendingUpload } from 'spaik-sdk-react';
 
 interface Props {
     uploads: PendingUpload[];

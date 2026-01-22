@@ -1,4 +1,4 @@
-import { Message } from '@spaik/react';
+import { Message } from 'spaik-sdk-react';
 
 interface Props {
     message: Message;

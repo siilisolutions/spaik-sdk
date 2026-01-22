@@ -5,20 +5,20 @@ Material UI components for building AI chat interfaces.
 ## Installation
 
 ```bash
-npm install @spaik/material
+npm install spaik-sdk-material
 ```
 
 Requires peer dependencies:
 
 ```bash
-npm install @spaik/react react react-dom
+npm install spaik-sdk-react react react-dom
 ```
 
 ## Quick Start
 
 ```tsx
-import { AgentSdkClientProvider, AgentSdkClient } from '@spaik/react';
-import { AgentChat, AgentThemeProvider } from '@spaik/material';
+import { AgentSdkClientProvider, AgentSdkClient } from 'spaik-sdk-react';
+import { AgentChat, AgentThemeProvider } from 'spaik-sdk-material';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 
@@ -40,7 +40,7 @@ function App() {
 Full chat interface with sidebar and message area.
 
 ```tsx
-import { AgentChat } from '@spaik/material';
+import { AgentChat } from 'spaik-sdk-material';
 
 <AgentChat />
 ```
@@ -50,7 +50,7 @@ import { AgentChat } from '@spaik/material';
 Message list with input, without sidebar.
 
 ```tsx
-import { ChatPanel } from '@spaik/material';
+import { ChatPanel } from 'spaik-sdk-material';
 
 <ChatPanel threadId={selectedThreadId} />
 ```
@@ -60,7 +60,7 @@ import { ChatPanel } from '@spaik/material';
 Thread list for navigation.
 
 ```tsx
-import { ThreadSidebar } from '@spaik/material';
+import { ThreadSidebar } from 'spaik-sdk-material';
 
 <ThreadSidebar
   onThreadSelect={setSelectedThreadId}
@@ -73,7 +73,7 @@ import { ThreadSidebar } from '@spaik/material';
 Individual message display.
 
 ```tsx
-import { MessageCard } from '@spaik/material';
+import { MessageCard } from 'spaik-sdk-material';
 
 <MessageCard message={message} />
 ```
@@ -83,7 +83,7 @@ import { MessageCard } from '@spaik/material';
 Chat input with attachments.
 
 ```tsx
-import { MessageInput } from '@spaik/material';
+import { MessageInput } from 'spaik-sdk-material';
 
 <MessageInput
   onSend={(content, attachments) => sendMessage(threadId, { content, attachments })}
@@ -94,7 +94,7 @@ import { MessageInput } from '@spaik/material';
 ### Audio Controls
 
 ```tsx
-import { SpeakButton, PushToTalkButton } from '@spaik/material';
+import { SpeakButton, PushToTalkButton } from 'spaik-sdk-material';
 
 // Text-to-speech for a message
 <SpeakButton text={message.blocks.map(b => b.content).join('')} />
@@ -108,7 +108,7 @@ import { SpeakButton, PushToTalkButton } from '@spaik/material';
 ### Default Theme
 
 ```tsx
-import { AgentThemeProvider } from '@spaik/material';
+import { AgentThemeProvider } from 'spaik-sdk-material';
 
 <AgentThemeProvider>
   <App />
@@ -118,7 +118,7 @@ import { AgentThemeProvider } from '@spaik/material';
 ### Custom Theme
 
 ```tsx
-import { AgentThemeProvider, createAgentTheme } from '@spaik/material';
+import { AgentThemeProvider, createAgentTheme } from 'spaik-sdk-material';
 
 const theme = createAgentTheme({
   palette: {
@@ -141,7 +141,7 @@ const theme = createAgentTheme({
 Access theme in components:
 
 ```tsx
-import { useAgentTheme } from '@spaik/material';
+import { useAgentTheme } from 'spaik-sdk-material';
 
 function MyComponent() {
   const theme = useAgentTheme();
@@ -159,7 +159,7 @@ import {
   ReasoningBlock,
   ToolCallBlock,
   ErrorBlock,
-} from '@spaik/material';
+} from 'spaik-sdk-material';
 
 // Automatically rendered by MessageCard, or use directly:
 <TextBlock content={block.content} streaming={block.streaming} />
@@ -173,7 +173,7 @@ import {
 Built-in markdown rendering with GFM support:
 
 ```tsx
-import { MarkdownRenderer } from '@spaik/material';
+import { MarkdownRenderer } from 'spaik-sdk-material';
 
 <MarkdownRenderer content="# Hello **world**" />
 ```

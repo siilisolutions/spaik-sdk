@@ -7,12 +7,12 @@ export default defineConfig({
     resolve: {
         alias: {
             // Force Vite to use the source files directly instead of pre-bundled versions
-            '@spaik/material': path.resolve(__dirname, '../../packages/agent-sdk-material/src/index.ts'),
-            '@spaik/react': path.resolve(__dirname, '../../packages/agent-sdk-hooks/src/index.ts'),
+            'spaik-sdk-material': path.resolve(__dirname, '../../packages/agent-sdk-material/src/index.ts'),
+            'spaik-sdk-react': path.resolve(__dirname, '../../packages/agent-sdk-hooks/src/index.ts'),
         },
     },
     optimizeDeps: {
         // Don't pre-bundle our local packages
-        exclude: ['@spaik/material', '@spaik/react'],
+        exclude: ['spaik-sdk-material', 'spaik-sdk-react'],
     },
 })

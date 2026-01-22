@@ -1,4 +1,4 @@
-import { Thread } from '@spaik/react';
+import { Thread } from 'spaik-sdk-react';
 
 interface Props {
     thread: Thread;

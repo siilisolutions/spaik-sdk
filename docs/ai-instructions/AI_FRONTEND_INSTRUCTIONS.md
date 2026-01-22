@@ -15,7 +15,7 @@ The React hooks package provides type-safe, streaming-enabled React integration 
 Provider component that configures the SDK client for your React application:
 
 ```tsx
-import { AgentSdkClientProvider } from '@spaik/react';
+import { AgentSdkClientProvider } from 'spaik-sdk-react';
 
 function App() {
     return (
@@ -31,7 +31,7 @@ function App() {
 Access the configured client within provider context:
 
 ```tsx
-import { useAgentSdkClient } from '@spaik/react';
+import { useAgentSdkClient } from 'spaik-sdk-react';
 
 function MyComponent() {
     const client = useAgentSdkClient();
@@ -66,7 +66,7 @@ Main client class with public methods:
 Primary hook for managing individual thread state:
 
 ```tsx
-import { useThread } from '@spaik/react';
+import { useThread } from 'spaik-sdk-react';
 
 function ThreadView({ threadId }: { threadId: string }) {
     const { thread, loading, error } = useThread(threadId);
@@ -95,7 +95,7 @@ function ThreadView({ threadId }: { threadId: string }) {
 Hook for thread actions (creating threads, sending messages):
 
 ```tsx
-import { useThreadActions } from '@spaik/react';
+import { useThreadActions } from 'spaik-sdk-react';
 
 function MessageInput({ threadId }: { threadId: string }) {
     const { createThread, sendMessage } = useThreadActions();
@@ -133,7 +133,7 @@ function MessageInput({ threadId }: { threadId: string }) {
 Access to low-level streaming handlers for custom implementations:
 
 ```tsx
-import { getStreamingHandlers } from '@spaik/react';
+import { getStreamingHandlers } from 'spaik-sdk-react';
 
 function CustomStreamingComponent() {
     const handlers = getStreamingHandlers();
@@ -160,7 +160,7 @@ function CustomStreamingComponent() {
 Hook for managing list of threads:
 
 ```tsx
-import { useThreadList } from '@spaik/react';
+import { useThreadList } from 'spaik-sdk-react';
 
 function ThreadList() {
     const { threadSummaries, loading, error, refresh } = useThreadList();
@@ -189,7 +189,7 @@ function ThreadList() {
 Hook for managing thread selection state:
 
 ```tsx
-import { useThreadSelection } from '@spaik/react';
+import { useThreadSelection } from 'spaik-sdk-react';
 
 function ThreadSelector() {
     const { selectedThreadId, selectThread } = useThreadSelection();
@@ -217,7 +217,7 @@ function ThreadSelector() {
 Hook for thread list actions:
 
 ```tsx
-import { useThreadListActions } from '@spaik/react';
+import { useThreadListActions } from 'spaik-sdk-react';
 
 function ThreadListControls() {
     const { loadThreads, refresh } = useThreadListActions();
@@ -310,7 +310,7 @@ export interface ListThreadsFilters {
 Low-level API client (usually not used directly):
 
 ```tsx
-import { createThreadsApiClient } from '@spaik/react';
+import { createThreadsApiClient } from 'spaik-sdk-react';
 
 const apiClient = createThreadsApiClient({
     baseUrl: 'http://localhost:8000',
@@ -340,7 +340,7 @@ import {
     useThreadActions, 
     useThreadList,
     useThreadSelection
-} from '@spaik/react';
+} from 'spaik-sdk-react';
 
 function App() {
     return (

@@ -1,4 +1,4 @@
-import { Message } from '@spaik/react';
+import { Message } from 'spaik-sdk-react';
 import { MessageBlockRenderer } from '../MessageBlockRenderer/MessageBlockRenderer';
 import { EmptyMessageContent } from './EmptyMessageContent';
 
