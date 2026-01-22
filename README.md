@@ -2,7 +2,7 @@
 
 Build production-ready AI agents with multi-LLM support, streaming, and a complete frontend/backend stack.
 
-Siili AI SDK is an open-source project developed and maintained by Siili Solutions Oyj.
+Siili AI SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
 
 **Early Release**  
 This project is an early release. While it is functional and actively used,
