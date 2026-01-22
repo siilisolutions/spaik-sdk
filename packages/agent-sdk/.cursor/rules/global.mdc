@@ -26,7 +26,7 @@ and something you can easily get to production as well
 this is the way to obtain the logger:
 
 ```
-from siili_ai_sdk.utils.init_logger import init_logger
+from spaik_sdk.utils.init_logger import init_logger
 
 logger = init_logger(__name__)
 ```

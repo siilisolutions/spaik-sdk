@@ -1,4 +1,4 @@
-import { useThreadList, useThreadSelection, useThreadActions } from '@siilisolutions/ai-sdk-react';
+import { useThreadList, useThreadSelection, useThreadActions } from '@spaik/react';
 import { ThreadListItem } from './ThreadListItem';
 
 const styles = `

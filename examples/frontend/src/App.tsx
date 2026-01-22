@@ -1,4 +1,4 @@
-import { AgentThemeProvider, AgentChat } from '@siilisolutions/ai-sdk-material';
+import { AgentThemeProvider, AgentChat } from '@spaik/material';
 
 export function App() {
     return (

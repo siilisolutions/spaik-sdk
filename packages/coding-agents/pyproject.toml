@@ -1,5 +1,5 @@
 [project]
-name = "siili-coding-agents"
+name = "spaik-coding-agents"
 version = "0.2.1"
 description = "Pre-built coding agents for AI-assisted software development"
 readme = "README.md"
@@ -21,7 +21,7 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "siili-ai-sdk>=0.2.0",
+    "spaik-sdk>=0.2.0",
     "claude-code-sdk>=0.0.14",
     "anyio>=4.0.0",
     "typer>=0.9.0",
@@ -35,8 +35,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/siilisolutions/siili-ai-sdk"
-Repository = "https://github.com/siilisolutions/siili-ai-sdk"
+Homepage = "https://github.com/siilisolutions/spaik-sdk"
+Repository = "https://github.com/siilisolutions/spaik-sdk"
 
 [build-system]
 requires = ["hatchling"]
@@ -46,8 +46,8 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["siili_coding_agents"]
-include = ["siili_coding_agents/py.typed"]
+packages = ["spaik_coding_agents"]
+include = ["spaik_coding_agents/py.typed"]
 
 [tool.ruff]
 line-length = 140
@@ -61,4 +61,4 @@ ignore = ["W293"]
 quote-style = "double" 
 
 [tool.uv.sources]
-siili-ai-sdk = { path = "../agent-sdk", editable = true }
+spaik-sdk = { path = "../agent-sdk", editable = true }

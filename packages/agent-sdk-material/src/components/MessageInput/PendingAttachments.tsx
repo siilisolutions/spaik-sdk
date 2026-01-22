@@ -1,5 +1,5 @@
 import { Box, Chip, CircularProgress, alpha } from '@mui/material';
-import { PendingUpload } from '@siilisolutions/ai-sdk-react';
+import { PendingUpload } from '@spaik/react';
 import { CheckCircleIcon, ErrorIcon } from '../../utils/icons';
 
 interface Props {

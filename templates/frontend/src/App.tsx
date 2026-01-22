@@ -1,6 +1,6 @@
 import { ThreadList } from './components/ThreadList/ThreadList';
 import { ThreadView } from './components/ThreadView/ThreadView';
-import { useThreadSelection } from '@siilisolutions/ai-sdk-react';
+import { useThreadSelection } from '@spaik/react';
 import { NoThreadSelected } from './components/ThreadView/EmptyStates';
 
 

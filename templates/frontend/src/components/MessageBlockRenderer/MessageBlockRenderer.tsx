@@ -1,4 +1,4 @@
-import { MessageBlock } from '@siilisolutions/ai-sdk-react';
+import { MessageBlock } from '@spaik/react';
 import { getBlockTypeStyle } from './blockStyles';
 import { BlockTypeHeader } from './BlockTypeHeader';
 import { ToolNameDisplay } from './ToolNameDisplay';

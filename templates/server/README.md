@@ -1,6 +1,6 @@
 # Server Template
 
-FastAPI server template for Siili AI SDK agents.
+FastAPI server template for Spaik SDK agents.
 
 ## Setup
 
@@ -29,7 +29,7 @@ uv run uvicorn main:app --reload --port 8000
 ### Add Tools
 
 ```python
-from siili_ai_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
+from spaik_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
 
 class MyTools(ToolProvider):
     def get_tools(self) -> list[BaseTool]:
@@ -61,7 +61,7 @@ The SDK automatically loads this based on agent class name.
 ### Change Model
 
 ```python
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.models.model_registry import ModelRegistry
 
 agent = MyAgent(llm_model=ModelRegistry.CLAUDE_4_SONNET)
 # or GPT_4_1, GEMINI_2_5_FLASH, etc.
@@ -70,7 +70,7 @@ agent = MyAgent(llm_model=ModelRegistry.CLAUDE_4_SONNET)
 ### Production Setup
 
 ```python
-from siili_ai_sdk.server.storage.impl.local_file_thread_repository import LocalFileThreadRepository
+from spaik_sdk.server.storage.impl.local_file_thread_repository import LocalFileThreadRepository
 
 api_builder = ApiBuilder.stateful(
     repository=LocalFileThreadRepository(base_path="./data"),

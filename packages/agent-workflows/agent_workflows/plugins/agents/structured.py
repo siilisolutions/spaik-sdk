@@ -33,8 +33,8 @@ import json
 from typing import Any, Dict, Type
 
 from pydantic import BaseModel, create_model
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.models.model_registry import ModelRegistry
 
 
 class StructuredAgent(BaseAgent):

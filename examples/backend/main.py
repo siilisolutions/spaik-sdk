@@ -6,12 +6,12 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.attachments import get_or_create_file_storage
-from siili_ai_sdk.image_gen import ImageGenerator, ImageGenOptions, ImageFormat
-from siili_ai_sdk.models.model_registry import ModelRegistry
-from siili_ai_sdk.server.api.routers.api_builder import ApiBuilder
-from siili_ai_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.attachments import get_or_create_file_storage
+from spaik_sdk.image_gen import ImageGenerator, ImageGenOptions, ImageFormat
+from spaik_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.server.api.routers.api_builder import ApiBuilder
+from spaik_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
 
 load_dotenv()
 

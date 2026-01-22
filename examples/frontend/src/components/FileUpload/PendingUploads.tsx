@@ -1,4 +1,4 @@
-import type { PendingUpload } from '@siilisolutions/ai-sdk-react';
+import type { PendingUpload } from '@spaik/react';
 
 interface Props {
     uploads: PendingUpload[];

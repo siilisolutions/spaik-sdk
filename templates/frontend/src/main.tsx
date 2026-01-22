@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { App } from './App.tsx'
-import { AgentSdkClientProvider, AgentSdkClient, ThreadsApiClient } from '@siilisolutions/ai-sdk-react';
+import { AgentSdkClientProvider, AgentSdkClient, ThreadsApiClient } from '@spaik/react';
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

@@ -1,17 +1,17 @@
-# Siili AI SDK
+# Spaik SDK
 
 Python SDK for building AI agents with multi-LLM support, streaming, and production infrastructure.
 
 ## Installation
 
 ```bash
-pip install siili-ai-sdk
+pip install spaik-sdk
 ```
 
 ## Quick Start
 
 ```python
-from siili_ai_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.agent.base_agent import BaseAgent
 
 class MyAgent(BaseAgent):
     pass
@@ -36,8 +36,8 @@ print(agent.get_response_text("Hello!"))
 ### Basic Response Methods
 
 ```python
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.models.model_registry import ModelRegistry
 
 agent = MyAgent(
     system_prompt="You are helpful.",
@@ -91,7 +91,7 @@ agent.run_cli()  # Starts interactive chat in terminal
 ## Tools
 
 ```python
-from siili_ai_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
+from spaik_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
 
 class WeatherTools(ToolProvider):
     def get_tools(self) -> list[BaseTool]:
@@ -118,8 +118,8 @@ print(agent.get_response_text("What's the weather in Tokyo?"))
 ### Built-in Tool Providers
 
 ```python
-from siili_ai_sdk.tools.impl.search_tool_provider import SearchToolProvider
-from siili_ai_sdk.tools.impl.mcp_tool_provider import MCPToolProvider
+from spaik_sdk.tools.impl.search_tool_provider import SearchToolProvider
+from spaik_sdk.tools.impl.mcp_tool_provider import MCPToolProvider
 
 class MyAgent(BaseAgent):
     def get_tool_providers(self):
@@ -132,7 +132,7 @@ class MyAgent(BaseAgent):
 ## Models
 
 ```python
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.models.model_registry import ModelRegistry
 
 # Anthropic
 ModelRegistry.CLAUDE_4_SONNET
@@ -155,8 +155,8 @@ ModelRegistry.from_name("gpt 4.1")     # GPT_4_1
 ModelRegistry.from_name("gemini 2.5")  # GEMINI_2_5_FLASH
 
 # Custom model
-from siili_ai_sdk.models.llm_model import LLMModel
-from siili_ai_sdk.models.llm_families import LLMFamilies
+from spaik_sdk.models.llm_model import LLMModel
+from spaik_sdk.models.llm_families import LLMFamilies
 
 custom = LLMModel(
     family=LLMFamilies.OPENAI,
@@ -172,8 +172,8 @@ ModelRegistry.register_custom(custom)
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.server.api.routers.api_builder import ApiBuilder
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.server.api.routers.api_builder import ApiBuilder
 
 class MyAgent(BaseAgent):
     pass
@@ -218,8 +218,8 @@ Audio:
 ### Production Setup
 
 ```python
-from siili_ai_sdk.server.storage.impl.local_file_thread_repository import LocalFileThreadRepository
-from siili_ai_sdk.server.authorization.base_authorizer import BaseAuthorizer
+from spaik_sdk.server.storage.impl.local_file_thread_repository import LocalFileThreadRepository
+from spaik_sdk.server.authorization.base_authorizer import BaseAuthorizer
 
 # Custom repository and auth
 api_builder = ApiBuilder.stateful(
@@ -234,7 +234,7 @@ api_builder = ApiBuilder.stateful(
 Code-first workflow orchestration without graph DSLs:
 
 ```python
-from siili_ai_sdk.orchestration import BaseOrchestrator, OrchestratorEvent
+from spaik_sdk.orchestration import BaseOrchestrator, OrchestratorEvent
 from dataclasses import dataclass
 from typing import AsyncIterator
 
@@ -313,7 +313,7 @@ make typecheck                      # Type check
 Messages contain blocks of different types:
 
 ```python
-from siili_ai_sdk.thread.models import MessageBlockType
+from spaik_sdk.thread.models import MessageBlockType
 
 # Block types
 MessageBlockType.PLAIN      # Regular text

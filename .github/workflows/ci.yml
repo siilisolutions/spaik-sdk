@@ -62,7 +62,7 @@ jobs:
       - name: Lint
         run: uv run ruff check .
       - name: Type check
-        run: uv run ty check siili_ai_sdk tests
+        run: uv run ty check spaik_sdk tests
       - name: Unit tests
         run: uv run python3 -m pytest tests/unit/ -m "unit" --no-cov
 
@@ -85,7 +85,7 @@ jobs:
       - name: Lint
         run: uv run ruff check .
       - name: Type check
-        run: uv run ty check siili_coding_agents
+        run: uv run ty check spaik_coding_agents
 
   agent-workflows:
     needs: [changes, agent-sdk]

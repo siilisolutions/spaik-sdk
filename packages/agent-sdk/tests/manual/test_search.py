@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.tools.impl.search_tool_provider import SearchToolProvider
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.tools.impl.search_tool_provider import SearchToolProvider
 
 
 class SearchAgent(BaseAgent):

@@ -1,5 +1,5 @@
 [project]
-name = "siili-ai-sdk"
+name = "spaik-sdk"
 version = "0.6.2"
 description = "Python SDK for building AI agents with multi-LLM support, streaming, and production-ready infrastructure"
 readme = "README.md"
@@ -58,16 +58,16 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/siilisolutions/siili-ai-sdk"
-Repository = "https://github.com/siilisolutions/siili-ai-sdk"
-Documentation = "https://github.com/siilisolutions/siili-ai-sdk#readme"
+Homepage = "https://github.com/siilisolutions/spaik-sdk"
+Repository = "https://github.com/siilisolutions/spaik-sdk"
+Documentation = "https://github.com/siilisolutions/spaik-sdk#readme"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["siili_ai_sdk"]
+packages = ["spaik_sdk"]
 include = ["py.typed"]
 
 [tool.ruff]
@@ -95,7 +95,7 @@ addopts = [
     "--strict-config", 
     "--verbose",
     "--tb=short",
-    "--cov=siili_ai_sdk",
+    "--cov=spaik_sdk",
     "--cov-report=term-missing",
     "--ignore=__init__.py",
     "--ignore=setup.py",

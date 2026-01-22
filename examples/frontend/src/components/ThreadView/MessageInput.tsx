@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useThreadActions, useFileUploadStore, type PendingUpload } from '@siilisolutions/ai-sdk-react';
-import { createFilesApiClient } from '@siilisolutions/ai-sdk-react';
+import { useThreadActions, useFileUploadStore, type PendingUpload } from '@spaik/react';
+import { createFilesApiClient } from '@spaik/react';
 import { FileUploadButton } from '../FileUpload/FileUploadButton';
 import { PendingUploads } from '../FileUpload/PendingUploads';
 

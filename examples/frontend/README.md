@@ -1,6 +1,6 @@
 # Frontend Example
 
-React frontend demonstrating the Siili AI SDK hooks.
+React frontend demonstrating the Spaik SDK hooks.
 
 ## Setup
 
@@ -42,7 +42,7 @@ frontend/
 ### Provider Setup
 
 ```tsx
-import { AgentSdkClientProvider, AgentSdkClient } from '@siilisolutions/ai-sdk-react';
+import { AgentSdkClientProvider, AgentSdkClient } from '@spaik/react';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 
@@ -58,7 +58,7 @@ function App() {
 ### Thread List
 
 ```tsx
-import { useThreadList, useThreadSelection } from '@siilisolutions/ai-sdk-react';
+import { useThreadList, useThreadSelection } from '@spaik/react';
 
 function ThreadList() {
   const { threadSummaries } = useThreadList();
@@ -79,7 +79,7 @@ function ThreadList() {
 ### Message Input
 
 ```tsx
-import { useThreadActions, useThreadSelection } from '@siilisolutions/ai-sdk-react';
+import { useThreadActions, useThreadSelection } from '@spaik/react';
 
 function MessageInput() {
   const { selectedThreadId } = useThreadSelection();
@@ -109,7 +109,7 @@ function MessageInput() {
 ### Message Display
 
 ```tsx
-import { useThread, useThreadSelection } from '@siilisolutions/ai-sdk-react';
+import { useThread, useThreadSelection } from '@spaik/react';
 
 function Messages() {
   const { selectedThreadId } = useThreadSelection();

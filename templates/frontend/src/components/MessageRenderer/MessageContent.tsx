@@ -1,4 +1,4 @@
-import { Message } from '@siilisolutions/ai-sdk-react';
+import { Message } from '@spaik/react';
 import { MessageBlockRenderer } from '../MessageBlockRenderer/MessageBlockRenderer';
 import { EmptyMessageContent } from './EmptyMessageContent';
 

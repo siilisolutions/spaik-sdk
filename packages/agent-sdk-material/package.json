@@ -1,7 +1,7 @@
 {
-    "name": "@siilisolutions/ai-sdk-material",
+    "name": "@spaik/material",
     "version": "0.1.0",
-    "description": "Material UI components for Siili AI SDK - themeable chat UI for AI agents",
+    "description": "Material UI components for Spaik SDK - themeable chat UI for AI agents",
     "type": "module",
     "main": "dist/index.js",
     "module": "dist/index.js",
@@ -29,7 +29,7 @@
         "type-check": "bun run tsc --noEmit"
     },
     "peerDependencies": {
-        "@siilisolutions/ai-sdk-react": "^0.1.0",
+        "@spaik/react": "^0.1.0",
         "react": "^18.0.0",
         "react-dom": "^18.0.0"
     },
@@ -42,7 +42,7 @@
         "remark-gfm": "^4.0.0"
     },
     "devDependencies": {
-        "@siilisolutions/ai-sdk-react": "workspace:*",
+        "@spaik/react": "workspace:*",
         "@types/react": "^18.2.47",
         "@types/react-dom": "^18.2.18",
         "react": "^18.2.0",
@@ -64,7 +64,7 @@
         "chat",
         "ui",
         "components",
-        "siili"
+        "spaik"
     ]
 }
 

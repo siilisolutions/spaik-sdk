@@ -5,7 +5,7 @@ Pre-built coding agents for AI-assisted software development.
 ## Installation
 
 ```bash
-pip install siili-coding-agents
+pip install spaik-coding-agents
 ```
 
 ## Agents
@@ -16,7 +16,7 @@ Wrapper for Claude Code SDK with streaming support.
 
 ```python
 import anyio
-from siili_coding_agents import ClaudeAgent, ClaudeAgentOptions
+from spaik_coding_agents import ClaudeAgent, ClaudeAgentOptions
 
 async def main():
     agent = ClaudeAgent(
@@ -35,7 +35,7 @@ anyio.run(main)
 ### Synchronous Usage
 
 ```python
-from siili_coding_agents import ClaudeAgent
+from spaik_coding_agents import ClaudeAgent
 
 agent = ClaudeAgent()
 agent.run("Fix the bug in main.py")
@@ -46,7 +46,7 @@ agent.run("Fix the bug in main.py")
 Integration with Cursor AI editor.
 
 ```python
-from siili_coding_agents import CursorAgent
+from spaik_coding_agents import CursorAgent
 
 agent = CursorAgent()
 result = agent.run("Refactor this function")
@@ -55,7 +55,7 @@ result = agent.run("Refactor this function")
 ## Requirements
 
 - Python 3.10+
-- siili-ai-sdk >= 0.2.0
+- spaik-sdk >= 0.2.0
 - Claude Code SDK (for ClaudeAgent)
 
 ## License

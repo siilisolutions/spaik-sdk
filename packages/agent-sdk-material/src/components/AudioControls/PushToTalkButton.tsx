@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { IconButton, Tooltip, CircularProgress, Box, alpha, useTheme } from '@mui/material';
-import { usePushToTalk } from '@siilisolutions/ai-sdk-react';
+import { usePushToTalk } from '@spaik/react';
 import { MicIcon, StopIcon } from '../../utils/icons';
 
 interface VoiceInputButtonProps {

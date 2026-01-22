@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Unit Tests
 - Location: `tests/unit/{folder path to file being tested}/test_{filename}.py`
-- Example: For `siili_ai_sdk/agent/base_agent.py` → `tests/unit/siili_ai_sdk/agent/test_base_agent.py`
+- Example: For `spaik_sdk/agent/base_agent.py` → `tests/unit/spaik_sdk/agent/test_base_agent.py`
 - Use `@pytest.mark.unit` decorator
 - Mock external dependencies
 

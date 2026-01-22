@@ -72,7 +72,7 @@ jobs:
       - name: Run checks
         run: |
           uv run ruff check .
-          uv run ty check siili_ai_sdk tests
+          uv run ty check spaik_sdk tests
           uv run python3 -m pytest tests/unit/ -m "unit" --no-cov
 
       - name: Build package

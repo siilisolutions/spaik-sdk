@@ -126,8 +126,8 @@ async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
     logger(f"📊 Recorded {len(audio_bytes)} bytes of audio")
 
     # Transcribe using SDK
-    from siili_ai_sdk.audio.options import STTOptions
-    from siili_ai_sdk.audio.stt import SpeechToText
+    from spaik_sdk.audio.options import STTOptions
+    from spaik_sdk.audio.stt import SpeechToText
 
     stt = SpeechToText()
     options = STTOptions(

@@ -7,7 +7,7 @@ dependencies = [
     "fastapi>=0.100.0",
     "uvicorn[standard]>=0.20.0",
     "python-dotenv>=1.0.0",
-    "siili-ai-sdk",
+    "spaik-sdk",
 ]
 
 [project.optional-dependencies]
@@ -38,4 +38,4 @@ ignore = ["W293"]
 quote-style = "double" 
 
 [tool.uv.sources]
-siili-ai-sdk = { path = "../../packages/agent-sdk", editable = true }
+spaik-sdk = { path = "../../packages/agent-sdk", editable = true }

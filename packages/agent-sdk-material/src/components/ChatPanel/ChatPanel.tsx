@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
-import { useThread, useThreadSelection, useThreadActions } from '@siilisolutions/ai-sdk-react';
+import { useThread, useThreadSelection, useThreadActions } from '@spaik/react';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from '../MessageInput/MessageInput';

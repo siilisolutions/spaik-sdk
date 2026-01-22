@@ -54,9 +54,9 @@ make typecheck                      # Type check
 ### Creating an Agent
 
 ```python
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.models.model_registry import ModelRegistry
-from siili_ai_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
 
 class MyTools(ToolProvider):
     def get_tools(self) -> list[BaseTool]:
@@ -91,7 +91,7 @@ print(agent.get_response_text("What's the weather in Helsinki?"))
 
 ```python
 from fastapi import FastAPI
-from siili_ai_sdk.server.api.routers.api_builder import ApiBuilder
+from spaik_sdk.server.api.routers.api_builder import ApiBuilder
 
 app = FastAPI()
 agent = MyAgent()
@@ -105,7 +105,7 @@ app.include_router(api_builder.build_audio_router())
 ### Model Registry
 
 ```python
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.models.model_registry import ModelRegistry
 
 # Direct access
 ModelRegistry.CLAUDE_4_SONNET
@@ -140,7 +140,7 @@ import {
   useThread,
   useThreadActions,
   useThreadSelection,
-} from '@siilisolutions/ai-sdk-react';
+} from '@spaik/react';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 

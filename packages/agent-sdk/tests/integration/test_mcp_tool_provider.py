@@ -1,6 +1,6 @@
 import pytest
 
-from siili_ai_sdk.tools.impl.mcp_tool_provider import (
+from spaik_sdk.tools.impl.mcp_tool_provider import (
     McpToolProvider,
     mcp_server_stdio,
 )

@@ -1,4 +1,4 @@
-import { MessageBlock } from '@siilisolutions/ai-sdk-react';
+import { MessageBlock } from '@spaik/react';
 import { MessageText } from './MessageText';
 import { ToolCallResponse } from '../ToolCallResponse';
 

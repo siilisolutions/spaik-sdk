@@ -1,13 +1,13 @@
-# Siili AI SDK React
+# Spaik SDK React
 
 React hooks for building AI chat interfaces with real-time streaming.
 
 ## Installation
 
 ```bash
-npm install @siilisolutions/ai-sdk-react
+npm install @spaik/react
 # or
-bun add @siilisolutions/ai-sdk-react
+bun add @spaik/react
 ```
 
 ## Quick Start
@@ -20,7 +20,7 @@ import {
   useThread,
   useThreadActions,
   useThreadSelection,
-} from '@siilisolutions/ai-sdk-react';
+} from '@spaik/react';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 
@@ -196,7 +196,7 @@ import {
   createThreadsApiClient,
   createFilesApiClient,
   createAudioApiClient,
-} from '@siilisolutions/ai-sdk-react';
+} from '@spaik/react';
 
 const threadsApi = createThreadsApiClient({ baseUrl: '...' });
 const filesApi = createFilesApiClient({ baseUrl: '...' });

@@ -5,7 +5,7 @@ import {
     useFileUploadStore,
     createFilesApiClient,
     PendingUpload,
-} from '@siilisolutions/ai-sdk-react';
+} from '@spaik/react';
 import { AttachButton } from './AttachButton';
 import { PendingAttachments } from './PendingAttachments';
 import { PushToTalkButton } from '../AudioControls/PushToTalkButton';

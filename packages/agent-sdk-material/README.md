@@ -1,24 +1,24 @@
-# Siili AI SDK Material
+# Spaik SDK Material
 
 Material UI components for building AI chat interfaces.
 
 ## Installation
 
 ```bash
-npm install @siilisolutions/ai-sdk-material
+npm install @spaik/material
 ```
 
 Requires peer dependencies:
 
 ```bash
-npm install @siilisolutions/ai-sdk-react react react-dom
+npm install @spaik/react react react-dom
 ```
 
 ## Quick Start
 
 ```tsx
-import { AgentSdkClientProvider, AgentSdkClient } from '@siilisolutions/ai-sdk-react';
-import { AgentChat, AgentThemeProvider } from '@siilisolutions/ai-sdk-material';
+import { AgentSdkClientProvider, AgentSdkClient } from '@spaik/react';
+import { AgentChat, AgentThemeProvider } from '@spaik/material';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 
@@ -40,7 +40,7 @@ function App() {
 Full chat interface with sidebar and message area.
 
 ```tsx
-import { AgentChat } from '@siilisolutions/ai-sdk-material';
+import { AgentChat } from '@spaik/material';
 
 <AgentChat />
 ```
@@ -50,7 +50,7 @@ import { AgentChat } from '@siilisolutions/ai-sdk-material';
 Message list with input, without sidebar.
 
 ```tsx
-import { ChatPanel } from '@siilisolutions/ai-sdk-material';
+import { ChatPanel } from '@spaik/material';
 
 <ChatPanel threadId={selectedThreadId} />
 ```
@@ -60,7 +60,7 @@ import { ChatPanel } from '@siilisolutions/ai-sdk-material';
 Thread list for navigation.
 
 ```tsx
-import { ThreadSidebar } from '@siilisolutions/ai-sdk-material';
+import { ThreadSidebar } from '@spaik/material';
 
 <ThreadSidebar
   onThreadSelect={setSelectedThreadId}
@@ -73,7 +73,7 @@ import { ThreadSidebar } from '@siilisolutions/ai-sdk-material';
 Individual message display.
 
 ```tsx
-import { MessageCard } from '@siilisolutions/ai-sdk-material';
+import { MessageCard } from '@spaik/material';
 
 <MessageCard message={message} />
 ```
@@ -83,7 +83,7 @@ import { MessageCard } from '@siilisolutions/ai-sdk-material';
 Chat input with attachments.
 
 ```tsx
-import { MessageInput } from '@siilisolutions/ai-sdk-material';
+import { MessageInput } from '@spaik/material';
 
 <MessageInput
   onSend={(content, attachments) => sendMessage(threadId, { content, attachments })}
@@ -94,7 +94,7 @@ import { MessageInput } from '@siilisolutions/ai-sdk-material';
 ### Audio Controls
 
 ```tsx
-import { SpeakButton, PushToTalkButton } from '@siilisolutions/ai-sdk-material';
+import { SpeakButton, PushToTalkButton } from '@spaik/material';
 
 // Text-to-speech for a message
 <SpeakButton text={message.blocks.map(b => b.content).join('')} />
@@ -108,7 +108,7 @@ import { SpeakButton, PushToTalkButton } from '@siilisolutions/ai-sdk-material';
 ### Default Theme
 
 ```tsx
-import { AgentThemeProvider } from '@siilisolutions/ai-sdk-material';
+import { AgentThemeProvider } from '@spaik/material';
 
 <AgentThemeProvider>
   <App />
@@ -118,7 +118,7 @@ import { AgentThemeProvider } from '@siilisolutions/ai-sdk-material';
 ### Custom Theme
 
 ```tsx
-import { AgentThemeProvider, createAgentTheme } from '@siilisolutions/ai-sdk-material';
+import { AgentThemeProvider, createAgentTheme } from '@spaik/material';
 
 const theme = createAgentTheme({
   palette: {
@@ -141,7 +141,7 @@ const theme = createAgentTheme({
 Access theme in components:
 
 ```tsx
-import { useAgentTheme } from '@siilisolutions/ai-sdk-material';
+import { useAgentTheme } from '@spaik/material';
 
 function MyComponent() {
   const theme = useAgentTheme();
@@ -159,7 +159,7 @@ import {
   ReasoningBlock,
   ToolCallBlock,
   ErrorBlock,
-} from '@siilisolutions/ai-sdk-material';
+} from '@spaik/material';
 
 // Automatically rendered by MessageCard, or use directly:
 <TextBlock content={block.content} streaming={block.streaming} />
@@ -173,7 +173,7 @@ import {
 Built-in markdown rendering with GFM support:
 
 ```tsx
-import { MarkdownRenderer } from '@siilisolutions/ai-sdk-material';
+import { MarkdownRenderer } from '@spaik/material';
 
 <MarkdownRenderer content="# Hello **world**" />
 ```
