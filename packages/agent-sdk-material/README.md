@@ -192,4 +192,4 @@ bun run lint
 
 ## License
 
-MIT - Copyright (c) 2025 Siili Solutions Oyj
+MIT - Copyright (c) 2026 Siili Solutions Oyj
