@@ -1,4 +1,4 @@
-name: Release spaik-sdk-react
+name: Release spaik-sdk-material
 
 on:
   workflow_dispatch:
@@ -36,9 +36,13 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Build hooks package (dependency)
+        working-directory: packages/agent-sdk-hooks
+        run: bun run build
+
       - name: Get current version
         id: current_version
-        working-directory: packages/agent-sdk-hooks
+        working-directory: packages/agent-sdk-material
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -65,22 +69,22 @@ jobs:
           echo "Bumping version from $CURRENT to $NEW_VERSION"
 
       - name: Update version in package.json
-        working-directory: packages/agent-sdk-hooks
+        working-directory: packages/agent-sdk-material
         run: |
           npm version ${{ steps.new_version.outputs.version }} --no-git-tag-version
 
       - name: Run checks
-        working-directory: packages/agent-sdk-hooks
+        working-directory: packages/agent-sdk-material
         run: |
           bun run lint
           bun run type-check
 
       - name: Build package
-        working-directory: packages/agent-sdk-hooks
+        working-directory: packages/agent-sdk-material
         run: bun run build
 
       - name: Publish to npm
-        working-directory: packages/agent-sdk-hooks
+        working-directory: packages/agent-sdk-material
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public
@@ -89,8 +93,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add packages/agent-sdk-hooks/package.json
-          git commit -m "chore: bump spaik-sdk-react version to ${{ steps.new_version.outputs.version }}"
-          git tag "spaik-sdk-react-v${{ steps.new_version.outputs.version }}"
+          git add packages/agent-sdk-material/package.json
+          git commit -m "chore: bump spaik-sdk-material version to ${{ steps.new_version.outputs.version }}"
+          git tag "spaik-sdk-material-v${{ steps.new_version.outputs.version }}"
           git push origin HEAD --tags
-
