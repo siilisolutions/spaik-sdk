@@ -1,6 +1,6 @@
 {
     "name": "spaik-sdk-material",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Material UI components for Spaik SDK - themeable chat UI for AI agents",
     "type": "module",
     "main": "dist/index.js",
@@ -29,9 +29,9 @@
         "type-check": "bun run tsc --noEmit"
     },
     "peerDependencies": {
-        "spaik-sdk-react": "^0.1.0",
         "react": "^18.0.0",
-        "react-dom": "^18.0.0"
+        "react-dom": "^18.0.0",
+        "spaik-sdk-react": "^0.1.0"
     },
     "dependencies": {
         "@emotion/react": "^11.11.3",
@@ -42,7 +42,6 @@
         "remark-gfm": "^4.0.0"
     },
     "devDependencies": {
-        "spaik-sdk-react": "workspace:*",
         "@types/react": "^18.2.47",
         "@types/react-dom": "^18.2.18",
         "@typescript-eslint/eslint-plugin": "^6.19.0",
@@ -52,6 +51,7 @@
         "eslint-plugin-react-hooks": "^4.6.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "spaik-sdk-react": "workspace:*",
         "typescript": "^5.3.3"
     },
     "keywords": [
