@@ -1,6 +1,6 @@
 [project]
 name = "spaik-coding-agents"
-version = "0.2.1"
+version = "0.2.2"
 description = "Pre-built coding agents for AI-assisted software development"
 readme = "README.md"
 license = "MIT"
