@@ -33,13 +33,6 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Build hooks package (dependency)
-        working-directory: packages/agent-sdk-hooks
-        run: bun run build
-
       - name: Get current version
         id: current_version
         working-directory: packages/agent-sdk-material
@@ -72,6 +65,13 @@ jobs:
         working-directory: packages/agent-sdk-material
         run: |
           npm version ${{ steps.new_version.outputs.version }} --no-git-tag-version
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build hooks package (dependency)
+        working-directory: packages/agent-sdk-hooks
+        run: bun run build
 
       - name: Run checks
         working-directory: packages/agent-sdk-material
