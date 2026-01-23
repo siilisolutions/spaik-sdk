@@ -10,7 +10,7 @@ This document provides comprehensive instructions for working with the Agent SDK
 
 ## Core Backend Components
 
-### BaseAgent (`siili_ai_sdk/agent/base_agent.py:32`)
+### BaseAgent (`spaik_sdk/agent/base_agent.py:32`)
 
 The primary class for creating AI agents. Inherits from ABC and provides the foundation for all agent implementations.
 
@@ -39,75 +39,75 @@ def __init__(
 
 **Response Generation Methods:**
 
-- **`get_response_stream(user_input: Optional[str]) -> AsyncGenerator[Dict[str, Any], None]`** (`siili_ai_sdk/agent/base_agent.py:62`)
+- **`get_response_stream(user_input: Optional[str]) -> AsyncGenerator[Dict[str, Any], None]`** (`spaik_sdk/agent/base_agent.py:62`)
   - Returns async generator for streaming responses
   - Yields dictionaries with response chunks
   - Use for real-time streaming applications
 
-- **`get_event_stream(user_input: Optional[str]) -> AsyncGenerator[ThreadEvent, None]`** (`siili_ai_sdk/agent/base_agent.py:67`)
+- **`get_event_stream(user_input: Optional[str]) -> AsyncGenerator[ThreadEvent, None]`** (`spaik_sdk/agent/base_agent.py:67`)
   - Returns async generator for structured events
   - Yields ThreadEvent objects for detailed response handling
   - Use for event-driven architectures
 
-- **`get_response(user_input: Optional[str]) -> ThreadMessage`** (`siili_ai_sdk/agent/base_agent.py:75`)
+- **`get_response(user_input: Optional[str]) -> ThreadMessage`** (`spaik_sdk/agent/base_agent.py:75`)
   - Synchronous method returning complete response
   - Blocks until full response is received
   - Use for simple request/response patterns
 
-- **`get_response_async(user_input: Optional[str]) -> ThreadMessage`** (`siili_ai_sdk/agent/base_agent.py:78`)
+- **`get_response_async(user_input: Optional[str]) -> ThreadMessage`** (`spaik_sdk/agent/base_agent.py:78`)
   - Async version of get_response
   - Non-blocking, returns awaitable ThreadMessage
   - Preferred for async applications
 
-- **`get_response_text(user_input: Optional[str]) -> str`** (`siili_ai_sdk/agent/base_agent.py:87`)
+- **`get_response_text(user_input: Optional[str]) -> str`** (`spaik_sdk/agent/base_agent.py:87`)
   - Convenience method returning just text content
   - Synchronous, blocks until completion
   - Use for simple text-only responses
 
-- **`get_response_text_async(user_input: Optional[str]) -> str`** (`siili_ai_sdk/agent/base_agent.py:90`)
+- **`get_response_text_async(user_input: Optional[str]) -> str`** (`spaik_sdk/agent/base_agent.py:90`)
   - Async version of get_response_text
   - Returns awaitable string
   - Preferred for async text-only responses
 
-- **`get_structured_response(prompt: str, output_schema: Type[T]) -> T`** (`siili_ai_sdk/agent/base_agent.py:93`)
+- **`get_structured_response(prompt: str, output_schema: Type[T]) -> T`** (`spaik_sdk/agent/base_agent.py:93`)
   - Returns response parsed as Pydantic model
   - Type-safe structured output
   - Use for data extraction and structured generation
 
 **Configuration Methods:**
 
-- **`create_llm_config(llm_model: Optional[LLMModel], reasoning: Optional[bool]) -> LLMConfig`** (`siili_ai_sdk/agent/base_agent.py:104`)
+- **`create_llm_config(llm_model: Optional[LLMModel], reasoning: Optional[bool]) -> LLMConfig`** (`spaik_sdk/agent/base_agent.py:104`)
   - Creates LLM configuration with model and reasoning settings
   - Returns LLMConfig object for model configuration
 
-- **`get_llm_model() -> LLMModel`** (`siili_ai_sdk/agent/base_agent.py:114`)
+- **`get_llm_model() -> LLMModel`** (`spaik_sdk/agent/base_agent.py:114`)
   - Returns default LLM model from environment configuration
   - Override in subclasses for custom model selection
 
-- **`is_reasoning() -> bool`** (`siili_ai_sdk/agent/base_agent.py:117`)
+- **`is_reasoning() -> bool`** (`spaik_sdk/agent/base_agent.py:117`)
   - Returns whether reasoning mode is enabled
   - Default: True. Override for custom reasoning behavior
 
 **Tool Integration Methods:**
 
-- **`get_tool_providers() -> List[ToolProvider]`** (`siili_ai_sdk/agent/base_agent.py:120`)
+- **`get_tool_providers() -> List[ToolProvider]`** (`spaik_sdk/agent/base_agent.py:120`)
   - Override to define agent tools
   - Return list of ToolProvider instances
   - Tools are automatically integrated into agent responses
 
 **Thread Management Methods:**
 
-- **`set_thread_container(thread_container: ThreadContainer) -> None`** (`siili_ai_sdk/agent/base_agent.py:123`)
+- **`set_thread_container(thread_container: ThreadContainer) -> None`** (`spaik_sdk/agent/base_agent.py:123`)
   - Sets custom thread container for conversation state
   - Automatically subscribes to thread events
 
-- **`set_cancellation_handle(cancellation_handle: Optional[CancellationHandle]) -> None`** (`siili_ai_sdk/agent/base_agent.py:129`)
+- **`set_cancellation_handle(cancellation_handle: Optional[CancellationHandle]) -> None`** (`spaik_sdk/agent/base_agent.py:129`)
   - Sets cancellation handle for request cancellation
   - Use for implementing request timeouts and cancellation
 
 **CLI Method:**
 
-- **`run_cli() -> None`** (`siili_ai_sdk/agent/base_agent.py:101`)
+- **`run_cli() -> None`** (`spaik_sdk/agent/base_agent.py:101`)
   - Starts interactive CLI interface
   - Use for testing and development
   - Blocks until CLI session ends
@@ -126,7 +126,7 @@ response = agent.get_response_text("Hello!")
 
 **Agent with Custom Model:**
 ```python
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.models.model_registry import ModelRegistry
 
 class ClaudeAgent(BaseAgent):
     def get_llm_model(self) -> LLMModel:
@@ -144,12 +144,12 @@ class WeatherAgent(BaseAgent):
 
 ### Tool System
 
-#### ToolProvider (`siili_ai_sdk/tools/tool_provider.py`)
+#### ToolProvider (`spaik_sdk/tools/tool_provider.py`)
 
 Base class for defining agent tools.
 
 ```python
-from siili_ai_sdk.tools.tool_provider import ToolProvider, tool, BaseTool
+from spaik_sdk.tools.tool_provider import ToolProvider, tool, BaseTool
 from typing import List
 
 class MyToolProvider(ToolProvider):
@@ -175,12 +175,12 @@ class MyToolProvider(ToolProvider):
 
 ### Model Configuration
 
-#### ModelRegistry (`siili_ai_sdk/models/model_registry.py`)
+#### ModelRegistry (`spaik_sdk/models/model_registry.py`)
 
 Centralized registry of available models:
 
 ```python
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.models.model_registry import ModelRegistry
 
 # OpenAI models
 ModelRegistry.GPT_4_TURBO
@@ -201,13 +201,13 @@ ModelRegistry.GEMINI_2_5_FLASH_THINKING
 ModelRegistry.AZURE_GPT_4O
 ```
 
-#### LLMConfig (`siili_ai_sdk/models/llm_config.py`)
+#### LLMConfig (`spaik_sdk/models/llm_config.py`)
 
 Configuration object for LLM settings:
 
 ```python
-from siili_ai_sdk.models.llm_config import LLMConfig
-from siili_ai_sdk.models.providers.provider_type import ProviderType
+from spaik_sdk.models.llm_config import LLMConfig
+from spaik_sdk.models.providers.provider_type import ProviderType
 
 config = LLMConfig(
     model=ModelRegistry.CLAUDE_4_SONNET,
@@ -221,12 +221,12 @@ config = LLMConfig(
 
 ### Thread Management
 
-#### ThreadContainer (`siili_ai_sdk/thread/thread_container.py`)
+#### ThreadContainer (`spaik_sdk/thread/thread_container.py`)
 
 Manages conversation state and message history:
 
 ```python
-from siili_ai_sdk.thread.thread_container import ThreadContainer
+from spaik_sdk.thread.thread_container import ThreadContainer
 
 # Create thread container
 container = ThreadContainer(system_prompt="You are a helpful assistant.")
@@ -238,7 +238,7 @@ agent.set_thread_container(container)
 messages = container.get_messages()
 ```
 
-#### ThreadMessage (`siili_ai_sdk/thread/models.py`)
+#### ThreadMessage (`spaik_sdk/thread/models.py`)
 
 Represents a single message in conversation:
 
@@ -251,12 +251,12 @@ blocks = message.blocks  # List of MessageBlock objects
 
 ### Recording and Playback
 
-#### ConditionalRecorder (`siili_ai_sdk/recording/conditional_recorder.py`)
+#### ConditionalRecorder (`spaik_sdk/recording/conditional_recorder.py`)
 
 Records LLM interactions for testing and debugging:
 
 ```python
-from siili_ai_sdk.recording.conditional_recorder import ConditionalRecorder
+from spaik_sdk.recording.conditional_recorder import ConditionalRecorder
 
 recorder = ConditionalRecorder.create_if_recording()
 agent = MyAgent(recorder=recorder)
@@ -267,12 +267,12 @@ response = agent.get_response_text("Test message")
 
 ### Environment Configuration
 
-#### env_config (`siili_ai_sdk/config/env.py`)
+#### env_config (`spaik_sdk/config/env.py`)
 
 Manages environment-based configuration:
 
 ```python
-from siili_ai_sdk.config.env import env_config
+from spaik_sdk.config.env import env_config
 
 # Get default model from environment
 default_model = env_config.get_default_model()

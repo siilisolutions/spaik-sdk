@@ -1,5 +1,5 @@
 import { Paper, Box, useTheme, Avatar, Typography, alpha } from '@mui/material';
-import { Message } from '@siilisolutions/ai-sdk-react';
+import { Message } from 'spaik-sdk-react';
 import { MessageContent } from './MessageContent';
 import { AttachmentGallery } from './AttachmentGallery';
 import { SmartToyIcon, PersonIcon } from '../../utils/icons';

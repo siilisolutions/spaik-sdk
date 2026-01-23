@@ -12,8 +12,8 @@ with:
 
 from typing import Any, Dict
 
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.models.model_registry import ModelRegistry
 
 
 class GeneralAgent(BaseAgent):

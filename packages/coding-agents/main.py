@@ -1,6 +1,6 @@
 import os
 
-from siili_coding_agents import CursorAgent, CursorAgentOptions
+from spaik_coding_agents import CursorAgent, CursorAgentOptions
 
 
 def main() -> None:

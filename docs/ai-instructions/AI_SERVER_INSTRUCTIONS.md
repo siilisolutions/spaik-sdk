@@ -4,14 +4,14 @@ This document provides instructions for using the Agent SDK's public server APIs
 
 ## Public Server Interface: ApiBuilder
 
-The main public interface for creating server applications is `ApiBuilder` (`siili_ai_sdk/server/api/routers/api_builder.py`):
+The main public interface for creating server applications is `ApiBuilder` (`spaik_sdk/server/api/routers/api_builder.py`):
 
 ### Basic Usage Pattern
 
 ```python
 from fastapi import FastAPI
-from siili_ai_sdk.server.api.routers.api_builder import ApiBuilder
-from siili_ai_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.server.api.routers.api_builder import ApiBuilder
+from spaik_sdk.agent.base_agent import BaseAgent
 
 app = FastAPI()
 
@@ -83,7 +83,7 @@ The `build_thread_router()` method creates these REST endpoints:
 
 ## Request/Response Models
 
-Located in `siili_ai_sdk/server/services/thread_models.py`:
+Located in `spaik_sdk/server/services/thread_models.py`:
 
 ### Request Models
 ```python
@@ -128,7 +128,7 @@ Available storage implementations for persistence:
 
 ### InMemoryThreadRepository
 ```python
-from siili_ai_sdk.server.storage.impl.in_memory_thread_repository import InMemoryThreadRepository
+from spaik_sdk.server.storage.impl.in_memory_thread_repository import InMemoryThreadRepository
 
 # For testing/development only
 repository = InMemoryThreadRepository()
@@ -136,7 +136,7 @@ repository = InMemoryThreadRepository()
 
 ### LocalFileThreadRepository  
 ```python
-from siili_ai_sdk.server.storage.impl.local_file_thread_repository import LocalFileThreadRepository
+from spaik_sdk.server.storage.impl.local_file_thread_repository import LocalFileThreadRepository
 
 # File-based persistence 
 repository = LocalFileThreadRepository()
@@ -145,7 +145,7 @@ repository = LocalFileThreadRepository()
 ### Custom Repository
 Implement `BaseThreadRepository` for custom storage (database, etc.):
 ```python
-from siili_ai_sdk.server.storage.base_thread_repository import BaseThreadRepository
+from spaik_sdk.server.storage.base_thread_repository import BaseThreadRepository
 
 class MyRepository(BaseThreadRepository):
     async def save_thread(self, thread_container):
@@ -166,8 +166,8 @@ Built-in authorizer that allows all operations - used automatically with `ApiBui
 ### Custom Authorization
 Implement `BaseAuthorizer` for custom user management:
 ```python
-from siili_ai_sdk.server.authorization.base_authorizer import BaseAuthorizer
-from siili_ai_sdk.server.authorization.base_user import BaseUser
+from spaik_sdk.server.authorization.base_authorizer import BaseAuthorizer
+from spaik_sdk.server.authorization.base_user import BaseUser
 
 class MyAuthorizer(BaseAuthorizer):
     async def get_user(self, request) -> BaseUser:
@@ -191,10 +191,10 @@ Based on `examples/backend/main.py`:
 ```python
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.tools.tool_provider import ToolProvider, tool, BaseTool
-from siili_ai_sdk.server.api.routers.api_builder import ApiBuilder
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.tools.tool_provider import ToolProvider, tool, BaseTool
+from spaik_sdk.server.api.routers.api_builder import ApiBuilder
+from spaik_sdk.models.model_registry import ModelRegistry
 from typing import List
 
 app = FastAPI(title="Agent SDK Backend", version="0.0.1")

@@ -2,6 +2,8 @@
 
 YAML-driven workflow engine for AI agents.
 
+Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
+
 ## Installation
 
 ```bash
@@ -251,4 +253,4 @@ uv run ty check agent_workflows
 
 ## License
 
-MIT - Copyright (c) 2025 Siili Solutions Oyj
+MIT - Copyright (c) 2026 Siili Solutions Oyj

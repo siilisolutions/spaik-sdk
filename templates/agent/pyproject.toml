@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Example agents using agent-sdk"
 requires-python = ">=3.10"
 dependencies = [
-    "siili-ai-sdk",
+    "spaik-sdk",
 ]
 
 [project.optional-dependencies]
@@ -35,4 +35,4 @@ ignore = ["W293"]
 quote-style = "double" 
 
 [tool.uv.sources]
-siili-ai-sdk = { git = "ssh://git@gitlab.siilicloud.com/siili-ai-labs/siili-ai-sdk.git", subdirectory = "packages/agent-sdk" }
+spaik-sdk = { git = "https://github.com/siilisolutions/spaik-sdk.git", subdirectory = "packages/agent-sdk" }

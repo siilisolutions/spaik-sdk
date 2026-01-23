@@ -1,9 +1,9 @@
 from typing import List
 
 from dotenv import load_dotenv
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.models.llm_model import LLMModel
-from siili_ai_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.models.llm_model import LLMModel
+from spaik_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
 
 
 @tool

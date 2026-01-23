@@ -1,7 +1,7 @@
 {
-    "name": "@siilisolutions/ai-sdk-react",
-    "version": "0.1.0",
-    "description": "React library for Siili AI SDK - state management and streaming for AI agent frontends",
+    "name": "spaik-sdk-react",
+    "version": "0.1.1",
+    "description": "React library for Spaik SDK - state management and streaming for AI agent frontends",
     "type": "module",
     "main": "dist/index.js",
     "module": "dist/index.js",
@@ -14,12 +14,12 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/siilisolutions/siili-ai-sdk.git",
+        "url": "https://github.com/siilisolutions/spaik-sdk.git",
         "directory": "packages/agent-sdk-hooks"
     },
-    "homepage": "https://github.com/siilisolutions/siili-ai-sdk#readme",
+    "homepage": "https://github.com/siilisolutions/spaik-sdk#readme",
     "bugs": {
-        "url": "https://github.com/siilisolutions/siili-ai-sdk/issues"
+        "url": "https://github.com/siilisolutions/spaik-sdk/issues"
     },
     "exports": {
         ".": {
@@ -66,6 +66,6 @@
         "state-management",
         "zustand",
         "zod",
-        "siili"
+        "spaik"
     ]
 }

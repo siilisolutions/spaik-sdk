@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useThreadActions } from '@siilisolutions/ai-sdk-react';
+import { useThreadActions } from 'spaik-sdk-react';
 
 interface Props {
     threadId: string;

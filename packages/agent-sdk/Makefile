@@ -45,11 +45,11 @@ test-watch:
 
 # Run tests with coverage
 test-cov:
-	uv run python3 -m pytest --cov=siili_ai_sdk --cov-report=term-missing
+	uv run python3 -m pytest --cov=spaik_sdk --cov-report=term-missing
 
 # Run tests with HTML coverage report
 test-html:
-	uv run python3 -m pytest --cov=siili_ai_sdk --cov-report=html
+	uv run python3 -m pytest --cov=spaik_sdk --cov-report=html
 	@echo "Coverage report generated in htmlcov/index.html"
 
 # Run specific test file
@@ -73,7 +73,7 @@ lint-fix:
 
 # Run type checking
 typecheck:
-	uv run ty check siili_ai_sdk tests
+	uv run ty check spaik_sdk tests
 
 # Clean test artifacts
 clean:
@@ -89,4 +89,4 @@ test-debug:
 
 # Run tests and generate JUnit XML (for CI)
 test-ci:
-	uv run python3 -m pytest tests/ --junitxml=test-results.xml --cov=siili_ai_sdk --cov-report=xml 
+	uv run python3 -m pytest tests/ --junitxml=test-results.xml --cov=spaik_sdk --cov-report=xml 

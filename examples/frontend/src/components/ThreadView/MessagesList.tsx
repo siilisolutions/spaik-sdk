@@ -1,4 +1,4 @@
-import { Thread, Message } from '@siilisolutions/ai-sdk-react';
+import { Thread, Message } from 'spaik-sdk-react';
 import { MessageRenderer } from '../MessageRenderer/MessageRenderer';
 
 interface Props {

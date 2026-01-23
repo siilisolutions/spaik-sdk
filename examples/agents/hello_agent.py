@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from siili_ai_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.agent.base_agent import BaseAgent
 
 
 class HelloAgent(BaseAgent):

@@ -4,10 +4,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.tools.tool_provider import ToolProvider, tool, BaseTool
-from siili_ai_sdk.server.api.routers.api_builder import ApiBuilder
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.tools.tool_provider import ToolProvider, tool, BaseTool
+from spaik_sdk.server.api.routers.api_builder import ApiBuilder
+from spaik_sdk.models.model_registry import ModelRegistry
 
 load_dotenv()
 

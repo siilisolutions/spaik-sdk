@@ -1,6 +1,6 @@
 # Frontend Template
 
-React frontend template for Siili AI SDK.
+React frontend template for Spaik SDK.
 
 ## Setup
 

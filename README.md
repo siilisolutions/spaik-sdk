@@ -1,8 +1,8 @@
-# Siili AI SDK
+# Spaik SDK
 
 Build production-ready AI agents with multi-LLM support, streaming, and a complete frontend/backend stack.
 
-Siili AI SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
+Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
 
 **Early Release**  
 This project is an early release. While it is functional and actively used,
@@ -40,17 +40,17 @@ Siili Solutions Oyj assumes no liability for the use of this software.
 
 | Package | Description | npm/PyPI |
 |---------|-------------|----------|
-| `siili-ai-sdk` | Python SDK | [PyPI](https://pypi.org/project/siili-ai-sdk/) |
-| `@siilisolutions/ai-sdk-react` | React hooks | npm |
-| `@siilisolutions/ai-sdk-material` | Material UI components | npm |
-| `siili-coding-agents` | Pre-built coding agents | [PyPI](https://pypi.org/project/siili-coding-agents/) |
+| `spaik-sdk` | Python SDK | [PyPI](https://pypi.org/project/spaik-sdk/) |
+| `spaik-sdk-react` | React hooks | npm |
+| `spaik-sdk-material` | Material UI components | npm |
+| `spaik-coding-agents` | Pre-built coding agents | [PyPI](https://pypi.org/project/spaik-coding-agents/) |
 
 ## Quick Start
 
 ### Minimal Agent
 
 ```python
-from siili_ai_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.agent.base_agent import BaseAgent
 
 class MyAgent(BaseAgent):
     pass
@@ -62,8 +62,8 @@ print(agent.get_response_text("Hello!"))
 ### Agent with Tools
 
 ```python
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
 
 class MyTools(ToolProvider):
     def get_tools(self) -> list[BaseTool]:
@@ -85,8 +85,8 @@ print(agent.get_response_text("Search for Python tutorials"))
 
 ```python
 from fastapi import FastAPI
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.server.api.routers.api_builder import ApiBuilder
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.server.api.routers.api_builder import ApiBuilder
 
 app = FastAPI()
 
@@ -108,7 +108,7 @@ import {
   AgentSdkClient,
   useThread,
   useThreadActions,
-} from '@siilisolutions/ai-sdk-react';
+} from 'spaik-sdk-react';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 
@@ -146,29 +146,29 @@ function Chat({ threadId }: { threadId: string }) {
 ### Python SDK
 
 ```bash
-pip install siili-ai-sdk
+pip install spaik-sdk
 ```
 
 ### React Hooks
 
 ```bash
-npm install @siilisolutions/ai-sdk-react
+npm install spaik-sdk-react
 # or
-bun add @siilisolutions/ai-sdk-react
+bun add spaik-sdk-react
 ```
 
 ### Material UI Components
 
 ```bash
-npm install @siilisolutions/ai-sdk-material
+npm install spaik-sdk-material
 ```
 
 ## Running Examples
 
 ```bash
 # Clone repo
-git clone https://github.com/siilisolutions/siili-ai-sdk.git
-cd siili-ai-sdk
+git clone https://github.com/siilisolutions/spaik-sdk.git
+cd spaik-sdk
 
 # Backend
 cd examples/backend
@@ -201,7 +201,7 @@ DEFAULT_MODEL=claude-sonnet-4-20250514
 ## Model Support
 
 ```python
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.models.model_registry import ModelRegistry
 
 # Anthropic
 ModelRegistry.CLAUDE_4_SONNET

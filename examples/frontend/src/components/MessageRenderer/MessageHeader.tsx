@@ -1,4 +1,4 @@
-import { Message } from '@siilisolutions/ai-sdk-react';
+import { Message } from 'spaik-sdk-react';
 import { AuthorIndicator } from './AuthorIndicator';
 import { MessageTimestamp } from './MessageTimestamp';
 

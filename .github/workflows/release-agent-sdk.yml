@@ -72,7 +72,7 @@ jobs:
       - name: Run checks
         run: |
           uv run ruff check .
-          uv run ty check siili_ai_sdk tests
+          uv run ty check spaik_sdk tests
           uv run python3 -m pytest tests/unit/ -m "unit" --no-cov
 
       - name: Build package
@@ -88,7 +88,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add pyproject.toml
-          git commit -m "chore: bump agent-sdk version to ${{ steps.new_version.outputs.version }}"
-          git tag "agent-sdk-v${{ steps.new_version.outputs.version }}"
+          git commit -m "chore: bump spaik-sdk version to ${{ steps.new_version.outputs.version }}"
+          git tag "spaik-sdk-v${{ steps.new_version.outputs.version }}"
           git push origin HEAD --tags
 

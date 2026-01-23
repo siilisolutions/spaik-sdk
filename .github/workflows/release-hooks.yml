@@ -1,4 +1,4 @@
-name: Release ai-sdk-react
+name: Release spaik-sdk-react
 
 on:
   workflow_dispatch:
@@ -33,9 +33,6 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
       - name: Get current version
         id: current_version
         working-directory: packages/agent-sdk-hooks
@@ -66,8 +63,10 @@ jobs:
 
       - name: Update version in package.json
         working-directory: packages/agent-sdk-hooks
-        run: |
-          npm version ${{ steps.new_version.outputs.version }} --no-git-tag-version
+        run: npm pkg set version=${{ steps.new_version.outputs.version }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
       - name: Run checks
         working-directory: packages/agent-sdk-hooks
@@ -81,18 +80,15 @@ jobs:
 
       - name: Publish to npm
         working-directory: packages/agent-sdk-hooks
-        # To make the package public, change to: npm publish --provenance --access public
-        run: |
-          echo "📦 Publishing as PRIVATE package. To make public, update this workflow."
-          npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
 
       - name: Commit and tag
-        working-directory: packages/agent-sdk-hooks
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json
-          git commit -m "chore: bump ai-sdk-react version to ${{ steps.new_version.outputs.version }}"
-          git tag "ai-sdk-react-v${{ steps.new_version.outputs.version }}"
+          git add packages/agent-sdk-hooks/package.json
+          git commit -m "chore: bump spaik-sdk-react version to ${{ steps.new_version.outputs.version }}"
+          git tag "spaik-sdk-react-v${{ steps.new_version.outputs.version }}"
           git push origin HEAD --tags
-

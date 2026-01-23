@@ -2,7 +2,7 @@
 
 import pytest
 
-from siili_ai_sdk.llm.consumption.consumption_extractor import ConsumptionExtractor
+from spaik_sdk.llm.consumption.consumption_extractor import ConsumptionExtractor
 
 
 @pytest.mark.integration

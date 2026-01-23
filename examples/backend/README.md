@@ -1,6 +1,6 @@
 # Backend Example
 
-FastAPI server demonstrating the Siili AI SDK.
+FastAPI server demonstrating the Spaik SDK.
 
 ## Setup
 
@@ -52,9 +52,9 @@ backend/
 ## Agent Configuration
 
 ```python
-from siili_ai_sdk.agent.base_agent import BaseAgent
-from siili_ai_sdk.models.model_registry import ModelRegistry
-from siili_ai_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
 
 class MyTools(ToolProvider):
     def get_tools(self) -> list[BaseTool]:
@@ -77,7 +77,7 @@ app.include_router(api_builder.build_thread_router())
 ## Model Selection
 
 ```python
-from siili_ai_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.models.model_registry import ModelRegistry
 
 agent = MyAgent(llm_model=ModelRegistry.CLAUDE_4_SONNET)
 # or

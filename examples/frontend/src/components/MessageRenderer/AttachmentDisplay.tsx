@@ -1,4 +1,4 @@
-import type { Attachment } from '@siilisolutions/ai-sdk-react';
+import type { Attachment } from 'spaik-sdk-react';
 
 interface Props {
     attachments: Attachment[];

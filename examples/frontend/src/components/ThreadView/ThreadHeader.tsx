@@ -1,4 +1,4 @@
-import { Thread } from '@siilisolutions/ai-sdk-react';
+import { Thread } from 'spaik-sdk-react';
 
 interface Props {
     thread: Thread;

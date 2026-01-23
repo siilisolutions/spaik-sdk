@@ -1,4 +1,4 @@
-import { Id, useThread } from '@siilisolutions/ai-sdk-react';
+import { Id, useThread } from 'spaik-sdk-react';
 import { ThreadHeader } from './ThreadHeader';
 import { MessagesList } from './MessagesList';
 import { MessageInput } from './MessageInput';

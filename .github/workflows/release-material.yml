@@ -1,0 +1,98 @@
+name: Release spaik-sdk-material
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Get current version
+        id: current_version
+        working-directory: packages/agent-sdk-material
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Calculate new version
+        id: new_version
+        run: |
+          CURRENT="${{ steps.current_version.outputs.version }}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          
+          case "${{ inputs.version_bump }}" in
+            major)
+              NEW_VERSION="$((MAJOR + 1)).0.0"
+              ;;
+            minor)
+              NEW_VERSION="$MAJOR.$((MINOR + 1)).0"
+              ;;
+            patch)
+              NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+              ;;
+          esac
+          
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Bumping version from $CURRENT to $NEW_VERSION"
+
+      - name: Update version in package.json
+        working-directory: packages/agent-sdk-material
+        run: npm pkg set version=${{ steps.new_version.outputs.version }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build hooks package (dependency)
+        working-directory: packages/agent-sdk-hooks
+        run: bun run build
+
+      - name: Run checks
+        working-directory: packages/agent-sdk-material
+        run: |
+          bun run lint
+          bun run type-check
+
+      - name: Build package
+        working-directory: packages/agent-sdk-material
+        run: bun run build
+
+      - name: Publish to npm
+        working-directory: packages/agent-sdk-material
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+      - name: Commit and tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/agent-sdk-material/package.json
+          git commit -m "chore: bump spaik-sdk-material version to ${{ steps.new_version.outputs.version }}"
+          git tag "spaik-sdk-material-v${{ steps.new_version.outputs.version }}"
+          git push origin HEAD --tags

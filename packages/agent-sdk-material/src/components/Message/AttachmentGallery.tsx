@@ -1,5 +1,5 @@
 import { Box, Paper, Typography, Link } from '@mui/material';
-import { Attachment } from '@siilisolutions/ai-sdk-react';
+import { Attachment } from 'spaik-sdk-react';
 import { ImageIcon, PictureAsPdfIcon, AudioFileIcon, VideoFileIcon, InsertDriveFileIcon } from '../../utils/icons';
 
 interface Props {

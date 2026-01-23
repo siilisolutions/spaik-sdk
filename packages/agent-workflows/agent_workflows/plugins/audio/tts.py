@@ -73,8 +73,8 @@ async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
     logger(f"   Voice: {voice}, Speed: {speed}, Model: {model}")
 
     # Synthesize
-    from siili_ai_sdk.audio.options import TTSOptions
-    from siili_ai_sdk.audio.tts import TextToSpeech
+    from spaik_sdk.audio.options import TTSOptions
+    from spaik_sdk.audio.tts import TextToSpeech
 
     tts = TextToSpeech(model=model)
     options = TTSOptions(

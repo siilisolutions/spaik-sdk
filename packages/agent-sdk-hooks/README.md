@@ -1,13 +1,15 @@
-# Siili AI SDK React
+# Spaik SDK React
 
 React hooks for building AI chat interfaces with real-time streaming.
+
+Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
 
 ## Installation
 
 ```bash
-npm install @siilisolutions/ai-sdk-react
+npm install spaik-sdk-react
 # or
-bun add @siilisolutions/ai-sdk-react
+bun add spaik-sdk-react
 ```
 
 ## Quick Start
@@ -20,7 +22,7 @@ import {
   useThread,
   useThreadActions,
   useThreadSelection,
-} from '@siilisolutions/ai-sdk-react';
+} from 'spaik-sdk-react';
 
 const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
 
@@ -196,7 +198,7 @@ import {
   createThreadsApiClient,
   createFilesApiClient,
   createAudioApiClient,
-} from '@siilisolutions/ai-sdk-react';
+} from 'spaik-sdk-react';
 
 const threadsApi = createThreadsApiClient({ baseUrl: '...' });
 const filesApi = createFilesApiClient({ baseUrl: '...' });
@@ -336,4 +338,4 @@ bun run lint:fix
 
 ## License
 
-MIT - Copyright (c) 2025 Siili Solutions Oyj
+MIT - Copyright (c) 2026 Siili Solutions Oyj
