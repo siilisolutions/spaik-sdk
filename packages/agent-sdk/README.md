@@ -2,6 +2,8 @@
 
 Python SDK for building AI agents with multi-LLM support, streaming, and production infrastructure.
 
+Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
+
 ## Installation
 
 ```bash

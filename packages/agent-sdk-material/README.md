@@ -2,6 +2,8 @@
 
 Material UI components for building AI chat interfaces.
 
+Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
+
 ## Installation
 
 ```bash

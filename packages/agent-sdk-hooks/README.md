@@ -2,6 +2,8 @@
 
 React hooks for building AI chat interfaces with real-time streaming.
 
+Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
+
 ## Installation
 
 ```bash

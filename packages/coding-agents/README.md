@@ -2,6 +2,8 @@
 
 Pre-built coding agents for AI-assisted software development.
 
+Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
+
 ## Installation
 
 ```bash
