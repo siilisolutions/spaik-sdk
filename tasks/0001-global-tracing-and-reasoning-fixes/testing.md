@@ -13,10 +13,12 @@
 
 ### get_trace_sink Resolution
 - [ ] When TRACE_SINK_MODE=local env var is set, returns LocalTraceSink regardless of global config
+- [ ] When TRACE_SINK_MODE=noop env var is set, returns NoOpTraceSink regardless of global config
 - [ ] When TRACE_SINK_MODE is unset and global sink is configured, returns the global sink
 - [ ] When TRACE_SINK_MODE is unset and no global sink configured, returns NoOpTraceSink
 - [ ] When TRACE_SINK_MODE is set to invalid value, falls through to global/no-op (no error)
 - [ ] Env var LOCAL takes precedence over configure_tracing (escape hatch works)
+- [ ] Env var NOOP takes precedence over configure_tracing
 
 ### TraceSink Interface
 - [ ] save_trace method accepts agent_instance_id parameter
@@ -26,7 +28,7 @@
 ### AgentTrace
 - [ ] Constructor accepts agent_instance_id parameter
 - [ ] When save is called, agent_instance_id is passed to TraceSink.save_trace
-- [ ] AgentTrace created without instance_id handles gracefully (generates one or uses sentinel)
+- [ ] AgentTrace created without instance_id generates its own UUID (backward compatibility)
 
 ### BaseAgent Instance ID
 - [ ] Each BaseAgent instance has a unique agent_instance_id
@@ -55,35 +57,33 @@
 
 ### TraceSinkMode
 - [ ] from_name returns LOCAL for "local" string
+- [ ] from_name returns NOOP for "noop" string
 - [ ] from_name returns None for empty string
 - [ ] from_name returns None for unset/None input
 
 ## Integration Tests
 
-### Global Tracing Configuration Flow
+**Note**: Most integration tests require API keys. Focus on unit tests with mocked responses where possible. Integration tests are optional and run only when API keys are available.
+
+### Global Tracing Configuration Flow (no API keys needed)
 - [ ] Configure custom trace sink at startup, create multiple agents, verify all use the custom sink
 - [ ] Configure custom sink, set TRACE_SINK_MODE=local, verify LocalTraceSink is used instead
+- [ ] Configure custom sink, set TRACE_SINK_MODE=noop, verify NoOpTraceSink is used
 - [ ] Create agents without any tracing config, verify no filesystem writes occur (no-op behavior)
 
-### Agent Instance ID Correlation
-- [ ] Create agent, make multiple calls, verify all traces have same instance ID
-- [ ] Create two agents of same class, verify traces have different instance IDs
-- [ ] Custom trace sink receives correct instance ID for correlation
+### Agent Instance ID Correlation (no API keys needed)
+- [ ] Create agent, verify instance ID is set
+- [ ] Create two agents of same class, verify instance IDs differ
+- [ ] Custom trace sink receives correct instance ID for correlation (mock sink)
 
-### Google Gemini Reasoning Disabled
-- [ ] Create Gemini agent with reasoning=False, verify API call includes thinking_budget=0
-- [ ] Verify response does not contain thinking/reasoning content when disabled
-
-### OpenAI GPT-5.1 Reasoning Disabled
-- [ ] Create GPT-5.1 agent with reasoning=False, verify API call sets reasoning effort to "none"
-- [ ] Verify response does not contain reasoning tokens when disabled
-
-### OpenAI GPT-5 Reasoning Minimal
-- [ ] Create GPT-5 agent with reasoning=False, verify API call sets reasoning effort to "minimal"
-- [ ] Verify this is the lowest possible reasoning level for this model
+### API-Dependent Tests (optional, skipped without keys)
+These tests verify actual API behavior and should be skipped when API keys are unavailable:
+- [ ] Google Gemini: verify API call includes thinking_budget=0 when reasoning=False
+- [ ] OpenAI GPT-5.1: verify API call sets reasoning effort to "none" when reasoning=False
+- [ ] OpenAI GPT-5: verify API call sets reasoning effort to "minimal" when reasoning=False
 
 ## Browser/E2E Tests
 Not applicable - this is backend/library code with no UI components.
 
 ## Manual Testing
-**None** - all verification must be automated.
+**Minimal** - API-dependent integration tests may be run manually when keys are available. Unit tests must be automated.

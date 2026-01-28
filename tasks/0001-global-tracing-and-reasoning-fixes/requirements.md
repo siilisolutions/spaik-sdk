@@ -16,6 +16,7 @@ Additionally, there's no way to correlate traces across multiple calls to the sa
 - [ ] Users can call a single function at application startup to configure tracing for all agents
 - [ ] The configured trace sink is used by all subsequently created agents without needing to pass it to each constructor
 - [ ] Environment variable `TRACE_SINK_MODE=local` overrides any programmatically configured sink (escape hatch for local debugging)
+- [ ] Environment variable `TRACE_SINK_MODE=noop` explicitly disables tracing (does nothing)
 - [ ] When no tracing is configured (no env var, no global sink), tracing is silently disabled (no-op) rather than writing to filesystem
 - [ ] The default behavior changes from writing to filesystem to no-op
 
@@ -35,12 +36,11 @@ Additionally, there's no way to correlate traces across multiple calls to the sa
 
 - This is library code - users import it into their applications, so global configuration must be explicit (called by user code) rather than automatic
 - Must maintain backward compatibility with existing TraceSink implementations
-- The precedence order for trace sink resolution must be: env var LOCAL → global configured sink → no-op
+- The precedence order for trace sink resolution must be: env var (LOCAL or NOOP) → global configured sink → no-op
 - Cannot fully disable reasoning on GPT-5 base models (API limitation) - must use minimal effort as best alternative
 
 ## Non-Goals
 
-- Adding new TraceSinkMode enum values for no-op (no-op is the fallback, not a mode)
 - Supporting per-async-context trace sinks (single global is sufficient)
 - Runtime switching of trace sinks after initial configuration
 - Supporting o1/o3 models (considered legacy)

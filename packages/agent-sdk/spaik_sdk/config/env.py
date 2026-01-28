@@ -1,5 +1,6 @@
 import os
 from typing import Dict
+from typing import Optional as OptionalType
 
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.model_registry import ModelRegistry
@@ -46,8 +47,16 @@ class EnvConfig:
     def get_prompt_loader_mode(self) -> PromptLoaderMode:
         return PromptLoaderMode.from_name(self.get_key("PROMPT_LOADER_MODE", "local"))
 
-    def get_trace_sink_mode(self) -> TraceSinkMode:
-        return TraceSinkMode.from_name(self.get_key("TRACE_SINK_MODE", "local"))
+    def get_trace_sink_mode(self) -> OptionalType[TraceSinkMode]:
+        """Get the trace sink mode from environment variable.
+
+        Returns:
+            TraceSinkMode.LOCAL if TRACE_SINK_MODE=local,
+            TraceSinkMode.NOOP if TRACE_SINK_MODE=noop,
+            None if TRACE_SINK_MODE is not set or empty (allows global/default behavior).
+        """
+        mode_str = self.get_key("TRACE_SINK_MODE", "", required=False)
+        return TraceSinkMode.from_name(mode_str)
 
     def get_credentials_provider_type(self) -> str:
         return self.get_key("CREDENTIALS_PROVIDER_TYPE", "env")

@@ -8,7 +8,7 @@
 - Currently returns `LocalTraceSink` when mode is LOCAL, throws otherwise
 - Needs to check for a globally configured sink before falling back
 - Needs to return a no-op sink as the final fallback instead of throwing
-- Resolution order changes to: LOCAL env var → global sink → no-op
+- Resolution order changes to: env var (LOCAL or NOOP) → global sink → no-op
 
 **New: NoOpTraceSink**
 - A new TraceSink implementation that does nothing when `save_trace` is called
@@ -89,8 +89,9 @@
 ### Trace Sink Resolution Flow
 1. `get_trace_sink()` is called (by AgentTrace or directly)
 2. Check if TRACE_SINK_MODE env var is explicitly set to "local" → return LocalTraceSink
-3. Check if global sink was configured via `configure_tracing()` → return that sink
-4. Neither configured → return NoOpTraceSink
+3. Check if TRACE_SINK_MODE env var is explicitly set to "noop" → return NoOpTraceSink
+4. Check if global sink was configured via `configure_tracing()` → return that sink
+5. Neither configured → return NoOpTraceSink
 
 ### Agent Instance ID Flow
 1. BaseAgent constructor generates UUID
@@ -126,8 +127,8 @@
 - NoOpTraceSink cannot fail (does nothing)
 
 ### Missing Agent Instance ID
-- If AgentTrace is created without an instance ID (backward compatibility), should generate one internally or use a sentinel value
-- TraceSink implementations must handle None/missing instance ID gracefully
+- If AgentTrace is created without an instance ID (backward compatibility), it generates its own UUID internally
+- This ensures traces always have correlation capability even for legacy usage
 
 ### Env Var Parsing
 - If TRACE_SINK_MODE is set to an invalid value (not "local", not empty), current behavior throws ValueError
