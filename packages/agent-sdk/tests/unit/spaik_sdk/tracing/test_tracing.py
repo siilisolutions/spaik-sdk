@@ -1,10 +1,12 @@
-"""Unit tests for tracing module - NoOpTraceSink, configure_tracing, get_trace_sink resolution."""
+"""Unit tests for tracing module - NoOpTraceSink, configure_tracing, get_trace_sink resolution, agent instance ID."""
 
+import uuid
 from unittest.mock import MagicMock
 
 import pytest
 
 from spaik_sdk.tracing import (
+    AgentTrace,
     LocalTraceSink,
     NoOpTraceSink,
     TraceSink,
@@ -238,3 +240,103 @@ class TestTraceSinkMode:
 
         result = TraceSinkMode.from_name("filesystem")
         assert result is None
+
+
+@pytest.mark.unit
+class TestTraceSinkInterface:
+    """Tests for TraceSink interface with agent_instance_id parameter."""
+
+    def test_save_trace_accepts_agent_instance_id(self):
+        """TraceSink.save_trace accepts agent_instance_id parameter."""
+        sink = NoOpTraceSink()
+        # Should not raise any exception
+        sink.save_trace("name", "content", "prompt", agent_instance_id="test-uuid-123")
+
+    def test_local_trace_sink_ignores_agent_instance_id(self, tmp_path):
+        """LocalTraceSink accepts agent_instance_id but file naming is unchanged."""
+        sink = LocalTraceSink(traces_dir=str(tmp_path))
+
+        # Call with agent_instance_id
+        sink.save_trace("test_agent", "trace content", "system prompt", agent_instance_id="abc-123-def")
+
+        # Files should be named by 'name' parameter, not include instance ID
+        trace_path = tmp_path / "test_agent.txt"
+        prompt_path = tmp_path / "test_agent_system_prompt.txt"
+
+        assert trace_path.exists()
+        assert prompt_path.exists()
+        assert trace_path.read_text() == "trace content"
+        assert prompt_path.read_text() == "system prompt"
+
+    def test_custom_sink_receives_agent_instance_id(self, clean_env):
+        """Custom TraceSink implementations receive agent_instance_id in save_trace calls."""
+        mock_sink = MagicMock(spec=TraceSink)
+        instance_id = "custom-uuid-456"
+
+        trace = AgentTrace(
+            system_prompt="test prompt",
+            save_name="test",
+            trace_sink=mock_sink,
+            agent_instance_id=instance_id,
+        )
+
+        # Trigger a save by adding a step
+        trace.add_step("test step")
+
+        # Verify the mock was called with the correct instance ID
+        mock_sink.save_trace.assert_called_once()
+        call_args = mock_sink.save_trace.call_args
+        assert call_args[0][3] == instance_id  # 4th positional arg is agent_instance_id
+
+
+@pytest.mark.unit
+class TestAgentTrace:
+    """Tests for AgentTrace with agent_instance_id."""
+
+    def test_constructor_accepts_agent_instance_id(self):
+        """AgentTrace constructor accepts agent_instance_id parameter."""
+        trace = AgentTrace(
+            system_prompt="test",
+            agent_instance_id="my-custom-uuid",
+        )
+        assert trace.agent_instance_id == "my-custom-uuid"
+
+    def test_save_passes_agent_instance_id_to_sink(self, clean_env):
+        """AgentTrace.save passes agent_instance_id to TraceSink.save_trace."""
+        mock_sink = MagicMock(spec=TraceSink)
+        instance_id = "trace-uuid-789"
+
+        trace = AgentTrace(
+            system_prompt="test prompt",
+            trace_sink=mock_sink,
+            agent_instance_id=instance_id,
+        )
+
+        trace.save("test_name")
+
+        mock_sink.save_trace.assert_called_once_with(
+            "test_name",
+            "",  # No steps, so empty trace content
+            "test prompt",
+            instance_id,
+        )
+
+    def test_agent_trace_without_instance_id_generates_uuid(self, clean_env):
+        """AgentTrace created without instance_id generates its own UUID for backward compatibility."""
+        trace = AgentTrace(system_prompt="test")
+
+        # Should have an instance ID
+        assert trace.agent_instance_id is not None
+        assert isinstance(trace.agent_instance_id, str)
+        assert len(trace.agent_instance_id) > 0
+
+        # Should be a valid UUID format
+        parsed_uuid = uuid.UUID(trace.agent_instance_id)
+        assert str(parsed_uuid) == trace.agent_instance_id
+
+    def test_two_agent_traces_have_different_instance_ids(self, clean_env):
+        """Two AgentTrace instances created without explicit IDs have different instance IDs."""
+        trace1 = AgentTrace(system_prompt="test1")
+        trace2 = AgentTrace(system_prompt="test2")
+
+        assert trace1.agent_instance_id != trace2.agent_instance_id

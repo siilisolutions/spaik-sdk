@@ -10,7 +10,14 @@ class LocalTraceSink(TraceSink):
     def __init__(self, traces_dir: Optional[str] = None):
         self.traces_dir = traces_dir or "traces"
 
-    def save_trace(self, name: str, trace_content: str, system_prompt: str) -> None:
+    def save_trace(
+        self,
+        name: str,
+        trace_content: str,
+        system_prompt: str,
+        agent_instance_id: Optional[str] = None,
+    ) -> None:
+        # agent_instance_id is accepted but intentionally ignored - file naming is unchanged
         os.makedirs(self.traces_dir, exist_ok=True)
 
         trace_path = os.path.join(self.traces_dir, f"{name}.txt")
