@@ -10,6 +10,20 @@ from spaik_sdk.utils.init_logger import init_logger
 logger = init_logger(__name__)
 
 
+def _supports_full_reasoning_disable(model_name: str) -> bool:
+    """Check if the model supports reasoning.effort = 'none' for full disable.
+
+    GPT-5.1 and later models (including codex variants, 5.2) support effort='none'.
+    GPT-5 base models (5, 5-mini, 5-nano) only support minimum effort='minimal'.
+    """
+    # GPT-5.1+ models support full disable with effort='none'
+    # These include: gpt-5.1, gpt-5.1-codex, gpt-5.1-codex-mini, gpt-5.1-codex-max, gpt-5.2, gpt-5.2-pro
+    if model_name.startswith("gpt-5.1") or model_name.startswith("gpt-5.2"):
+        return True
+    # GPT-5 base models (gpt-5, gpt-5-mini, gpt-5-nano) don't support full disable
+    return False
+
+
 class OpenAIModelFactory(BaseModelFactory):
     MODELS = ModelRegistry.get_by_family(LLMFamilies.OPENAI)
 
@@ -36,15 +50,26 @@ class OpenAIModelFactory(BaseModelFactory):
         if config.tool_usage:
             model_config["model_kwargs"] = {"parallel_tool_calls": True}
 
-        # Add model-specific configurations for reasoning models
+        # Handle reasoning configuration based on user preference (config.reasoning)
+        # and model capability (config.model.reasoning)
         if config.model.reasoning:
-            # Enable Responses API for reasoning models
+            # Model supports reasoning - check user preference
             model_config["use_responses_api"] = True
 
-            # Configure reasoning through model_kwargs as per LangChain docs
-            if config.reasoning_summary:
-                model_config["model_kwargs"] = {"reasoning": {"effort": config.reasoning_effort, "summary": config.reasoning_summary}}
+            if config.reasoning:
+                # User wants reasoning enabled - use configured effort
+                if config.reasoning_summary:
+                    model_config["model_kwargs"] = {"reasoning": {"effort": config.reasoning_effort, "summary": config.reasoning_summary}}
+            else:
+                # User wants reasoning disabled - set appropriate effort level
+                if _supports_full_reasoning_disable(config.model.name):
+                    # GPT-5.1+ supports effort='none' for full disable
+                    model_config["model_kwargs"] = {"reasoning": {"effort": "none"}}
+                else:
+                    # GPT-5 base models only support minimum effort='minimal'
+                    model_config["model_kwargs"] = {"reasoning": {"effort": "minimal"}}
         else:
+            # Model doesn't support reasoning
             model_config["temperature"] = config.temperature
 
         return model_config
