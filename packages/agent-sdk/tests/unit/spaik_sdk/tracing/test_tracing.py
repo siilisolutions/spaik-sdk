@@ -340,3 +340,85 @@ class TestAgentTrace:
         trace2 = AgentTrace(system_prompt="test2")
 
         assert trace1.agent_instance_id != trace2.agent_instance_id
+
+
+@pytest.mark.unit
+class TestEnvConfigGetTraceSinkMode:
+    """Tests for EnvConfig.get_trace_sink_mode method.
+
+    These tests verify the env config correctly translates TRACE_SINK_MODE
+    env var values to TraceSinkMode enum values or None.
+    """
+
+    def test_returns_none_when_env_var_not_set(self, monkeypatch):
+        """When TRACE_SINK_MODE env var is not set, get_trace_sink_mode returns None."""
+        monkeypatch.delenv("TRACE_SINK_MODE", raising=False)
+
+        from spaik_sdk.config.env import EnvConfig
+
+        config = EnvConfig()
+        result = config.get_trace_sink_mode()
+
+        assert result is None
+
+    def test_returns_none_when_env_var_empty_string(self, monkeypatch):
+        """When TRACE_SINK_MODE env var is empty string, get_trace_sink_mode returns None."""
+        monkeypatch.setenv("TRACE_SINK_MODE", "")
+
+        from spaik_sdk.config.env import EnvConfig
+
+        config = EnvConfig()
+        result = config.get_trace_sink_mode()
+
+        assert result is None
+
+    def test_returns_local_when_env_var_is_local(self, monkeypatch):
+        """When TRACE_SINK_MODE env var is 'local', get_trace_sink_mode returns TraceSinkMode.LOCAL."""
+        monkeypatch.setenv("TRACE_SINK_MODE", "local")
+
+        from spaik_sdk.config.env import EnvConfig
+
+        config = EnvConfig()
+        result = config.get_trace_sink_mode()
+
+        assert result == TraceSinkMode.LOCAL
+
+    def test_returns_noop_when_env_var_is_noop(self, monkeypatch):
+        """When TRACE_SINK_MODE env var is 'noop', get_trace_sink_mode returns TraceSinkMode.NOOP."""
+        monkeypatch.setenv("TRACE_SINK_MODE", "noop")
+
+        from spaik_sdk.config.env import EnvConfig
+
+        config = EnvConfig()
+        result = config.get_trace_sink_mode()
+
+        assert result == TraceSinkMode.NOOP
+
+    def test_returns_none_for_invalid_value(self, monkeypatch):
+        """When TRACE_SINK_MODE env var is invalid, get_trace_sink_mode returns None (no error)."""
+        monkeypatch.setenv("TRACE_SINK_MODE", "invalid_value")
+
+        from spaik_sdk.config.env import EnvConfig
+
+        config = EnvConfig()
+        result = config.get_trace_sink_mode()
+
+        assert result is None
+
+    def test_case_insensitive(self, monkeypatch):
+        """TRACE_SINK_MODE is case insensitive."""
+        from spaik_sdk.config.env import EnvConfig
+
+        config = EnvConfig()
+
+        monkeypatch.setenv("TRACE_SINK_MODE", "LOCAL")
+        assert config.get_trace_sink_mode() == TraceSinkMode.LOCAL
+
+        monkeypatch.setenv("TRACE_SINK_MODE", "Local")
+        assert config.get_trace_sink_mode() == TraceSinkMode.LOCAL
+
+        monkeypatch.setenv("TRACE_SINK_MODE", "NOOP")
+        assert config.get_trace_sink_mode() == TraceSinkMode.NOOP
+
+        monkeypatch.setenv("TRACE_SINK_MODE", "NoOp")
+        assert config.get_trace_sink_mode() == TraceSinkMode.NOOP
