@@ -16,6 +16,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: release
     permissions:
       contents: write
     env:
@@ -91,4 +92,3 @@ jobs:
           git commit -m "chore: bump spaik-sdk version to ${{ steps.new_version.outputs.version }}"
           git tag "spaik-sdk-v${{ steps.new_version.outputs.version }}"
           git push origin HEAD --tags
-
