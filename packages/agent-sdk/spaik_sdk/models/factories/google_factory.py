@@ -22,6 +22,11 @@ class GoogleModelFactory(BaseModelFactory):
         if config.reasoning:
             model_config["thinking_budget"] = config.reasoning_budget_tokens
             model_config["include_thoughts"] = True
+        else:
+            # Gemini models have thinking enabled by default, so we must explicitly
+            # set thinking_budget=0 to disable it (omitting the parameter doesn't work)
+            model_config["thinking_budget"] = 0
+            model_config["include_thoughts"] = False
 
         # Handle streaming - Google models use disable_streaming instead of streaming
         if not config.streaming:

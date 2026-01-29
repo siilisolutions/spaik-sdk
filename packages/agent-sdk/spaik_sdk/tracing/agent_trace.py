@@ -1,5 +1,6 @@
 import json
 import time
+import uuid
 from typing import Optional, Type
 
 from pydantic import BaseModel
@@ -15,12 +16,15 @@ class AgentTrace:
         system_prompt: str,
         save_name: Optional[str] = None,
         trace_sink: Optional[TraceSink] = None,
+        agent_instance_id: Optional[str] = None,
     ):
         self.system_prompt: str = system_prompt
         self._start_time_monotonic: float = time.monotonic()
         self._steps: list[tuple[float, str]] = []
         self.save_name: Optional[str] = save_name
         self._trace_sink: TraceSink = trace_sink or get_trace_sink()
+        # Generate UUID if not provided (backward compatibility)
+        self.agent_instance_id: str = agent_instance_id or str(uuid.uuid4())
 
     def add_step(self, step_content: str) -> None:
         current_time_monotonic: float = time.monotonic()
@@ -69,4 +73,6 @@ class AgentTrace:
 
     def save(self, name: str) -> None:
         trace_content = self.to_string(include_system_prompt=False)
-        self._trace_sink.save_trace(name, trace_content, self.system_prompt)
+        self._trace_sink.save_trace(
+            name, trace_content, self.system_prompt, self.agent_instance_id
+        )

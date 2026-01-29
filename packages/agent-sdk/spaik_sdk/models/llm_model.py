@@ -8,6 +8,7 @@ class LLMModel:
     family: str
     name: str
     reasoning: bool = True
+    reasoning_min_effort: str = "none"  # Minimum reasoning effort: 'none' or 'minimal'
     prompt_caching: bool = False
 
     def __str__(self) -> str:

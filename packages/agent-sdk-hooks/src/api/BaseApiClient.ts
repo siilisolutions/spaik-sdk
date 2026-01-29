@@ -86,7 +86,11 @@ export abstract class BaseApiClient {
         onChunk: (chunk: string) => void,
         signal?: AbortSignal
     ): Promise<void> {
-        const fullUrl = new URL(url, this.axiosInstance.defaults.baseURL).toString();
+        // Concatenate baseURL and url directly to preserve the path portion of baseURL
+        // Using new URL() here would incorrectly treat '/threads/...' as an absolute path
+        // and ignore the path in baseURL (e.g., '/api/chat')
+        const baseUrl = this.axiosInstance.defaults.baseURL || '';
+        const fullUrl = baseUrl + url;
 
         // Build headers explicitly for fetch
         const headers: Record<string, string> = {
@@ -95,21 +99,44 @@ export abstract class BaseApiClient {
             'Cache-Control': 'no-cache',
         };
 
-        // Add auth headers if they exist
-        const commonHeaders = this.axiosInstance.defaults.headers.common;
-        if (commonHeaders) {
-            Object.entries(commonHeaders).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    headers[key] = String(value);
+        // Add all headers from axios instance (including custom headers from config)
+        const axiosHeaders = this.axiosInstance.defaults.headers;
+
+        // Add common headers
+        if (axiosHeaders.common) {
+            Object.entries(axiosHeaders.common).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && typeof value === 'string') {
+                    headers[key] = value;
                 }
             });
         }
+
+        // Add POST-specific headers
+        if (axiosHeaders.post) {
+            Object.entries(axiosHeaders.post).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && typeof value === 'string') {
+                    headers[key] = value;
+                }
+            });
+        }
+
+        // Add root-level headers (where custom headers like X-Project-Id are stored)
+        Object.entries(axiosHeaders).forEach(([key, value]) => {
+            // Skip the method-specific header objects
+            if (['common', 'delete', 'get', 'head', 'post', 'put', 'patch'].includes(key)) {
+                return;
+            }
+            if (value !== undefined && value !== null && typeof value === 'string') {
+                headers[key] = value;
+            }
+        });
 
         const response = await fetch(fullUrl, {
             method: 'POST',
             headers,
             body: JSON.stringify(data),
             signal,
+            credentials: 'include', // Include cookies for authentication
         });
 
         if (!response.ok) {

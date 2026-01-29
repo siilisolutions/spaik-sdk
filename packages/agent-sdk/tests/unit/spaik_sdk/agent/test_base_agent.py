@@ -1,4 +1,5 @@
 import time
+import uuid
 from typing import List, Optional
 
 import pytest
@@ -275,3 +276,62 @@ class TestBaseAgent:
         # Verify cost estimation works
         cost = BuiltinCostProvider().get_cost_estimate(ModelRegistry.CLAUDE_4_SONNET, total_consumption)
         assert cost.cost > 0
+
+
+@pytest.mark.unit
+class TestBaseAgentInstanceId:
+    """Tests for BaseAgent agent_instance_id."""
+
+    def test_base_agent_has_agent_instance_id(self):
+        """BaseAgent has an agent_instance_id attribute that is a UUID."""
+        agent = ConcreteTestAgent(
+            recording_name="test_instance_id_has_id",
+            llm_model=ModelRegistry.CLAUDE_4_SONNET,
+        )
+
+        assert hasattr(agent, "agent_instance_id")
+        assert agent.agent_instance_id is not None
+        assert isinstance(agent.agent_instance_id, str)
+
+        # Should be a valid UUID format
+        parsed_uuid = uuid.UUID(agent.agent_instance_id)
+        assert str(parsed_uuid) == agent.agent_instance_id
+
+    def test_two_agents_have_different_instance_ids(self):
+        """Two BaseAgent instances have different instance IDs."""
+        agent1 = ConcreteTestAgent(
+            recording_name="test_instance_id_unique_1",
+            llm_model=ModelRegistry.CLAUDE_4_SONNET,
+        )
+        agent2 = ConcreteTestAgent(
+            recording_name="test_instance_id_unique_2",
+            llm_model=ModelRegistry.CLAUDE_4_SONNET,
+        )
+
+        assert agent1.agent_instance_id != agent2.agent_instance_id
+
+    def test_same_agent_class_different_instance_ids(self):
+        """Two agents created from same class have different instance IDs."""
+        # Create two agents of the exact same type with same parameters
+        agent1 = ConcreteTestAgent(
+            recording_name="test_same_class_different_id_1",
+            system_prompt="Same prompt",
+            llm_model=ModelRegistry.CLAUDE_4_SONNET,
+        )
+        agent2 = ConcreteTestAgent(
+            recording_name="test_same_class_different_id_2",
+            system_prompt="Same prompt",
+            llm_model=ModelRegistry.CLAUDE_4_SONNET,
+        )
+
+        assert agent1.agent_instance_id != agent2.agent_instance_id
+
+    def test_agent_instance_id_passed_to_trace(self):
+        """The agent_instance_id is passed to AgentTrace during construction."""
+        agent = ConcreteTestAgent(
+            recording_name="test_instance_id_in_trace",
+            llm_model=ModelRegistry.CLAUDE_4_SONNET,
+        )
+
+        # The agent's instance ID should match the trace's instance ID
+        assert agent.agent_instance_id == agent.trace.agent_instance_id

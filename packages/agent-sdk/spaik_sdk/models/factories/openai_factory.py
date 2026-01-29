@@ -36,15 +36,21 @@ class OpenAIModelFactory(BaseModelFactory):
         if config.tool_usage:
             model_config["model_kwargs"] = {"parallel_tool_calls": True}
 
-        # Add model-specific configurations for reasoning models
+        # Handle reasoning configuration based on user preference (config.reasoning)
+        # and model capability (config.model.reasoning)
         if config.model.reasoning:
-            # Enable Responses API for reasoning models
+            # Model supports reasoning - check user preference
             model_config["use_responses_api"] = True
 
-            # Configure reasoning through model_kwargs as per LangChain docs
-            if config.reasoning_summary:
-                model_config["model_kwargs"] = {"reasoning": {"effort": config.reasoning_effort, "summary": config.reasoning_summary}}
+            if config.reasoning:
+                # User wants reasoning enabled - use configured effort
+                if config.reasoning_summary:
+                    model_config["model_kwargs"] = {"reasoning": {"effort": config.reasoning_effort, "summary": config.reasoning_summary}}
+            else:
+                # User wants reasoning disabled - use model's minimum effort level
+                model_config["model_kwargs"] = {"reasoning": {"effort": config.model.reasoning_min_effort}}
         else:
+            # Model doesn't support reasoning
             model_config["temperature"] = config.temperature
 
         return model_config

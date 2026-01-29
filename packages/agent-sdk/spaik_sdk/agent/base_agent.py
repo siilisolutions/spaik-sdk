@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 from abc import ABC
 from typing import Any, AsyncGenerator, Dict, List, Optional, Type, TypeVar
 
@@ -57,9 +58,16 @@ class BaseAgent(ABC):
         cost_provider: Optional[CostProvider] = None,
     ):
         logger.debug("Initializing BaseAgent")
+        # Generate unique instance ID for trace correlation
+        self.agent_instance_id: str = str(uuid.uuid4())
         self.prompt_loader = prompt_loader or get_prompt_loader(prompt_loader_mode)
         self.system_prompt = system_prompt or self._get_system_prompt(system_prompt_args, system_prompt_version)
-        self.trace = trace or AgentTrace(self.system_prompt, self.__class__.__name__, trace_sink=trace_sink)
+        self.trace = trace or AgentTrace(
+            self.system_prompt,
+            self.__class__.__name__,
+            trace_sink=trace_sink,
+            agent_instance_id=self.agent_instance_id,
+        )
         self.thread_container = thread_container or ThreadContainer(self.system_prompt)
         self.tools = tools or self._create_tools(tool_providers)
         self.llm_config = llm_config or self.create_llm_config(llm_model, reasoning)
