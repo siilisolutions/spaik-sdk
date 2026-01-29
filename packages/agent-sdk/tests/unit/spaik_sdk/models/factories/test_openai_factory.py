@@ -2,7 +2,7 @@
 
 import pytest
 
-from spaik_sdk.models.factories.openai_factory import OpenAIModelFactory, _supports_full_reasoning_disable
+from spaik_sdk.models.factories.openai_factory import OpenAIModelFactory
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.model_registry import ModelRegistry
 
@@ -197,26 +197,6 @@ class TestOpenAIModelFactoryReasoning:
         assert model_config["temperature"] == 0.7
         assert "use_responses_api" not in model_config
         assert "reasoning" not in model_config.get("model_kwargs", {})
-
-    # Tests for helper function
-
-    def test_supports_full_reasoning_disable_gpt_5_1_models(self):
-        """GPT-5.1+ models support full reasoning disable (effort='none')."""
-        assert _supports_full_reasoning_disable("gpt-5.1") is True
-        assert _supports_full_reasoning_disable("gpt-5.1-codex") is True
-        assert _supports_full_reasoning_disable("gpt-5.1-codex-mini") is True
-        assert _supports_full_reasoning_disable("gpt-5.1-codex-max") is True
-
-    def test_supports_full_reasoning_disable_gpt_5_2_models(self):
-        """GPT-5.2 models support full reasoning disable (effort='none')."""
-        assert _supports_full_reasoning_disable("gpt-5.2") is True
-        assert _supports_full_reasoning_disable("gpt-5.2-pro") is True
-
-    def test_supports_full_reasoning_disable_gpt_5_base_models(self):
-        """GPT-5 base models don't support full reasoning disable."""
-        assert _supports_full_reasoning_disable("gpt-5") is False
-        assert _supports_full_reasoning_disable("gpt-5-mini") is False
-        assert _supports_full_reasoning_disable("gpt-5-nano") is False
 
 
 @pytest.mark.unit
