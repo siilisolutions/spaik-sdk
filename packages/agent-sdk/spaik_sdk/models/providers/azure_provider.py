@@ -46,10 +46,7 @@ class AzureProvider(BaseProvider):
         env_var = AZURE_DEPLOYMENT_ENV_VARS.get(model_name)
         if not env_var:
             raise ValueError(f"Model '{model_name}' not supported on Azure. Add it to AZURE_DEPLOYMENT_ENV_VARS.")
-        deployment = os.environ.get(env_var)
-        if not deployment:
-            raise ValueError(f"Azure deployment not configured. Set {env_var} environment variable.")
-        return deployment
+        return os.environ.get(env_var, model_name)
 
     def _get_required_env(self, key: str) -> str:
         value = os.environ.get(key)
