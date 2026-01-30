@@ -178,7 +178,7 @@ class AudioRouterFactory:
             try:
                 audio_bytes = await file.read()
                 filename = file.filename or "audio.webm"
-                
+
                 logger.info(f"STT request: language={language}, filename={filename}, size={len(audio_bytes)}")
 
                 options = STTOptions(
