@@ -73,6 +73,4 @@ class AgentTrace:
 
     def save(self, name: str) -> None:
         trace_content = self.to_string(include_system_prompt=False)
-        self._trace_sink.save_trace(
-            name, trace_content, self.system_prompt, self.agent_instance_id
-        )
+        self._trace_sink.save_trace(name, trace_content, self.system_prompt, self.agent_instance_id)
