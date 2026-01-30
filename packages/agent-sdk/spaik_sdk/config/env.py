@@ -1,5 +1,4 @@
 import os
-from typing import Dict
 from typing import Optional as OptionalType
 
 from spaik_sdk.models.llm_model import LLMModel
@@ -15,16 +14,6 @@ class EnvConfig:
         if required and not value:
             raise ValueError(f"Environment variable {key} is required but not set")
         return value
-
-    def get_azure_keys(self) -> Dict[str, str]:
-        return {
-            "api_key": self.get_key("AZURE_API_KEY"),
-            "api_version": self.get_key("AZURE_API_VERSION"),
-            "endpoint": self.get_key("AZURE_ENDPOINT"),
-            "o3-mini_deployment": self.get_key("AZURE_O3_MINI_DEPLOYMENT", required=False),
-            "gpt-4_1_deployment": self.get_key("AZURE_GPT_4_1_DEPLOYMENT", required=False),
-            "gpt-4o_deployment": self.get_key("AZURE_GPT_4O_DEPLOYMENT", required=False),
-        }
 
     def get_default_model(self) -> LLMModel:
         return ModelRegistry.from_name(self.get_key("DEFAULT_MODEL"))
