@@ -20,6 +20,7 @@ class XAIModelFactory(BaseModelFactory):
         model_config: Dict[str, Any] = {
             "model": config.model.name,
             "temperature": config.temperature,
-            "max_tokens": config.max_output_tokens,
         }
+        if config.max_output_tokens is not None:
+            model_config["max_tokens"] = config.max_output_tokens
         return model_config

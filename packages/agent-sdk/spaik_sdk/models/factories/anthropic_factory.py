@@ -21,7 +21,7 @@ class AnthropicModelFactory(BaseModelFactory):
         model_config: Dict[str, Any] = {
             "model_name": config.model.name,
             "streaming": config.streaming,
-            "max_tokens": config.max_output_tokens,
+            "max_tokens": config.max_output_tokens if config.max_output_tokens is not None else 8192,
         }
 
         # Handle thinking mode via model_kwargs for LangChain compatibility
