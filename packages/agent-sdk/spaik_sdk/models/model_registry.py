@@ -22,17 +22,32 @@ class ModelRegistry:
 
     # OpenAI models
     GPT_4_1 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1", reasoning=False, prompt_caching=True)
+    GPT_4_1_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1-mini", reasoning=False, prompt_caching=True)
+    GPT_4_1_NANO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1-nano", reasoning=False, prompt_caching=True)
     GPT_4O = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4o", reasoning=False, prompt_caching=True)
+    GPT_4O_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4o-mini", reasoning=False, prompt_caching=True)
+    O1 = LLMModel(family=LLMFamilies.OPENAI, name="o1")
+    O1_MINI = LLMModel(family=LLMFamilies.OPENAI, name="o1-mini")
+    O3 = LLMModel(family=LLMFamilies.OPENAI, name="o3")
+    O3_MINI = LLMModel(family=LLMFamilies.OPENAI, name="o3-mini")
+    O3_PRO = LLMModel(family=LLMFamilies.OPENAI, name="o3-pro")
     O4_MINI = LLMModel(family=LLMFamilies.OPENAI, name="o4-mini")
     O4_MINI_APRIL_2025 = LLMModel(family=LLMFamilies.OPENAI, name="o4-mini-2025-04-16")
+    CODEX_MINI = LLMModel(family=LLMFamilies.OPENAI, name="codex-mini")
     GPT_5 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5", reasoning=True, reasoning_min_effort="minimal", prompt_caching=True)
     GPT_5_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-mini", reasoning=True, reasoning_min_effort="minimal", prompt_caching=True)
     GPT_5_NANO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-nano", reasoning=True, reasoning_min_effort="minimal", prompt_caching=True)
+    GPT_5_CHAT = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-chat", reasoning=False, prompt_caching=True)
+    GPT_5_CODEX = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-codex", reasoning=True, prompt_caching=True)
+    GPT_5_PRO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-pro", reasoning=True, prompt_caching=True)
     GPT_5_1 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.1", reasoning=True, prompt_caching=True)
+    GPT_5_1_CHAT = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.1-chat", reasoning=True, prompt_caching=True)
     GPT_5_1_CODEX = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.1-codex", reasoning=True, prompt_caching=True)
     GPT_5_1_CODEX_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.1-codex-mini", reasoning=True, prompt_caching=True)
     GPT_5_1_CODEX_MAX = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.1-codex-max", reasoning=True, prompt_caching=True)
     GPT_5_2 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.2", reasoning=True, prompt_caching=True)
+    GPT_5_2_CHAT = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.2-chat", reasoning=False, prompt_caching=True)
+    GPT_5_2_CODEX = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.2-codex", reasoning=True, prompt_caching=True)
     GPT_5_2_PRO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.2-pro", reasoning=True, prompt_caching=True)
 
     # Google models
@@ -42,6 +57,35 @@ class ModelRegistry:
     GEMINI_2_5_PRO_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-pro", prompt_caching=True)
     GEMINI_3_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-flash-preview", prompt_caching=True)
     GEMINI_3_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-pro-preview", prompt_caching=True)
+
+    # DeepSeek models
+    DEEPSEEK_V3 = LLMModel(family=LLMFamilies.DEEPSEEK, name="DeepSeek-V3-0324")
+    DEEPSEEK_V3_1 = LLMModel(family=LLMFamilies.DEEPSEEK, name="DeepSeek-V3.1")
+    DEEPSEEK_V3_2 = LLMModel(family=LLMFamilies.DEEPSEEK, name="DeepSeek-V3.2")
+    DEEPSEEK_V3_2_SPECIALE = LLMModel(family=LLMFamilies.DEEPSEEK, name="DeepSeek-V3.2-Speciale")
+    DEEPSEEK_R1 = LLMModel(family=LLMFamilies.DEEPSEEK, name="DeepSeek-R1")
+    DEEPSEEK_R1_0528 = LLMModel(family=LLMFamilies.DEEPSEEK, name="DeepSeek-R1-0528")
+
+    # Mistral models
+    MISTRAL_LARGE_3 = LLMModel(family=LLMFamilies.MISTRAL, name="Mistral-Large-3", reasoning=False)
+
+    # Meta Llama models
+    LLAMA_4_MAVERICK = LLMModel(family=LLMFamilies.META, name="Llama-4-Maverick-17B-128E-Instruct-FP8", reasoning=False)
+    LLAMA_3_3_70B = LLMModel(family=LLMFamilies.META, name="Llama-3.3-70B-Instruct", reasoning=False)
+
+    # Cohere models
+    COHERE_COMMAND_A = LLMModel(family=LLMFamilies.COHERE, name="Cohere-command-a", reasoning=False)
+
+    # xAI Grok models
+    GROK_3 = LLMModel(family=LLMFamilies.XAI, name="grok-3")
+    GROK_3_MINI = LLMModel(family=LLMFamilies.XAI, name="grok-3-mini")
+    GROK_4 = LLMModel(family=LLMFamilies.XAI, name="grok-4")
+    GROK_4_FAST_REASONING = LLMModel(family=LLMFamilies.XAI, name="grok-4-fast-reasoning")
+    GROK_4_FAST_NON_REASONING = LLMModel(family=LLMFamilies.XAI, name="grok-4-fast-non-reasoning", reasoning=False)
+    GROK_CODE_FAST_1 = LLMModel(family=LLMFamilies.XAI, name="grok-code-fast-1")
+
+    # Moonshot AI models
+    KIMI_K2_THINKING = LLMModel(family=LLMFamilies.MOONSHOT, name="Kimi-K2-Thinking")
 
     # Registry for custom models
     _custom_models: Set[LLMModel] = set()
@@ -82,6 +126,7 @@ class ModelRegistry:
     def _get_aliases(cls) -> Dict[str, LLMModel]:
         """Get aliases mapping."""
         return {
+            # Claude aliases
             "sonnet": cls.CLAUDE_4_SONNET,
             "sonnet 3.7": cls.CLAUDE_3_7_SONNET,
             "sonnet 4.5": cls.CLAUDE_4_5_SONNET,
@@ -100,25 +145,73 @@ class ModelRegistry:
             "claude 4.5 sonnet": cls.CLAUDE_4_5_SONNET,
             "claude 4.5 haiku": cls.CLAUDE_4_5_HAIKU,
             "claude 4 opus": cls.CLAUDE_4_OPUS,
+            # OpenAI aliases
+            "o1": cls.O1,
+            "o1 mini": cls.O1_MINI,
+            "o3": cls.O3,
+            "o3 mini": cls.O3_MINI,
+            "o3 pro": cls.O3_PRO,
             "o4 mini": cls.O4_MINI,
             "o4 mini 2025-04-16": cls.O4_MINI_APRIL_2025,
+            "codex mini": cls.CODEX_MINI,
             "gpt 4.1": cls.GPT_4_1,
+            "gpt 4.1 mini": cls.GPT_4_1_MINI,
+            "gpt 4.1 nano": cls.GPT_4_1_NANO,
             "gpt 4o": cls.GPT_4O,
+            "gpt 4o mini": cls.GPT_4O_MINI,
             "gpt 5": cls.GPT_5,
             "gpt 5 mini": cls.GPT_5_MINI,
             "gpt 5 nano": cls.GPT_5_NANO,
+            "gpt 5 chat": cls.GPT_5_CHAT,
+            "gpt 5 codex": cls.GPT_5_CODEX,
+            "gpt 5 pro": cls.GPT_5_PRO,
             "gpt 5.1": cls.GPT_5_1,
+            "gpt 5.1 chat": cls.GPT_5_1_CHAT,
             "gpt 5.1 codex": cls.GPT_5_1_CODEX,
             "gpt 5.1 codex mini": cls.GPT_5_1_CODEX_MINI,
             "gpt 5.1 codex max": cls.GPT_5_1_CODEX_MAX,
             "gpt 5.2": cls.GPT_5_2,
+            "gpt 5.2 chat": cls.GPT_5_2_CHAT,
+            "gpt 5.2 codex": cls.GPT_5_2_CODEX,
             "gpt 5.2 pro": cls.GPT_5_2_PRO,
+            # Gemini aliases
             "gemini 2.5 flash": cls.GEMINI_2_5_FLASH,
             "gemini 2.5 pro": cls.GEMINI_2_5_PRO,
             "gemini 3 flash": cls.GEMINI_3_FLASH,
             "gemini 3.0 flash": cls.GEMINI_3_FLASH,
             "gemini 3 pro": cls.GEMINI_3_PRO,
             "gemini 3.0 pro": cls.GEMINI_3_PRO,
+            # DeepSeek aliases
+            "deepseek": cls.DEEPSEEK_V3_2,
+            "deepseek v3": cls.DEEPSEEK_V3,
+            "deepseek v3.1": cls.DEEPSEEK_V3_1,
+            "deepseek v3.2": cls.DEEPSEEK_V3_2,
+            "deepseek v3.2 speciale": cls.DEEPSEEK_V3_2_SPECIALE,
+            "deepseek r1": cls.DEEPSEEK_R1,
+            # Mistral aliases
+            "mistral": cls.MISTRAL_LARGE_3,
+            "mistral large": cls.MISTRAL_LARGE_3,
+            "mistral large 3": cls.MISTRAL_LARGE_3,
+            # Meta Llama aliases
+            "llama": cls.LLAMA_3_3_70B,
+            "llama 3.3": cls.LLAMA_3_3_70B,
+            "llama 3.3 70b": cls.LLAMA_3_3_70B,
+            "llama 4": cls.LLAMA_4_MAVERICK,
+            "llama 4 maverick": cls.LLAMA_4_MAVERICK,
+            # Cohere aliases
+            "cohere": cls.COHERE_COMMAND_A,
+            "cohere command": cls.COHERE_COMMAND_A,
+            "command a": cls.COHERE_COMMAND_A,
+            # xAI Grok aliases
+            "grok": cls.GROK_4,
+            "grok 3": cls.GROK_3,
+            "grok 3 mini": cls.GROK_3_MINI,
+            "grok 4": cls.GROK_4,
+            "grok 4 fast": cls.GROK_4_FAST_REASONING,
+            "grok code": cls.GROK_CODE_FAST_1,
+            # Moonshot aliases
+            "kimi": cls.KIMI_K2_THINKING,
+            "kimi k2": cls.KIMI_K2_THINKING,
         }
 
 

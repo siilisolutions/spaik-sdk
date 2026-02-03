@@ -9,6 +9,10 @@ class ProviderType(Enum):
     OPENAI_DIRECT = "openai"
     GOOGLE = "google"
     OLLAMA = "ollama"
+    DEEPSEEK = "deepseek"
+    XAI = "xai"
+    COHERE = "cohere"
+    MISTRAL = "mistral"
 
     @classmethod
     def from_name(cls, name: str) -> "ProviderType":
@@ -39,6 +43,14 @@ class ProviderType(Enum):
             return cls.GOOGLE
         elif family_lower == "ollama":
             return cls.OLLAMA
+        elif family_lower == "deepseek":
+            return cls.DEEPSEEK
+        elif family_lower == "xai":
+            return cls.XAI
+        elif family_lower == "cohere":
+            return cls.COHERE
+        elif family_lower == "mistral":
+            return cls.MISTRAL
         else:
             raise ValueError(f"Unknown model family: {family}")
 
@@ -51,6 +63,11 @@ PROVIDER_ALIASES = {
     "openai": ProviderType.OPENAI_DIRECT,
     "google": ProviderType.GOOGLE,
     "gemini": ProviderType.GOOGLE,
+    "deepseek": ProviderType.DEEPSEEK,
+    "xai": ProviderType.XAI,
+    "grok": ProviderType.XAI,
+    "cohere": ProviderType.COHERE,
+    "mistral": ProviderType.MISTRAL,
 }
 
 

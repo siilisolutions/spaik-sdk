@@ -16,7 +16,7 @@ class LLMConfig:
     streaming: bool = True
     reasoning_summary: str = "detailed"  # Options: "auto", "concise", "detailed", None
     reasoning_effort: str = "medium"  # Options: "low", "medium", "high"
-    max_output_tokens: int = 8192
+    max_output_tokens: Optional[int] = None
     reasoning_budget_tokens: int = 4096
     temperature: float = 0.1
     structured_response: bool = False

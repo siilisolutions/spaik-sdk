@@ -54,15 +54,27 @@ class BaseModelFactory(ABC):
         """Factory method to create appropriate factory instance."""
 
         from spaik_sdk.models.factories.anthropic_factory import AnthropicModelFactory
+        from spaik_sdk.models.factories.cohere_factory import CohereModelFactory
+        from spaik_sdk.models.factories.deepseek_factory import DeepSeekModelFactory
         from spaik_sdk.models.factories.google_factory import GoogleModelFactory
+        from spaik_sdk.models.factories.meta_factory import MetaModelFactory
+        from spaik_sdk.models.factories.mistral_factory import MistralModelFactory
+        from spaik_sdk.models.factories.moonshot_factory import MoonshotModelFactory
         from spaik_sdk.models.factories.ollama_factory import OllamaModelFactory
         from spaik_sdk.models.factories.openai_factory import OpenAIModelFactory
+        from spaik_sdk.models.factories.xai_factory import XAIModelFactory
 
         factories = [
             AnthropicModelFactory(),
             OpenAIModelFactory(),
             GoogleModelFactory(),
             OllamaModelFactory(),
+            DeepSeekModelFactory(),
+            XAIModelFactory(),
+            CohereModelFactory(),
+            MistralModelFactory(),
+            MetaModelFactory(),
+            MoonshotModelFactory(),
         ]
         for factory in factories:
             if factory.supports_model_config(config):
