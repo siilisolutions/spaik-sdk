@@ -7,11 +7,11 @@ from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.model_registry import ModelRegistry
 
 
-class CohereModelFactory(BaseModelFactory):
-    MODELS = ModelRegistry.get_by_family(LLMFamilies.COHERE)
+class MoonshotModelFactory(BaseModelFactory):
+    MODELS = ModelRegistry.get_by_family(LLMFamilies.MOONSHOT)
 
     def supports_model(self, model: LLMModel) -> bool:
-        return model in CohereModelFactory.MODELS
+        return model in MoonshotModelFactory.MODELS
 
     def get_cache_control(self, config: LLMConfig) -> Optional[Dict[str, Any]]:
         return None
@@ -20,5 +20,6 @@ class CohereModelFactory(BaseModelFactory):
         model_config: Dict[str, Any] = {
             "model": config.model.name,
             "temperature": config.temperature,
+            "max_tokens": config.max_output_tokens,
         }
         return model_config

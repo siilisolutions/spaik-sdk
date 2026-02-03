@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from spaik_sdk.models.factories.base_model_factory import BaseModelFactory
 from spaik_sdk.models.llm_config import LLMConfig
@@ -12,6 +12,9 @@ class XAIModelFactory(BaseModelFactory):
 
     def supports_model(self, model: LLMModel) -> bool:
         return model in XAIModelFactory.MODELS
+
+    def get_cache_control(self, config: LLMConfig) -> Optional[Dict[str, Any]]:
+        return None
 
     def get_model_specific_config(self, config: LLMConfig) -> Dict[str, Any]:
         model_config: Dict[str, Any] = {

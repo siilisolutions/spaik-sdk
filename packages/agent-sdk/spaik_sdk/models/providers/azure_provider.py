@@ -1,10 +1,9 @@
 import os
-from typing import Any, Collection, Dict
+from typing import Any, Collection, Dict, Set
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_openai import AzureChatOpenAI
 
-from spaik_sdk.models.factories.openai_factory import OpenAIModelFactory
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.providers.base_provider import BaseProvider
@@ -68,7 +67,16 @@ AZURE_DEPLOYMENT_ENV_VARS: Dict[str, str] = {
 
 class AzureProvider(BaseProvider):
     def get_supported_models(self) -> Collection[LLMModel]:
-        return OpenAIModelFactory.MODELS
+        from spaik_sdk.models.model_registry import ModelRegistry
+
+        supported: Set[LLMModel] = set()
+        for model_name in AZURE_DEPLOYMENT_ENV_VARS.keys():
+            try:
+                model = ModelRegistry.from_name(model_name)
+                supported.add(model)
+            except ValueError:
+                pass
+        return supported
 
     def get_model_config(self, config: LLMConfig) -> Dict[str, Any]:
         return {
