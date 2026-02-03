@@ -6,6 +6,7 @@ from langchain_openai import AzureChatOpenAI
 
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.llm_model import LLMModel
+from spaik_sdk.models.model_registry import ModelRegistry
 from spaik_sdk.models.providers.base_provider import BaseProvider
 
 # Model name -> Environment variable for Azure deployment name
@@ -67,8 +68,6 @@ AZURE_DEPLOYMENT_ENV_VARS: Dict[str, str] = {
 
 class AzureProvider(BaseProvider):
     def get_supported_models(self) -> Collection[LLMModel]:
-        from spaik_sdk.models.model_registry import ModelRegistry
-
         supported: Set[LLMModel] = set()
         for model_name in AZURE_DEPLOYMENT_ENV_VARS.keys():
             try:
