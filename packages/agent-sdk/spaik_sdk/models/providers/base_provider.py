@@ -58,5 +58,21 @@ class BaseProvider(ABC):
             from spaik_sdk.models.providers.ollama_provider import OllamaProvider
 
             return OllamaProvider()
+        elif provider_type == ProviderType.DEEPSEEK:
+            from spaik_sdk.models.providers.deepseek_provider import DeepSeekProvider
+
+            return DeepSeekProvider()
+        elif provider_type == ProviderType.XAI:
+            from spaik_sdk.models.providers.xai_provider import XAIProvider
+
+            return XAIProvider()
+        elif provider_type == ProviderType.COHERE:
+            from spaik_sdk.models.providers.cohere_provider import CohereProvider
+
+            return CohereProvider()
+        elif provider_type == ProviderType.MISTRAL:
+            from spaik_sdk.models.providers.mistral_provider import MistralProvider
+
+            return MistralProvider()
         else:
             raise ValueError(f"Unsupported provider type: {provider_type}")
