@@ -23,6 +23,7 @@ dependencies = [
     "azure-storage-blob",
     "dotenv>=0.9.9",
     "fastapi>=0.115.12",
+    "python-multipart>=0.0.18",
     "PyJWT>=2.8.0",
     "requests>=2.31.0",
     "cryptography>=41.0.0", # Required for JWT RSA operations
