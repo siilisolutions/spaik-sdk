@@ -335,3 +335,28 @@ class TestBaseAgentInstanceId:
 
         # The agent's instance ID should match the trace's instance ID
         assert agent.agent_instance_id == agent.trace.agent_instance_id
+
+
+@pytest.mark.unit
+class TestBaseAgentSystemPromptOverride:
+    """Tests for get_system_prompt() override support."""
+
+    def test_get_system_prompt_override_is_used(self):
+        """Subclass overriding get_system_prompt() should have it used without FileNotFoundError."""
+
+        class OverrideAgent(BaseAgent):
+            def get_system_prompt(self) -> str:
+                return "Custom system prompt from override"
+
+        agent = OverrideAgent(llm_model=ModelRegistry.CLAUDE_4_SONNET)
+        assert agent.system_prompt == "Custom system prompt from override"
+
+    def test_explicit_system_prompt_kwarg_takes_precedence(self):
+        """Explicit system_prompt kwarg should take precedence over get_system_prompt() override."""
+
+        class OverrideAgent(BaseAgent):
+            def get_system_prompt(self) -> str:
+                return "From override"
+
+        agent = OverrideAgent(system_prompt="From kwarg", llm_model=ModelRegistry.CLAUDE_4_SONNET)
+        assert agent.system_prompt == "From kwarg"
