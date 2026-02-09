@@ -11,7 +11,6 @@ from spaik_sdk.models.providers.ollama_provider import OllamaProvider
 
 @pytest.mark.unit
 class TestOllamaProvider:
-
     def test_create_langchain_model_does_not_duplicate_model_kwarg(self):
         """ChatOllama should receive 'model' only once via full_config, not as a separate kwarg."""
         provider = OllamaProvider()
