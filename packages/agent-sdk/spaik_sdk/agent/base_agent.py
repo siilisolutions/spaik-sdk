@@ -60,7 +60,7 @@ class BaseAgent(ABC):
         # Generate unique instance ID for trace correlation
         self.agent_instance_id: str = str(uuid.uuid4())
         self.prompt_loader = prompt_loader or get_prompt_loader(prompt_loader_mode)
-        self.system_prompt = system_prompt or self.get_system_prompt() or self._get_system_prompt(system_prompt_args, system_prompt_version)
+        self.system_prompt = system_prompt or self._get_system_prompt(system_prompt_args, system_prompt_version)
         self.trace = trace or AgentTrace(
             self.system_prompt,
             self.__class__.__name__,
@@ -152,9 +152,6 @@ class BaseAgent(ABC):
             reasoning=reasoning if reasoning is not None else llm_model.reasoning,
             tool_usage=len(self.tools) > 0,
         )
-
-    def get_system_prompt(self) -> Optional[str]:
-        return None
 
     def get_llm_model(self) -> LLMModel:
         return env_config.get_default_model()
