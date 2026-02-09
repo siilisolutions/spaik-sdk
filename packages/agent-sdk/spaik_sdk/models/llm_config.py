@@ -43,4 +43,4 @@ class LLMConfig:
         return BaseModelFactory.create_factory(self)
 
     def as_structured_response_config(self) -> "LLMConfig":
-        return replace(self, structured_response=True)
+        return replace(self, structured_response=True, tool_usage=False)
