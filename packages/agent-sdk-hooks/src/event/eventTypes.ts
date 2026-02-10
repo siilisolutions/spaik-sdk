@@ -60,6 +60,14 @@ export const ToolResponseReceivedEventSchema = z.object({
     }),
 }).passthrough();
 
+export const ErrorEventSchema = z.object({
+    event_type: z.literal('Error'),
+    data: z.object({
+        error_message: z.string(),
+        error_type: z.string().optional(),
+    }),
+}).passthrough();
+
 // Standard events with event_type
 export const EventSchema = z.discriminatedUnion('event_type', [
     StreamingUpdatedEventSchema,
@@ -68,6 +76,7 @@ export const EventSchema = z.discriminatedUnion('event_type', [
     BlockFullyAddedEventSchema,
     MessageAddedEventSchema,
     ToolResponseReceivedEventSchema,
+    ErrorEventSchema,
 ]);
 
 
@@ -77,4 +86,5 @@ export type BlockAddedEvent = z.infer<typeof BlockAddedEventSchema>;
 export type MessageFullyAddedEvent = z.infer<typeof MessageFullyAddedEventSchema>;
 export type MessageAddedEvent = z.infer<typeof MessageAddedEventSchema>;
 export type ToolResponseReceivedEvent = z.infer<typeof ToolResponseReceivedEventSchema>;
+export type ErrorEvent = z.infer<typeof ErrorEventSchema>;
 
