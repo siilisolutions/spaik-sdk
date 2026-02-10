@@ -23,7 +23,7 @@ from spaik_sdk.llm.message_handler import MessageHandler
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.recording.base_playback import BasePlayback
 from spaik_sdk.recording.base_recorder import BaseRecorder
-from spaik_sdk.thread.models import MessageBlock, MessageBlockType, ThreadMessage
+from spaik_sdk.thread.models import ErrorEvent, MessageBlock, MessageBlockType, ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
 from spaik_sdk.utils.init_logger import init_logger
 
@@ -137,7 +137,8 @@ class LangChainService:
                     yield token_data
 
         except Exception as e:
-            yield {"type": "error", "error": self._handle_error(e)}
+            error_info = self._handle_error(e)
+            yield ErrorEvent(error_message=error_info.get("error", str(e)))
         finally:
             self._on_request_completed()
 

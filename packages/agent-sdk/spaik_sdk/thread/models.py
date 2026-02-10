@@ -154,6 +154,18 @@ def fix_event_type(event_type: str) -> str:
 
 
 @dataclass
+class ErrorEvent(PublishableEvent):
+    error_message: str
+    error_type: str = "unknown"
+
+    def get_event_data(self) -> Optional[Dict[str, Any]]:
+        return {
+            "error_message": self.error_message,
+            "error_type": self.error_type,
+        }
+
+
+@dataclass
 class StreamingUpdatedEvent(PublishableEvent):
     block_id: str
     content: str

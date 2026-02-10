@@ -237,7 +237,13 @@ class ThreadRouterFactory:
 
                 except Exception as e:
                     logger.error(f"Error in SSE stream: {e}")
-                    yield f'data: {{"error": "{str(e)}"}}\n\n'
+                    error_event = {
+                        "event_type": "Error",
+                        "thread_id": thread_id,
+                        "timestamp": int(time.time() * 1000),
+                        "data": {"error_message": str(e), "error_type": "stream_error"},
+                    }
+                    yield json.dumps(error_event) + "\n\n"
 
             logger.info(f"StreamingResponse for job {thread_id}")
             return StreamingResponse(
