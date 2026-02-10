@@ -32,9 +32,10 @@ class OpenAIModelFactory(BaseModelFactory):
 
     def get_model_specific_config(self, config: LLMConfig) -> Dict[str, Any]:
         model_config: Dict[str, Any] = {"model": config.model.name, "streaming": config.streaming}
-        # Add parallel tool calls if tool usage is enabled
+        model_kwargs: Dict[str, Any] = {}
+
         if config.tool_usage:
-            model_config["model_kwargs"] = {"parallel_tool_calls": True}
+            model_kwargs["parallel_tool_calls"] = True
 
         # Handle reasoning configuration based on user preference (config.reasoning)
         # and model capability (config.model.reasoning)
@@ -45,12 +46,15 @@ class OpenAIModelFactory(BaseModelFactory):
             if config.reasoning:
                 # User wants reasoning enabled - use configured effort
                 if config.reasoning_summary:
-                    model_config["model_kwargs"] = {"reasoning": {"effort": config.reasoning_effort, "summary": config.reasoning_summary}}
+                    model_kwargs["reasoning"] = {"effort": config.reasoning_effort, "summary": config.reasoning_summary}
             else:
                 # User wants reasoning disabled - use model's minimum effort level
-                model_config["model_kwargs"] = {"reasoning": {"effort": config.model.reasoning_min_effort}}
+                model_kwargs["reasoning"] = {"effort": config.model.reasoning_min_effort}
         else:
             # Model doesn't support reasoning
             model_config["temperature"] = config.temperature
+
+        if model_kwargs:
+            model_config["model_kwargs"] = model_kwargs
 
         return model_config

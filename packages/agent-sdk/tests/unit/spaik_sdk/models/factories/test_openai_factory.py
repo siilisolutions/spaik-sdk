@@ -233,3 +233,61 @@ class TestOpenAIModelFactoryParameterized:
         model_config = factory.get_model_specific_config(config)
 
         assert model_config["model_kwargs"]["reasoning"]["effort"] == expected_effort
+
+
+@pytest.mark.unit
+class TestOpenAIModelFactoryParallelToolCalls:
+    """Tests for parallel_tool_calls handling (#44)."""
+
+    @pytest.fixture
+    def factory(self):
+        return OpenAIModelFactory()
+
+    def test_no_parallel_tool_calls_when_tool_usage_disabled(self, factory):
+        """parallel_tool_calls must not appear when tool_usage is False."""
+        config = LLMConfig(
+            model=ModelRegistry.GPT_4_1,
+            tool_usage=False,
+        )
+
+        model_config = factory.get_model_specific_config(config)
+
+        assert "parallel_tool_calls" not in model_config.get("model_kwargs", {})
+
+    def test_parallel_tool_calls_present_when_tool_usage_enabled(self, factory):
+        """parallel_tool_calls should be set when tool_usage is True."""
+        config = LLMConfig(
+            model=ModelRegistry.GPT_4_1,
+            tool_usage=True,
+        )
+
+        model_config = factory.get_model_specific_config(config)
+
+        assert model_config["model_kwargs"]["parallel_tool_calls"] is True
+
+    def test_structured_response_config_disables_tool_usage(self):
+        """as_structured_response_config should set tool_usage=False so parallel_tool_calls is not sent."""
+        config = LLMConfig(
+            model=ModelRegistry.GPT_4_1,
+            tool_usage=True,
+        )
+
+        structured_config = config.as_structured_response_config()
+
+        assert structured_config.structured_response is True
+        assert structured_config.tool_usage is False
+
+    def test_parallel_tool_calls_preserved_with_reasoning(self, factory):
+        """parallel_tool_calls must not be overwritten when reasoning config is also set."""
+        config = LLMConfig(
+            model=ModelRegistry.GPT_5_1,
+            tool_usage=True,
+            reasoning=True,
+            reasoning_effort="high",
+            reasoning_summary="detailed",
+        )
+
+        model_config = factory.get_model_specific_config(config)
+
+        assert model_config["model_kwargs"]["parallel_tool_calls"] is True
+        assert model_config["model_kwargs"]["reasoning"]["effort"] == "high"

@@ -23,4 +23,4 @@ class OllamaProvider(BaseProvider):
         return provider_config
 
     def create_langchain_model(self, config: LLMConfig, full_config: Dict[str, Any]) -> BaseChatModel:
-        return ChatOllama(model=config.model.name, **full_config)
+        return ChatOllama(**full_config)

@@ -17,6 +17,7 @@ from spaik_sdk.llm.cost.cost_provider import CostProvider
 from spaik_sdk.llm.langchain_service import LangChainService
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.llm_model import LLMModel
+from spaik_sdk.models.providers.provider_type import ProviderType
 from spaik_sdk.prompt.get_prompt_loader import get_prompt_loader
 from spaik_sdk.prompt.prompt_loader import PromptLoader
 from spaik_sdk.prompt.prompt_loader_mode import PromptLoaderMode
@@ -148,10 +149,16 @@ class BaseAgent(ABC):
 
         return LLMConfig(
             model=llm_model,
-            provider_type=env_config.get_provider_type(),
+            provider_type=self._resolve_provider_type(llm_model),
             reasoning=reasoning if reasoning is not None else llm_model.reasoning,
             tool_usage=len(self.tools) > 0,
         )
+
+    def _resolve_provider_type(self, llm_model: LLMModel) -> ProviderType:
+        env_provider = env_config.get_key("MODEL_PROVIDER", required=False)
+        if env_provider:
+            return ProviderType.from_name(env_provider)
+        return ProviderType.from_family(llm_model.family)
 
     def get_llm_model(self) -> LLMModel:
         return env_config.get_default_model()
