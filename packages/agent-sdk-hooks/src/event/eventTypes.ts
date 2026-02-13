@@ -61,7 +61,9 @@ export const ToolResponseReceivedEventSchema = z.object({
 }).passthrough();
 
 export const ErrorEventSchema = z.object({
+    thread_id: IdSchema,
     event_type: z.literal('Error'),
+    timestamp: z.number(),
     data: z.object({
         error_message: z.string(),
         error_type: z.string().optional(),
