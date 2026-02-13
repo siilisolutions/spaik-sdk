@@ -80,6 +80,7 @@ export function MessageList({ messages, isLoading, filesBaseUrl, showTypingIndic
             sx={{
                 flex: 1,
                 overflow: 'auto',
+                overflowX: 'hidden',
                 p: 3,
             }}
         >

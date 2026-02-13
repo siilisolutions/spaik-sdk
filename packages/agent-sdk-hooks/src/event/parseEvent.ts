@@ -1,21 +1,24 @@
 import { BaseEvent, EventSchema } from './eventTypes';
 import { nullToUndefined } from '../utils/nullToUndefined';
 
-export function parseEvent(rawEvent: string): BaseEvent {
-    const parsedData = JSON.parse(rawEvent);
+export function parseEvent(rawEvent: string): BaseEvent | undefined {
+    let parsedData: unknown;
+    try {
+        parsedData = JSON.parse(rawEvent);
+    } catch {
+        console.warn('Failed to parse event JSON (skipping):', rawEvent);
+        return undefined;
+    }
     const withoutNulls = nullToUndefined(parsedData);
     const parseResult = EventSchema.safeParse(withoutNulls);
 
-
     if (parseResult.success) {
         return parseResult.data;
-    } else {
-        // Log the parsing error but continue - this helps debug schema mismatches
-        console.error('Event schema validation failed:', {
-            errors: parseResult.error.errors,
-            rawEvent
-        });
-        throw new Error('Event schema validation failed');
     }
 
+    console.warn('Unrecognized event (skipping):', {
+        errors: parseResult.error.errors,
+        rawEvent,
+    });
+    return undefined;
 }

@@ -47,7 +47,11 @@ export class ThreadsApiClient extends BaseApiClient {
         const url = `/threads/${threadId}/messages/stream`;
         const eventProcessor = new EventProcessor(threadId);
         await this.postStream(url, request, (chunk) => {
-            eventProcessor.handleRawEvent(chunk);
+            try {
+                eventProcessor.handleRawEvent(chunk);
+            } catch (e) {
+                console.error('Failed to process event chunk:', e);
+            }
         }, signal);
     }
 

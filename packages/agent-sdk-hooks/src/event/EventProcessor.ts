@@ -9,12 +9,12 @@ export class EventProcessor {
 
     public handleRawEvent(event: string): void {
         const parsedEvent = parseEvent(event);
+        if (!parsedEvent) return;
 
         this.onEvent(parsedEvent);
     }
 
     protected onEvent(event: BaseEvent): void {
-        console.log('🎯 Event:', JSON.stringify(event, null, 2));
         const handlers = getStreamingHandlers();
         switch (event.event_type) {
             case 'StreamingUpdated':
@@ -35,8 +35,8 @@ export class EventProcessor {
             case 'ToolResponseReceived':
                 handlers.addToolCallResponse(this.threadId, event.data.block_id, event.data.response);
                 break;
-            default:
-                console.log('🎯 Unknown event:', event);
+            case 'Error':
+                console.error('Server error event:', event.data.error_message);
                 break;
         }
     }
