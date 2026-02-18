@@ -101,21 +101,20 @@ class TestBaseOrchestrator:
         # Should have 2 events per step (started + completed) = 6 total
         assert len(step_events) == 6
 
-        # Check the sequence
-        assert step_events[0].step.step_id == "step_a"
-        assert step_events[0].step.status == StepStatus.RUNNING
-        assert step_events[1].step.step_id == "step_a"
-        assert step_events[1].step.status == StepStatus.COMPLETED
-
-        assert step_events[2].step.step_id == "step_b"
-        assert step_events[2].step.status == StepStatus.RUNNING
-        assert step_events[3].step.step_id == "step_b"
-        assert step_events[3].step.status == StepStatus.COMPLETED
-
-        assert step_events[4].step.step_id == "step_c"
-        assert step_events[4].step.status == StepStatus.RUNNING
-        assert step_events[5].step.step_id == "step_c"
-        assert step_events[5].step.status == StepStatus.COMPLETED
+        # Check the sequence - extract steps with narrowing for type checker
+        expected = [
+            ("step_a", StepStatus.RUNNING),
+            ("step_a", StepStatus.COMPLETED),
+            ("step_b", StepStatus.RUNNING),
+            ("step_b", StepStatus.COMPLETED),
+            ("step_c", StepStatus.RUNNING),
+            ("step_c", StepStatus.COMPLETED),
+        ]
+        for i, (expected_id, expected_status) in enumerate(expected):
+            step = step_events[i].step
+            assert step is not None
+            assert step.step_id == expected_id
+            assert step.status == expected_status
 
     @pytest.mark.asyncio
     async def test_final_result_has_correct_state(self):
@@ -128,8 +127,10 @@ class TestBaseOrchestrator:
                 final_event = event
 
         assert final_event is not None
-        assert final_event.result.final_value == 3
-        assert final_event.result.steps_run == ["a", "b", "c"]
+        result = final_event.result
+        assert result is not None
+        assert result.final_value == 3
+        assert result.steps_run == ["a", "b", "c"]
 
     @pytest.mark.asyncio
     async def test_step_failure_emits_failed_status_and_error(self):
@@ -189,14 +190,20 @@ class TestCheckpointResume:
         assert checkpoint.get_completed_steps() == {"step_a", "step_b", "step_c"}
 
         # Each checkpoint should have correct cumulative state
-        assert checkpoint.load("step_a").value == 1
-        assert checkpoint.load("step_a").history == ["a"]
+        state_a = checkpoint.load("step_a")
+        assert state_a is not None
+        assert state_a.value == 1
+        assert state_a.history == ["a"]
 
-        assert checkpoint.load("step_b").value == 2
-        assert checkpoint.load("step_b").history == ["a", "b"]
+        state_b = checkpoint.load("step_b")
+        assert state_b is not None
+        assert state_b.value == 2
+        assert state_b.history == ["a", "b"]
 
-        assert checkpoint.load("step_c").value == 3
-        assert checkpoint.load("step_c").history == ["a", "b", "c"]
+        state_c = checkpoint.load("step_c")
+        assert state_c is not None
+        assert state_c.value == 3
+        assert state_c.history == ["a", "b", "c"]
 
     @pytest.mark.asyncio
     async def test_resume_skips_completed_steps(self):
@@ -221,15 +228,23 @@ class TestCheckpointResume:
         step_events = [e for e in events if e.step is not None]
 
         # step_a and step_b should be SKIPPED
-        skipped = [e for e in step_events if e.step.status == StepStatus.SKIPPED]
-        assert len(skipped) == 2
-        assert {e.step.step_id for e in skipped} == {"step_a", "step_b"}
+        skipped_ids = set()
+        for e in step_events:
+            step = e.step
+            assert step is not None
+            if step.status == StepStatus.SKIPPED:
+                skipped_ids.add(step.step_id)
+        assert skipped_ids == {"step_a", "step_b"}
 
         # step_c should run normally
-        step_c_events = [e for e in step_events if e.step.step_id == "step_c"]
+        step_c_events = [e for e in step_events if e.step is not None and e.step.step_id == "step_c"]
         assert len(step_c_events) == 2
-        assert step_c_events[0].step.status == StepStatus.RUNNING
-        assert step_c_events[1].step.status == StepStatus.COMPLETED
+        step_c_0 = step_c_events[0].step
+        step_c_1 = step_c_events[1].step
+        assert step_c_0 is not None
+        assert step_c_1 is not None
+        assert step_c_0.status == StepStatus.RUNNING
+        assert step_c_1.status == StepStatus.COMPLETED
 
     @pytest.mark.asyncio
     async def test_resume_uses_checkpointed_state(self):
@@ -252,8 +267,10 @@ class TestCheckpointResume:
 
         # step_c should build on the checkpointed state (value=200)
         assert final_event is not None
-        assert final_event.result.final_value == 201
-        assert final_event.result.steps_run == ["custom_a", "custom_b", "c"]
+        result = final_event.result
+        assert result is not None
+        assert result.final_value == 201
+        assert result.steps_run == ["custom_a", "custom_b", "c"]
 
 
 @pytest.mark.unit
@@ -280,10 +297,14 @@ class TestProgressEvents:
         assert len(progress_events) == 5
 
         # Check progress values
-        assert progress_events[0].progress.current == 1
-        assert progress_events[0].progress.total == 5
-        assert progress_events[0].progress.percent == 20.0
+        first_progress = progress_events[0].progress
+        assert first_progress is not None
+        assert first_progress.current == 1
+        assert first_progress.total == 5
+        assert first_progress.percent == 20.0
 
-        assert progress_events[4].progress.current == 5
-        assert progress_events[4].progress.total == 5
-        assert progress_events[4].progress.percent == 100.0
+        last_progress = progress_events[4].progress
+        assert last_progress is not None
+        assert last_progress.current == 5
+        assert last_progress.total == 5
+        assert last_progress.percent == 100.0
