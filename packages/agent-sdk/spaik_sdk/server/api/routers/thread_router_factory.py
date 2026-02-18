@@ -25,7 +25,7 @@ from spaik_sdk.server.services.thread_models import (
 )
 from spaik_sdk.server.services.thread_service import ThreadService
 from spaik_sdk.server.storage.thread_filter import ThreadFilter
-from spaik_sdk.thread.models import MessageAddedEvent, MessageBlock, MessageBlockType, ThreadMessage
+from spaik_sdk.thread.models import ErrorEvent, MessageAddedEvent, MessageBlock, MessageBlockType, ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
 from spaik_sdk.utils.init_logger import init_logger
 
@@ -238,7 +238,7 @@ class ThreadRouterFactory:
 
                 except Exception as e:
                     logger.error(f"Error in SSE stream: {e}")
-                    yield f'data: {{"error": "{str(e)}"}}\n\n'
+                    yield ErrorEvent(error_message=str(e), error_type="stream_error").dump_json(thread_id) + "\n\n"
 
             logger.info(f"StreamingResponse for job {thread_id}")
             return StreamingResponse(
