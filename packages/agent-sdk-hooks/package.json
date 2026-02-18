@@ -1,6 +1,6 @@
 {
     "name": "spaik-sdk-react",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "description": "React library for Spaik SDK - state management and streaming for AI agent frontends",
     "type": "module",
     "main": "dist/index.js",
