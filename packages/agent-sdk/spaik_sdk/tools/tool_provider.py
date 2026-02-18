@@ -95,7 +95,7 @@ class ToolProvider(ABC):
                     fields[arg_name] = (arg_spec, Field())
 
             # Create dynamic Pydantic model
-            args_schema = create_model(f"{name}Args", **fields)  # type: ignore
+            args_schema = create_model(f"{name}Args", **fields)
 
         return StructuredTool.from_function(func=func, name=name, description=description, args_schema=args_schema, **kwargs)
 

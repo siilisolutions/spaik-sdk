@@ -1,7 +1,7 @@
 from typing import Any, Collection, Dict
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_google_genai import ChatGoogleGenerativeAI  # type: ignore
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from spaik_sdk.config.get_credentials_provider import credentials_provider
 from spaik_sdk.models.factories.google_factory import GoogleModelFactory
