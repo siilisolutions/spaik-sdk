@@ -25,7 +25,7 @@ from spaik_sdk.server.services.thread_models import (
 )
 from spaik_sdk.server.services.thread_service import ThreadService
 from spaik_sdk.server.storage.thread_filter import ThreadFilter
-from spaik_sdk.thread.models import MessageAddedEvent, MessageBlock, MessageBlockType, ThreadMessage
+from spaik_sdk.thread.models import ErrorEvent, MessageAddedEvent, MessageBlock, MessageBlockType, ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
 from spaik_sdk.utils.init_logger import init_logger
 
@@ -210,6 +210,7 @@ class ThreadRouterFactory:
 
             if not self.thread_job_processor:
                 raise HTTPException(status_code=501, detail="Thread job processor not supported")
+            thread_job_processor = self.thread_job_processor
             message = await _create_message(thread_id, request, user)
 
             job = AgentJob(job_type=JobType.THREAD_MESSAGE, id=thread_id)
@@ -229,7 +230,7 @@ class ThreadRouterFactory:
                     logger.debug(f"Starting streaming stream for thread {thread_id}")
                     yield MessageAddedEvent(message=message).dump_json(thread_id) + "\n\n"
 
-                    async for event_response in self.thread_job_processor.process_job(
+                    async for event_response in thread_job_processor.process_job(
                         job=job, cancellation_handle=cancellation_handle, on_complete=on_complete
                     ):
                         logger.debug(f"Received event response: {event_response}")
@@ -237,7 +238,7 @@ class ThreadRouterFactory:
 
                 except Exception as e:
                     logger.error(f"Error in SSE stream: {e}")
-                    yield f'data: {{"error": "{str(e)}"}}\n\n'
+                    yield ErrorEvent(error_message=str(e), error_type="stream_error").dump_json(thread_id) + "\n\n"
 
             logger.info(f"StreamingResponse for job {thread_id}")
             return StreamingResponse(

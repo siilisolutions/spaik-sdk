@@ -68,7 +68,7 @@ class BaseAgent(ABC):
             trace_sink=trace_sink,
             agent_instance_id=self.agent_instance_id,
         )
-        self.thread_container = thread_container or ThreadContainer(self.system_prompt)
+        self.thread_container: ThreadContainer = thread_container or ThreadContainer(self.system_prompt)
         self.tools = tools or self._create_tools(tool_providers)
         self.llm_config = llm_config or self.create_llm_config(llm_model, reasoning)
         self.recorder = recorder.get_recorder() if recorder is not None else None
@@ -211,7 +211,7 @@ class BaseAgent(ABC):
             self.trace.add_block(event.block)
 
     def get_cost(self, latest_only: bool = False) -> CostEstimate:
-        token_usage = self.thread_container.get_token_usage()
+        token_usage = self.thread_container.get_total_consumption()
         if latest_only:
             token_usage = self.thread_container.get_latest_token_usage()
         if token_usage is None:

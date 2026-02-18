@@ -10,7 +10,7 @@ from langchain_core.tools import BaseTool
 # Using create_react_agent because create_agent from langchain.agents
 # uses invoke() internally and does NOT emit on_chat_model_stream events,
 # which breaks token-level streaming. See: https://github.com/langchain-ai/langchain/issues/34017
-from langgraph.prebuilt import create_react_agent
+from langgraph.prebuilt import create_react_agent  # type: ignore[deprecated]
 from pydantic import BaseModel
 
 from spaik_sdk.attachments.file_storage_provider import get_file_storage
@@ -23,7 +23,7 @@ from spaik_sdk.llm.message_handler import MessageHandler
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.recording.base_playback import BasePlayback
 from spaik_sdk.recording.base_recorder import BaseRecorder
-from spaik_sdk.thread.models import MessageBlock, MessageBlockType, ThreadMessage
+from spaik_sdk.thread.models import ErrorEvent, MessageBlock, MessageBlockType, ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
 from spaik_sdk.utils.init_logger import init_logger
 
@@ -66,7 +66,7 @@ class LangChainService:
         self.cancellation_handle = cancellation_handle
 
     def create_executor(self, tools: list[BaseTool]):
-        return create_react_agent(self._get_model(), tools)
+        return create_react_agent(self._get_model(), tools)  # type: ignore[deprecated]
 
     def _get_model(self):
         return self.llm_config.get_model_wrapper().get_langchain_model()
@@ -137,7 +137,8 @@ class LangChainService:
                     yield token_data
 
         except Exception as e:
-            yield {"type": "error", "error": self._handle_error(e)}
+            error_info = self._handle_error(e)
+            yield ErrorEvent(error_message=error_info.get("error", str(e)))
         finally:
             self._on_request_completed()
 

@@ -32,7 +32,7 @@ async def test_mcp_tool_provider_can_call_echo_tool():
     tools = provider.get_tools()
 
     echo_tool = next(t for t in tools if t.name == "echo_tool")
-    result = await echo_tool.ainvoke({"message": "hello world"})
+    result = await echo_tool.ainvoke({"message": "hello world"})  # type: ignore[missing-typed-dict-key,invalid-key]
     assert "hello world" in str(result)
 
 

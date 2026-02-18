@@ -53,5 +53,5 @@ export type {
 } from './stores/messageTypes';
 
 // Event types for advanced usage
-export type { BaseEvent } from './event/eventTypes';
-export { EventProcessor } from './event/EventProcessor'; 
+export type { BaseEvent, ErrorEvent } from './event/eventTypes';
+export { EventProcessor } from './event/EventProcessor';

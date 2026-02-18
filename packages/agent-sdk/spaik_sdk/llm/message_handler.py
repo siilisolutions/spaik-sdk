@@ -132,7 +132,7 @@ class MessageHandler:
                 }
 
             elif streaming_event.event_type == EventType.USAGE_METADATA:
-                logger.info(f"📊 Processing USAGE_METADATA for message: {streaming_event.message_id}")
+                logger.debug(f"Processing USAGE_METADATA for message: {streaming_event.message_id}")
                 # Store consumption metadata in ThreadContainer
                 if streaming_event.message_id and streaming_event.usage_metadata:
                     self.thread_container.add_consumption_metadata(streaming_event.message_id, streaming_event.usage_metadata)

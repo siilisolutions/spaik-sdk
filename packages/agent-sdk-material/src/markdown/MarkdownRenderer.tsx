@@ -280,5 +280,5 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         });
     }, [segments, allComponents, theme]);
 
-    return <Box sx={{ '& > *:first-of-type': { mt: 0 } }}>{renderedContent}</Box>;
+    return <Box sx={{ '& > *:first-of-type': { mt: 0 }, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{renderedContent}</Box>;
 }
