@@ -188,75 +188,71 @@ If adding a model from a brand new provider:
 
 ---
 
-## 6. KNOWN MODEL STATUS (as of 2026-03-02)
+## 6. MODELS IN REGISTRY (last updated 2026-03-02)
 
-### Anthropic — VERIFIED via platform.claude.com/docs/en/about-claude/models/overview
+This section is a snapshot — update it whenever you run a model update pass.
 
-**In registry ✓:**
+### Anthropic
+
+| Registry Constant | Model ID | Reasoning | Notes |
+|---|---|---|---|
+| `CLAUDE_3_7_SONNET_FEB_2025` | `claude-3-7-sonnet-20250219` | Yes | |
+| `CLAUDE_3_7_SONNET` | `claude-3-7-sonnet-latest` | Yes | Alias, auto-updates |
+| `CLAUDE_4_SONNET` / `CLAUDE_4_SONNET_MAY_2025` | `claude-sonnet-4-20250514` | Yes | |
+| `CLAUDE_4_OPUS` / `CLAUDE_4_OPUS_MAY_2025` | `claude-opus-4-20250514` | Yes | |
+| `CLAUDE_4_1_OPUS` | `claude-opus-4-1-20250805` | Yes | |
+| `CLAUDE_4_5_SONNET` | `claude-sonnet-4-5-20250929` | Yes | |
+| `CLAUDE_4_5_HAIKU` | `claude-haiku-4-5-20251001` | Yes | |
+| `CLAUDE_4_5_OPUS` | `claude-opus-4-5-20251101` | Yes | |
+| `CLAUDE_4_6_OPUS` | `claude-opus-4-6` | Yes | $5/$25/MTok. 128K max output. |
+| `CLAUDE_4_6_SONNET` | `claude-sonnet-4-6` | Yes | $3/$15/MTok. 64K max output. |
+
+**Naming note**: 4.6+ models dropped the date suffix — `claude-opus-4-6` is both the API ID and the alias.
+
+### OpenAI
+
+| Registry Constant | Model ID | Reasoning |
+|---|---|---|
+| `GPT_4_1` | `gpt-4.1` | No |
+| `GPT_4_1_MINI` | `gpt-4.1-mini` | No |
+| `GPT_4_1_NANO` | `gpt-4.1-nano` | No |
+| `GPT_4O` | `gpt-4o` | No |
+| `GPT_4O_MINI` | `gpt-4o-mini` | No |
+| `O1` | `o1` | Yes |
+| `O1_MINI` | `o1-mini` | Yes |
+| `O1_PRO` | `o1-pro` | Yes |
+| `O3` | `o3` | Yes |
+| `O3_MINI` | `o3-mini` | Yes |
+| `O3_PRO` | `o3-pro` | Yes |
+| `O4_MINI` | `o4-mini` | Yes |
+| `O4_MINI_2025_04_16` | `o4-mini-2025-04-16` | Yes |
+| `GPT_5` | `gpt-5` | Yes (`reasoning_min_effort="minimal"`) |
+| `GPT_5_MINI` | `gpt-5-mini` | Yes (`reasoning_min_effort="minimal"`) |
+| `GPT_5_NANO` | `gpt-5-nano` | Yes (`reasoning_min_effort="minimal"`) |
+| `GPT_5_CHAT` | `gpt-5-chat-latest` | No |
+| `GPT_5_CODEX` | `gpt-5-codex` | Yes |
+| `GPT_5_PRO` | `gpt-5-pro` | Yes |
+| `GPT_5_1` | `gpt-5.1` | Yes |
+| `GPT_5_1_CHAT` | `gpt-5.1-chat-latest` | No |
+| `GPT_5_1_CODEX` | `gpt-5.1-codex` | Yes |
+| `GPT_5_1_CODEX_MINI` | `gpt-5.1-codex-mini` | Yes |
+| `GPT_5_1_CODEX_MAX` | `gpt-5.1-codex-max` | Yes |
+| `GPT_5_2` | `gpt-5.2` | Yes |
+| `GPT_5_2_CHAT` | `gpt-5.2-chat-latest` | No |
+| `GPT_5_2_CODEX` | `gpt-5.2-codex` | Yes |
+| `GPT_5_2_PRO` | `gpt-5.2-pro` | Yes |
+| `GPT_5_3_CODEX` | `gpt-5.3-codex` | Yes |
+
+### Google Gemini
+
 | Registry Constant | Model ID | Notes |
 |---|---|---|
-| `CLAUDE_3_7_SONNET_FEB_2025` | `claude-3-7-sonnet-20250219` | |
-| `CLAUDE_3_7_SONNET` | `claude-3-7-sonnet-latest` | Alias, auto-updates |
-| `CLAUDE_4_SONNET` / `CLAUDE_4_SONNET_MAY_2025` | `claude-sonnet-4-20250514` | |
-| `CLAUDE_4_OPUS` / `CLAUDE_4_OPUS_MAY_2025` | `claude-opus-4-20250514` | |
-| `CLAUDE_4_1_OPUS` | `claude-opus-4-1-20250805` | |
-| `CLAUDE_4_5_SONNET` | `claude-sonnet-4-5-20250929` | |
-| `CLAUDE_4_5_HAIKU` | `claude-haiku-4-5-20251001` | |
-| `CLAUDE_4_5_OPUS` | `claude-opus-4-5-20251101` | |
-
-**MISSING from registry — need to add:**
-| Model | API ID | Released | Notes |
-|---|---|---|---|
-| Claude Opus 4.6 | `claude-opus-4-6` | Feb 5, 2026 | $5/$25 per MTok. 128K max output. Extended + adaptive thinking. |
-| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Feb 17, 2026 | $3/$15 per MTok. 64K max output. Extended + adaptive thinking. |
-
-**Note on naming**: 4.6 models dropped the date suffix — `claude-opus-4-6` is both the ID and the alias.
-
-### OpenAI — VERIFIED via developers.openai.com/api/docs/models
-
-**In registry, verified correct:**
-- `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`, `gpt-4o`, `gpt-4o-mini`
-- `o1`, `o1-mini`, `o3`, `o3-mini`, `o3-pro`, `o4-mini`, `o4-mini-2025-04-16`
-- `gpt-5`, `gpt-5-mini`, `gpt-5-nano`
-- `gpt-5.1`, `gpt-5.1-codex`, `gpt-5.1-codex-mini`, `gpt-5.1-codex-max`
-- `gpt-5.2`, `gpt-5.2-codex`, `gpt-5.2-pro`
-
-**Uncertain — verify before release:**
-| Registry Name | Registry ID | Concern |
-|---|---|---|
-| `CODEX_MINI` | `codex-mini` | Real API ID may be `codex-mini-latest` |
-| `GPT_5_1_CHAT` | `gpt-5.1-chat` | Real ID may be `gpt-5.1-instant` or `gpt-5.1-chat-latest` |
-| `GPT_5_2_CHAT` | `gpt-5.2-chat` | Real ID may be `gpt-5.2-chat-latest` |
-| `GPT_5_CHAT` | `gpt-5-chat` | Verify exact API ID |
-| `GPT_5_CODEX` | `gpt-5-codex` | Verify exact API ID |
-| `GPT_5_PRO` | `gpt-5-pro` | Verify exact API ID |
-
-**NOT in registry (not yet in API):**
-- `gpt-5.3-codex` — Released Feb 5, 2026 for ChatGPT Codex, but **NOT yet in API**. Do not add until confirmed.
-
-### Google Gemini — VERIFIED via ai.google.dev/gemini-api/docs/models
-
-**In registry ✓:**
-- `gemini-2.5-flash` (stable)
-- `gemini-2.5-pro` (stable)
-- `gemini-3-flash-preview` ✓
-
-**In registry but DEPRECATED:**
-- `gemini-3-pro-preview` — **Retiring March 9, 2026**. Warn users; do not add new use of this model.
-
-**MISSING — need to add:**
-| Model | API ID | Notes |
-|---|---|---|
-| Gemini 3.1 Pro Preview | `gemini-3.1-pro-preview` | Released Feb 19, 2026. 1M context. |
-| Gemini 2.5 Flash-Lite | `gemini-2.5-flash-lite` | GA (stable). Fastest/cheapest in 2.5 family. |
-
-### Azure AI Foundry — VERIFIED via azure.microsoft.com/en-us/blog
-
-**Missing Claude model entries in `azure_provider.py`:**
-- `claude-opus-4-6` → should be `AZURE_CLAUDE_OPUS_4_6_DEPLOYMENT`
-- `claude-sonnet-4-6` → should be `AZURE_CLAUDE_SONNET_4_6_DEPLOYMENT`
-
-(Claude Opus 4.6 and Sonnet 4.6 are confirmed available in Azure AI Foundry as of Feb 2026)
+| `GEMINI_2_5_FLASH_LITE` | `gemini-2.5-flash-lite` | Fastest/cheapest in 2.5 family |
+| `GEMINI_2_5_FLASH` | `gemini-2.5-flash` | |
+| `GEMINI_2_5_PRO` | `gemini-2.5-pro` | |
+| `GEMINI_3_FLASH_PREVIEW` | `gemini-3-flash-preview` | |
+| `GEMINI_3_PRO_PREVIEW` | `gemini-3-pro-preview` | Retiring March 9, 2026 |
+| `GEMINI_3_1_PRO` | `gemini-3.1-pro-preview` | 1M context |
 
 ---
 
