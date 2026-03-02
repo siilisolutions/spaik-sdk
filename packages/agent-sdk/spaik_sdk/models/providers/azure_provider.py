@@ -11,6 +11,9 @@ from spaik_sdk.models.providers.base_provider import BaseProvider
 
 # Model name -> Environment variable for Azure deployment name
 AZURE_DEPLOYMENT_ENV_VARS: Dict[str, str] = {
+    # Anthropic models (Azure AI Foundry)
+    "claude-opus-4-6": "AZURE_CLAUDE_OPUS_4_6_DEPLOYMENT",
+    "claude-sonnet-4-6": "AZURE_CLAUDE_SONNET_4_6_DEPLOYMENT",
     # OpenAI models
     "gpt-4.1": "AZURE_GPT_4_1_DEPLOYMENT",
     "gpt-4.1-mini": "AZURE_GPT_4_1_MINI_DEPLOYMENT",

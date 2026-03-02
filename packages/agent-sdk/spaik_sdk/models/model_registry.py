@@ -195,6 +195,7 @@ class ModelRegistry:
             "gemini 3 pro": cls.GEMINI_3_PRO,
             "gemini 3.0 pro": cls.GEMINI_3_PRO,
             "gemini 3.1 pro": cls.GEMINI_3_1_PRO,
+            "gemini 3.1 pro preview": cls.GEMINI_3_1_PRO,
             # DeepSeek aliases
             "deepseek": cls.DEEPSEEK_V3_2,
             "deepseek v3": cls.DEEPSEEK_V3,

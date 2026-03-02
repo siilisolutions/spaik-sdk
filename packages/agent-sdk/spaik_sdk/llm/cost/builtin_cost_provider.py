@@ -35,6 +35,9 @@ class BuiltinCostProvider(CostProvider):
         elif name.startswith("gpt-4o"):
             # GPT-4o: $2.50 input, $10.00 output per 1M tokens
             return TokenUsage(input_tokens=250, output_tokens=1000, reasoning_tokens=0, cache_creation_tokens=312, cache_read_tokens=25)
+        elif name.startswith("o1-pro"):
+            # O1-Pro: $150.00 input, $600.00 output per 1M tokens
+            return TokenUsage(input_tokens=15000, output_tokens=60000, reasoning_tokens=0, cache_creation_tokens=0, cache_read_tokens=0)
         elif name.startswith("o4-mini"):
             # O4-mini: $0.40 input, $1.60 output per 1M tokens (based on GPT-4.1-mini pricing)
             return TokenUsage(
@@ -83,6 +86,12 @@ class BuiltinCostProvider(CostProvider):
         elif name.startswith("gemini-2.5-pro"):
             # Gemini 2.5 Pro: $1.25 input, $10.00 output per 1M tokens
             return TokenUsage(input_tokens=125, output_tokens=1000, reasoning_tokens=0, cache_creation_tokens=156, cache_read_tokens=12)
+        elif name.startswith("gemini-3.1-pro") or name.startswith("gemini-3-pro"):
+            # Gemini 3.x Pro: $1.25 input, $10.00 output per 1M tokens
+            return TokenUsage(input_tokens=125, output_tokens=1000, reasoning_tokens=0, cache_creation_tokens=156, cache_read_tokens=12)
+        elif name.startswith("gemini-3-flash"):
+            # Gemini 3 Flash: $0.15 input, $0.60 output per 1M tokens
+            return TokenUsage(input_tokens=15, output_tokens=60, reasoning_tokens=0, cache_creation_tokens=19, cache_read_tokens=1)
 
         # Default fallback for unknown models
         else:
