@@ -1,5 +1,5 @@
 import os
-from typing import Optional as OptionalType
+from typing import Dict, Optional as OptionalType
 
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.model_registry import ModelRegistry
@@ -52,6 +52,27 @@ class EnvConfig:
 
     def get_image_model(self) -> str:
         return self.get_key("IMAGE_MODEL")
+
+    # ── LLM proxy configuration ──────────────────────────────────────────
+
+    def get_llm_auth_mode(self) -> str:
+        """Get LLM auth mode: 'direct' (default) or 'proxy'."""
+        return self.get_key("LLM_AUTH_MODE", "direct", required=False)
+
+    def is_proxy_mode(self) -> bool:
+        return self.get_llm_auth_mode() == "proxy"
+
+    def get_proxy_base_url(self) -> str:
+        return self.get_key("LLM_PROXY_BASE_URL", "", required=False)
+
+    def get_proxy_api_key(self) -> str:
+        return self.get_key("LLM_PROXY_API_KEY", "", required=False)
+
+    def get_proxy_headers(self) -> Dict[str, str]:
+        raw = self.get_key("LLM_PROXY_HEADERS", "", required=False)
+        if not raw:
+            return {}
+        return dict(h.split(":", 1) for h in raw.split(",") if ":" in h)
 
 
 env_config = EnvConfig()

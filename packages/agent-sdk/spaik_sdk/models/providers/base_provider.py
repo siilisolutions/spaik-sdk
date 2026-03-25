@@ -30,6 +30,30 @@ class BaseProvider(ABC):
         """Create the langchain model instance with complete configuration and model info."""
         pass
 
+    def _get_proxy_config(self, api_key_param: str, base_url_param: str, headers_param: str) -> Dict[str, Any]:
+        """Build proxy config dict with correct LangChain param names.
+
+        Args:
+            api_key_param: LangChain kwarg for API key (e.g. "google_api_key", "api_key").
+            base_url_param: LangChain kwarg for base URL (e.g. "base_url", "xai_api_base").
+            headers_param: LangChain kwarg for headers (e.g. "additional_headers", "default_headers").
+        """
+        result: Dict[str, Any] = {}
+
+        base_url = env_config.get_proxy_base_url()
+        if base_url:
+            result[base_url_param] = base_url
+
+        api_key = env_config.get_proxy_api_key()
+        if api_key:
+            result[api_key_param] = api_key
+
+        headers = env_config.get_proxy_headers()
+        if headers:
+            result[headers_param] = headers
+
+        return result
+
     @classmethod
     def create_provider(cls, provider_type: Optional[ProviderType] = None) -> "BaseProvider":
         """Factory method to create appropriate provider instance."""
