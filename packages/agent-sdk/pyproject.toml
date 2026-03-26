@@ -146,6 +146,6 @@ ignore_missing_imports = true
 dev = [
     "pytest-timeout>=2.4.0",
     "ruff>=0.13.1",
-    "ty",
+    "ty==0.0.13",
     "echo-mcp-server-for-testing>=0.1.5",
 ]
