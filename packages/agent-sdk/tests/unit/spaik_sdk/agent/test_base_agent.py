@@ -140,8 +140,6 @@ class TestBaseAgent:
         [
             ModelRegistry.CLAUDE_4_SONNET,
             ModelRegistry.CLAUDE_3_7_SONNET,
-            ModelRegistry.GPT_4_1,
-            ModelRegistry.O4_MINI,
             ModelRegistry.GEMINI_2_5_FLASH,
             ModelRegistry.CLAUDE_4_5_SONNET,
             ModelRegistry.CLAUDE_4_5_HAIKU,
@@ -149,7 +147,6 @@ class TestBaseAgent:
             ModelRegistry.GPT_5_1,
             ModelRegistry.GPT_5_2,
             ModelRegistry.GEMINI_3_FLASH,
-            ModelRegistry.GEMINI_3_PRO,
         ],
     )
     def test_get_response_text_with_different_models(self, model):
@@ -167,8 +164,6 @@ class TestBaseAgent:
         [
             ModelRegistry.CLAUDE_4_SONNET,
             ModelRegistry.CLAUDE_3_7_SONNET,
-            ModelRegistry.GPT_4_1,
-            ModelRegistry.O4_MINI,
             ModelRegistry.GEMINI_2_5_FLASH,
             ModelRegistry.CLAUDE_4_1_OPUS,
             ModelRegistry.GPT_5,

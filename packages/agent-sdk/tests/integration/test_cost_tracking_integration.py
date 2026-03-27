@@ -19,10 +19,10 @@ class TestCostTrackingIntegration:
                 "output_tokens": 50,
                 "total_tokens": 150,
             }
-            response_metadata = {"model_name": "gpt-4o"}
+            response_metadata = {"model_name": "gpt-5"}
 
         data = {
-            "metadata": {"ls_provider": "openai", "ls_model_name": "gpt-4o"},
+            "metadata": {"ls_provider": "openai", "ls_model_name": "gpt-5"},
             "output": MockOutput(),
         }
 
@@ -64,11 +64,11 @@ class TestCostTrackingIntegration:
 
         class MockOutput:
             usage_metadata = None
-            response_metadata = {"model_name": "gpt-4.1-2025-04-14"}
+            response_metadata = {"model_name": "gpt-5-chat-latest-2025-04-14"}
             content = "This is a test response from GPT-4.1"
 
         data = {
-            "metadata": {"ls_provider": "openai", "ls_model_name": "gpt-4.1"},
+            "metadata": {"ls_provider": "openai", "ls_model_name": "gpt-5-chat-latest"},
             "output": MockOutput(),
         }
 
