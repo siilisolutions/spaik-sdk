@@ -66,7 +66,8 @@ class ModelRegistry:
     GEMINI_2_5_FLASH_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash", prompt_caching=True)
     GEMINI_2_5_PRO_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-pro", prompt_caching=True)
     GEMINI_3_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-flash-preview", prompt_caching=True)
-    GEMINI_3_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-pro-preview", prompt_caching=True)  # deprecated on Google API March 9, 2026
+    # Gemini 3 Pro: deprecated on Google API March 9, 2026
+    GEMINI_3_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-pro-preview", prompt_caching=True)
     GEMINI_3_1_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.1-pro-preview", prompt_caching=True)
     GEMINI_3_1_FLASH_LITE = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.1-flash-lite-preview", prompt_caching=True)
 
