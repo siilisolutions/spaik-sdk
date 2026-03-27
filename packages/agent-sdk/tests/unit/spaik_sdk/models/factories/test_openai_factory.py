@@ -187,7 +187,7 @@ class TestOpenAIModelFactoryReasoning:
     def test_non_reasoning_model_uses_temperature(self, factory):
         """Non-reasoning models use temperature instead of reasoning config."""
         config = LLMConfig(
-            model=ModelRegistry.GPT_5_CHAT,  # Non-reasoning model
+            model=ModelRegistry.GPT_4_1,  # Non-reasoning model
             reasoning=True,  # User preference doesn't matter for non-reasoning models
             temperature=0.7,
         )
@@ -249,7 +249,7 @@ class TestOpenAIModelFactoryParallelToolCalls:
     def test_no_parallel_tool_calls_when_tool_usage_disabled(self, factory):
         """parallel_tool_calls must not appear when tool_usage is False."""
         config = LLMConfig(
-            model=ModelRegistry.GPT_5_CHAT,
+            model=ModelRegistry.GPT_4_1,
             tool_usage=False,
         )
 
@@ -260,7 +260,7 @@ class TestOpenAIModelFactoryParallelToolCalls:
     def test_parallel_tool_calls_present_when_tool_usage_enabled(self, factory):
         """parallel_tool_calls should be set when tool_usage is True."""
         config = LLMConfig(
-            model=ModelRegistry.GPT_5_CHAT,
+            model=ModelRegistry.GPT_4_1,
             tool_usage=True,
         )
 
@@ -271,7 +271,7 @@ class TestOpenAIModelFactoryParallelToolCalls:
     def test_structured_response_config_disables_tool_usage(self):
         """as_structured_response_config should set tool_usage=False so parallel_tool_calls is not sent."""
         config = LLMConfig(
-            model=ModelRegistry.GPT_5_CHAT,
+            model=ModelRegistry.GPT_4_1,
             tool_usage=True,
         )
 
