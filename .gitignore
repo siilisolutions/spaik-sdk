@@ -237,6 +237,7 @@ traces/
 .mypy_cache/
 .pytest_cache/
 tasks/
+agent-memories/
 
 # uv
 .uv-cache/

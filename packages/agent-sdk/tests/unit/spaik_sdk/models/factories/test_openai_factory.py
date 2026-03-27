@@ -217,6 +217,9 @@ class TestOpenAIModelFactoryParameterized:
             (ModelRegistry.GPT_5_1_CODEX_MAX, "none"),
             (ModelRegistry.GPT_5_2, "none"),
             (ModelRegistry.GPT_5_2_PRO, "none"),
+            (ModelRegistry.GPT_5_4, "none"),
+            (ModelRegistry.GPT_5_4_PRO, "none"),
+            (ModelRegistry.GPT_5_4_MINI, "none"),
             # GPT-5 base models -> effort='minimal'
             (ModelRegistry.GPT_5, "minimal"),
             (ModelRegistry.GPT_5_MINI, "minimal"),

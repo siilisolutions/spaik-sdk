@@ -22,7 +22,7 @@ class ModelRegistry:
     CLAUDE_4_6_OPUS = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-4-6", prompt_caching=True)
     CLAUDE_4_6_SONNET = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-sonnet-4-6", prompt_caching=True)
 
-    # OpenAI models
+    # OpenAI models — legacy (deprecated on OpenAI direct API, still available on Azure and other providers)
     GPT_4_1 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1", reasoning=False, prompt_caching=True)
     GPT_4_1_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1-mini", reasoning=False, prompt_caching=True)
     GPT_4_1_NANO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1-nano", reasoning=False, prompt_caching=True)
@@ -31,11 +31,13 @@ class ModelRegistry:
     O1 = LLMModel(family=LLMFamilies.OPENAI, name="o1")
     O1_MINI = LLMModel(family=LLMFamilies.OPENAI, name="o1-mini")
     O1_PRO = LLMModel(family=LLMFamilies.OPENAI, name="o1-pro")
+    O4_MINI = LLMModel(family=LLMFamilies.OPENAI, name="o4-mini")
+    O4_MINI_APRIL_2025 = LLMModel(family=LLMFamilies.OPENAI, name="o4-mini-2025-04-16")
+
+    # OpenAI models — current
     O3 = LLMModel(family=LLMFamilies.OPENAI, name="o3")
     O3_MINI = LLMModel(family=LLMFamilies.OPENAI, name="o3-mini")
     O3_PRO = LLMModel(family=LLMFamilies.OPENAI, name="o3-pro")
-    O4_MINI = LLMModel(family=LLMFamilies.OPENAI, name="o4-mini")
-    O4_MINI_APRIL_2025 = LLMModel(family=LLMFamilies.OPENAI, name="o4-mini-2025-04-16")
     GPT_5 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5", reasoning=True, reasoning_min_effort="minimal", prompt_caching=True)
     GPT_5_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-mini", reasoning=True, reasoning_min_effort="minimal", prompt_caching=True)
     GPT_5_NANO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5-nano", reasoning=True, reasoning_min_effort="minimal", prompt_caching=True)
@@ -52,6 +54,10 @@ class ModelRegistry:
     GPT_5_2_CODEX = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.2-codex", reasoning=True, prompt_caching=True)
     GPT_5_2_PRO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.2-pro", reasoning=True, prompt_caching=True)
     GPT_5_3_CODEX = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.3-codex", reasoning=True, prompt_caching=True)
+    GPT_5_3_CHAT = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.3-chat-latest", reasoning=False, prompt_caching=True)
+    GPT_5_4 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.4", reasoning=True, prompt_caching=True)
+    GPT_5_4_PRO = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.4-pro", reasoning=True, prompt_caching=True)
+    GPT_5_4_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-5.4-mini", reasoning=True, prompt_caching=True)
 
     # Google models
     GEMINI_2_5_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash", prompt_caching=True)
@@ -60,8 +66,10 @@ class ModelRegistry:
     GEMINI_2_5_FLASH_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash", prompt_caching=True)
     GEMINI_2_5_PRO_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-pro", prompt_caching=True)
     GEMINI_3_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-flash-preview", prompt_caching=True)
+    # Gemini 3 Pro: deprecated on Google API March 9, 2026
     GEMINI_3_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-pro-preview", prompt_caching=True)
     GEMINI_3_1_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.1-pro-preview", prompt_caching=True)
+    GEMINI_3_1_FLASH_LITE = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.1-flash-lite-preview", prompt_caching=True)
 
     # DeepSeek models
     DEEPSEEK_V3 = LLMModel(family=LLMFamilies.DEEPSEEK, name="DeepSeek-V3-0324")
@@ -186,6 +194,10 @@ class ModelRegistry:
             "gpt 5.2 codex": cls.GPT_5_2_CODEX,
             "gpt 5.2 pro": cls.GPT_5_2_PRO,
             "gpt 5.3 codex": cls.GPT_5_3_CODEX,
+            "gpt 5.3 chat": cls.GPT_5_3_CHAT,
+            "gpt 5.4": cls.GPT_5_4,
+            "gpt 5.4 pro": cls.GPT_5_4_PRO,
+            "gpt 5.4 mini": cls.GPT_5_4_MINI,
             # Gemini aliases
             "gemini 2.5 flash": cls.GEMINI_2_5_FLASH,
             "gemini 2.5 flash lite": cls.GEMINI_2_5_FLASH_LITE,
@@ -196,6 +208,7 @@ class ModelRegistry:
             "gemini 3.0 pro": cls.GEMINI_3_PRO,
             "gemini 3.1 pro": cls.GEMINI_3_1_PRO,
             "gemini 3.1 pro preview": cls.GEMINI_3_1_PRO,
+            "gemini 3.1 flash lite": cls.GEMINI_3_1_FLASH_LITE,
             # DeepSeek aliases
             "deepseek": cls.DEEPSEEK_V3_2,
             "deepseek v3": cls.DEEPSEEK_V3,

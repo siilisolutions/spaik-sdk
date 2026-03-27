@@ -18,10 +18,16 @@ class TestModelRegistry:
             ("gpt 5.1 codex max", "gpt-5.1-codex-max"),
             ("gpt 5.2", "gpt-5.2"),
             ("gpt 5.2 pro", "gpt-5.2-pro"),
+            ("gpt 5.3 chat", "gpt-5.3-chat-latest"),
+            ("gpt 5.4", "gpt-5.4"),
+            ("gpt 5.4 pro", "gpt-5.4-pro"),
+            ("gpt 5.4 mini", "gpt-5.4-mini"),
             ("gemini 3 flash", "gemini-3-flash-preview"),
             ("gemini 3.0 flash", "gemini-3-flash-preview"),
             ("gemini 3 pro", "gemini-3-pro-preview"),
             ("gemini 3.0 pro", "gemini-3-pro-preview"),
+            ("gemini 3.1 pro", "gemini-3.1-pro-preview"),
+            ("gemini 3.1 flash lite", "gemini-3.1-flash-lite-preview"),
         ],
     )
     def test_from_name_alias_lookup_new_models(self, alias: str, expected_model_name: str):
@@ -38,8 +44,14 @@ class TestModelRegistry:
             "gpt-5.1-codex-max",
             "gpt-5.2",
             "gpt-5.2-pro",
+            "gpt-5.3-chat-latest",
+            "gpt-5.4",
+            "gpt-5.4-pro",
+            "gpt-5.4-mini",
             "gemini-3-flash-preview",
             "gemini-3-pro-preview",
+            "gemini-3.1-pro-preview",
+            "gemini-3.1-flash-lite-preview",
         ],
     )
     def test_from_name_exact_model_name(self, model_name: str):
@@ -51,9 +63,16 @@ class TestModelRegistry:
         assert ModelRegistry.GPT_5_1_CODEX_MINI.reasoning is True
         assert ModelRegistry.GPT_5_1_CODEX_MAX.reasoning is True
 
+    def test_gpt_5_4_variants_have_reasoning_enabled(self):
+        assert ModelRegistry.GPT_5_4.reasoning is True
+        assert ModelRegistry.GPT_5_4_PRO.reasoning is True
+        assert ModelRegistry.GPT_5_4_MINI.reasoning is True
+
     def test_gemini_3_models_use_google_family(self):
         assert ModelRegistry.GEMINI_3_FLASH.family == LLMFamilies.GOOGLE
         assert ModelRegistry.GEMINI_3_PRO.family == LLMFamilies.GOOGLE
+        assert ModelRegistry.GEMINI_3_1_PRO.family == LLMFamilies.GOOGLE
+        assert ModelRegistry.GEMINI_3_1_FLASH_LITE.family == LLMFamilies.GOOGLE
 
     def test_claude_4_5_opus_uses_anthropic_family(self):
         assert ModelRegistry.CLAUDE_4_5_OPUS.family == LLMFamilies.ANTHROPIC
@@ -72,5 +91,9 @@ class TestModelRegistry:
         assert "claude-opus-4-5-20251101" in model_names
         assert "gpt-5.1" in model_names
         assert "gpt-5.2" in model_names
+        assert "gpt-5.4" in model_names
+        assert "gpt-5.4-pro" in model_names
         assert "gemini-3-flash-preview" in model_names
         assert "gemini-3-pro-preview" in model_names
+        assert "gemini-3.1-pro-preview" in model_names
+        assert "gemini-3.1-flash-lite-preview" in model_names

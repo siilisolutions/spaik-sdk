@@ -28,7 +28,7 @@ class BuiltinCostProvider(CostProvider):
             # Claude Opus 4 / 4.1: $15.00 input, $75.00 output per 1M tokens
             return TokenUsage(input_tokens=1500, output_tokens=7500, reasoning_tokens=0, cache_creation_tokens=1875, cache_read_tokens=150)
 
-        # OpenAI models
+        # OpenAI models — legacy (deprecated on OpenAI direct API, still available on Azure)
         elif name.startswith("gpt-4.1"):
             # GPT-4.1: $2.00 input, $8.00 output per 1M tokens
             return TokenUsage(input_tokens=200, output_tokens=800, reasoning_tokens=0, cache_creation_tokens=250, cache_read_tokens=20)
@@ -39,7 +39,7 @@ class BuiltinCostProvider(CostProvider):
             # O1-Pro: $150.00 input, $600.00 output per 1M tokens
             return TokenUsage(input_tokens=15000, output_tokens=60000, reasoning_tokens=0, cache_creation_tokens=0, cache_read_tokens=0)
         elif name.startswith("o4-mini"):
-            # O4-mini: $0.40 input, $1.60 output per 1M tokens (based on GPT-4.1-mini pricing)
+            # O4-mini: $0.40 input, $1.60 output per 1M tokens
             return TokenUsage(
                 input_tokens=40,
                 output_tokens=160,
@@ -47,6 +47,8 @@ class BuiltinCostProvider(CostProvider):
                 cache_creation_tokens=50,
                 cache_read_tokens=4,
             )
+
+        # OpenAI models — current
         elif name.startswith("gpt-5"):
             if "nano" in name:
                 # GPT-5 Nano: $0.05 input, $0.40 output per 1M tokens
@@ -86,8 +88,14 @@ class BuiltinCostProvider(CostProvider):
         elif name.startswith("gemini-2.5-pro"):
             # Gemini 2.5 Pro: $1.25 input, $10.00 output per 1M tokens
             return TokenUsage(input_tokens=125, output_tokens=1000, reasoning_tokens=0, cache_creation_tokens=156, cache_read_tokens=12)
-        elif name.startswith("gemini-3.1-pro") or name.startswith("gemini-3-pro"):
-            # Gemini 3.x Pro: $1.25 input, $10.00 output per 1M tokens
+        elif name.startswith("gemini-3.1-pro"):
+            # Gemini 3.1 Pro: $2.00 input, $18.00 output per 1M tokens
+            return TokenUsage(input_tokens=200, output_tokens=1800, reasoning_tokens=0, cache_creation_tokens=250, cache_read_tokens=20)
+        elif name.startswith("gemini-3.1-flash-lite"):
+            # Gemini 3.1 Flash-Lite: $0.25 input, $1.50 output per 1M tokens
+            return TokenUsage(input_tokens=25, output_tokens=150, reasoning_tokens=0, cache_creation_tokens=31, cache_read_tokens=2)
+        elif name.startswith("gemini-3-pro"):
+            # Gemini 3 Pro: $1.25 input, $10.00 output per 1M tokens (deprecated on Google API March 9, 2026)
             return TokenUsage(input_tokens=125, output_tokens=1000, reasoning_tokens=0, cache_creation_tokens=156, cache_read_tokens=12)
         elif name.startswith("gemini-3-flash"):
             # Gemini 3 Flash: $0.15 input, $0.60 output per 1M tokens

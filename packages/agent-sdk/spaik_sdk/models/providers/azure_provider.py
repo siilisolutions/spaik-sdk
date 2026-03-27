@@ -45,6 +45,10 @@ AZURE_DEPLOYMENT_ENV_VARS: Dict[str, str] = {
     "gpt-5.2-codex": "AZURE_GPT_5_2_CODEX_DEPLOYMENT",
     "gpt-5.2-pro": "AZURE_GPT_5_2_PRO_DEPLOYMENT",
     "gpt-5.3-codex": "AZURE_GPT_5_3_CODEX_DEPLOYMENT",
+    "gpt-5.3-chat-latest": "AZURE_GPT_5_3_CHAT_DEPLOYMENT",
+    "gpt-5.4": "AZURE_GPT_5_4_DEPLOYMENT",
+    "gpt-5.4-pro": "AZURE_GPT_5_4_PRO_DEPLOYMENT",
+    "gpt-5.4-mini": "AZURE_GPT_5_4_MINI_DEPLOYMENT",
     # DeepSeek models (Azure AI Foundry)
     "DeepSeek-V3-0324": "AZURE_DEEPSEEK_V3_DEPLOYMENT",
     "DeepSeek-V3.1": "AZURE_DEEPSEEK_V3_1_DEPLOYMENT",
