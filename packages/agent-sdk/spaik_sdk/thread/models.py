@@ -227,6 +227,20 @@ class MessageFullyAddedEvent(PublishableEvent):
 
 
 @dataclass
+class BlockArgsUpdatedEvent(PublishableEvent):
+    message_id: str
+    block_id: str
+    tool_call_args: Dict[str, Any]
+
+    def get_event_data(self) -> Optional[Dict[str, Any]]:
+        return {
+            "message_id": self.message_id,
+            "block_id": self.block_id,
+            "tool_call_args": self.tool_call_args,
+        }
+
+
+@dataclass
 class BlockFullyAddedEvent(PublishableEvent):
     block_id: str
     message_id: str

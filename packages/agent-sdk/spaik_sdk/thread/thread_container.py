@@ -1,7 +1,7 @@
 import copy
 import time
 import uuid
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from langchain_core.messages import BaseMessage, SystemMessage
 
@@ -10,6 +10,7 @@ from spaik_sdk.llm.consumption.token_usage import TokenUsage
 from spaik_sdk.llm.converters import convert_thread_message_to_langchain, convert_thread_message_to_langchain_multimodal
 from spaik_sdk.thread.models import (
     BlockAddedEvent,
+    BlockArgsUpdatedEvent,
     BlockFullyAddedEvent,
     MessageAddedEvent,
     MessageBlock,
@@ -111,6 +112,25 @@ class ThreadContainer:
 
                 self._increment_version()
                 break
+
+    def update_tool_use_block_args(self, message_id: str, block_id: str, tool_call_args: Dict[str, Any]) -> None:
+        """Update tool_call_args on an existing tool_use block."""
+        if not tool_call_args:
+            return
+        for message in self.messages:
+            if message.id == message_id:
+                for block in message.blocks:
+                    if block.id == block_id and block.type == MessageBlockType.TOOL_USE:
+                        block.tool_call_args = tool_call_args
+                        self._emit_event(
+                            BlockArgsUpdatedEvent(
+                                message_id=message_id,
+                                block_id=block_id,
+                                tool_call_args=tool_call_args,
+                            )
+                        )
+                        self._increment_version()
+                        return
 
     def add_tool_call_response(self, response: ToolCallResponse) -> None:
         """Add a tool call response by its ID"""

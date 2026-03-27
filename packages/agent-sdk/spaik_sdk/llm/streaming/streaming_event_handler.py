@@ -63,11 +63,13 @@ class StreamingEventHandler:
                             yield streaming_event
                         self._final_message = ai_message
 
-            # on_chat_model_end - usage metadata from the model
+            # on_chat_model_end - complete args + usage metadata from the model
             elif event_type == "on_chat_model_end":
                 output = data.get("output")
                 if isinstance(output, (AIMessage, AIMessageChunk)):
                     self._final_message = output
+                    async for streaming_event in self._emit_complete_tool_args(output):
+                        yield streaming_event
                     async for streaming_event in self._emit_usage_if_available(output):
                         yield streaming_event
 
@@ -201,6 +203,17 @@ class StreamingEventHandler:
                 if tool_id and tool_name:
                     async for event in self.content_handler.handle_tool_use(tool_id, tool_name, tool_args):
                         yield event
+
+    async def _emit_complete_tool_args(self, message: AIMessageType) -> AsyncGenerator[StreamingEvent, None]:
+        """Re-emit tool_use events with complete args from the final message."""
+        if hasattr(message, "tool_calls") and message.tool_calls:
+            for tool_call in message.tool_calls:
+                tool_id = tool_call.get("id") if isinstance(tool_call, dict) else getattr(tool_call, "id", None)
+                tool_name = tool_call.get("name") if isinstance(tool_call, dict) else getattr(tool_call, "name", None)
+                tool_args = tool_call.get("args", {}) if isinstance(tool_call, dict) else getattr(tool_call, "args", {})
+                if tool_id and tool_name and tool_args:
+                    async for streaming_event in self.content_handler.handle_tool_use(tool_id, tool_name, tool_args):
+                        yield streaming_event
 
     async def _emit_usage_if_available(self, message: AIMessageType) -> AsyncGenerator[StreamingEvent, None]:
         """Emit usage metadata if available on message."""
