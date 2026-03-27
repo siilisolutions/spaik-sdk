@@ -4,6 +4,7 @@ from typing import Any, Collection, Dict, Set
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_openai import AzureChatOpenAI
 
+from spaik_sdk.config.env import env_config
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.model_registry import ModelRegistry
@@ -82,6 +83,9 @@ class AzureProvider(BaseProvider):
         return supported
 
     def get_model_config(self, config: LLMConfig) -> Dict[str, Any]:
+        if env_config.is_proxy_mode():
+            return self._get_proxy_config("api_key", "azure_endpoint", "default_headers")
+
         return {
             "api_key": self._get_required_env("AZURE_API_KEY"),
             "api_version": self._get_required_env("AZURE_API_VERSION"),

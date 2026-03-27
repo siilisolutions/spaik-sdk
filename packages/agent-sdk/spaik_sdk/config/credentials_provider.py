@@ -7,4 +7,4 @@ class CredentialsProvider(ABC):
         pass
 
     def get_provider_key(self, provider: str) -> str:
-        return self.get_key(f"{provider.upper()}_API_KEY")
+        return self.get_key(f"{provider.upper()}_API_KEY", required=False)
