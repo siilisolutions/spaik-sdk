@@ -99,7 +99,17 @@ class ThreadContainer:
         """Add a message block to an existing message by message_id"""
         for message in self.messages:
             if message.id == message_id:
-                message.blocks.append(block)
+                existing_block_index = next((index for index, existing_block in enumerate(message.blocks) if existing_block.id == block.id), -1)
+                is_new_block = existing_block_index == -1
+                if is_new_block:
+                    message.blocks.append(block)
+                else:
+                    existing_block = message.blocks[existing_block_index]
+                    if block.tool_call_response is None:
+                        block.tool_call_response = existing_block.tool_call_response
+                    if block.tool_call_error is None:
+                        block.tool_call_error = existing_block.tool_call_error
+                    message.blocks[existing_block_index] = block
 
                 # Emit block added event
                 self._emit_event(
@@ -107,7 +117,7 @@ class ThreadContainer:
                 )
 
                 # If it's a tool block, emit tool call started
-                if block.type == MessageBlockType.TOOL_USE and block.tool_call_id:
+                if is_new_block and block.type == MessageBlockType.TOOL_USE and block.tool_call_id:
                     tool_name = block.tool_name or "unknown"
 
                     self._emit_event(

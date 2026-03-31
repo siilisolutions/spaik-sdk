@@ -166,7 +166,23 @@ class MessageHandler:
 
             elif streaming_event.event_type == EventType.TOOL_USE:
                 logger.debug(f"🔍 Processing TOOL_USE for block: {streaming_event.block_id}")
-                # Handle tool use event - the block is already created, just yield for external consumption
+                assert streaming_event.block_id is not None
+                assert streaming_event.message_id is not None
+                tool_provider = self._resolve_tool_provider(streaming_event.tool_name)
+                self.thread_container.add_message_block(
+                    streaming_event.message_id,
+                    MessageBlock(
+                        id=streaming_event.block_id,
+                        streaming=True,
+                        type=MessageBlockType.TOOL_USE,
+                        tool_provider_id=tool_provider.get_provider_id() if tool_provider is not None else None,
+                        tool_provider=tool_provider,
+                        tool_call_id=streaming_event.tool_call_id,
+                        tool_call_args=streaming_event.tool_args,
+                        tool_name=streaming_event.tool_name,
+                    ),
+                )
+
                 yield {
                     "type": "tool_use",
                     "tool_call_id": streaming_event.tool_call_id,

@@ -57,3 +57,44 @@ class TestMessageHandler:
         assert block.tool_provider_id == provider.get_provider_id()
         assert block.tool_name == "search_docs"
         assert block.tool_call_id == "call-1"
+
+    @pytest.mark.asyncio
+    async def test_process_agent_token_stream_updates_existing_tool_block_when_tool_use_has_full_args(self):
+        thread = ThreadContainer(system_prompt="system prompt")
+        handler = MessageHandler(
+            thread,
+            assistant_name="assistant",
+            assistant_id="assistant",
+        )
+
+        async def process_stream(_agent_stream):
+            yield StreamingEvent(
+                event_type=EventType.MESSAGE_START,
+                message_id="message-1",
+            )
+            yield StreamingEvent(
+                event_type=EventType.BLOCK_START,
+                message_id="message-1",
+                block_id="block-1",
+                block_type=MessageBlockType.TOOL_USE,
+                tool_name="search_docs",
+                tool_call_id="call-1",
+                tool_args={"query": "hist"},
+            )
+            yield StreamingEvent(
+                event_type=EventType.TOOL_USE,
+                message_id="message-1",
+                block_id="block-1",
+                tool_name="search_docs",
+                tool_call_id="call-1",
+                tool_args={"query": "history", "limit": 5},
+            )
+
+        handler.streaming_handler.process_stream = process_stream  # type: ignore[method-assign]
+
+        async for _ in handler.process_agent_token_stream(fake_stream()):
+            pass
+
+        assert len(thread.messages[0].blocks) == 1
+        block = thread.messages[0].blocks[0]
+        assert block.tool_call_args == {"query": "history", "limit": 5}

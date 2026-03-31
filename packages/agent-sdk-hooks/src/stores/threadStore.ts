@@ -156,7 +156,16 @@ const useThreadStore = create<ThreadStore>()((set, get) => {
         },
         addBlock(threadId: Id, messageId: Id, block: MessageBlock) {
             console.log("adding block", block);
-            updateMessage(threadId, messageId, (message) => ({ ...message, blocks: [...message.blocks, block] }));
+            updateMessage(threadId, messageId, (message) => {
+                const blockIndex = message.blocks.findIndex(existingBlock => existingBlock.id === block.id);
+                if (blockIndex === -1) {
+                    return { ...message, blocks: [...message.blocks, block] };
+                }
+
+                const blocks = [...message.blocks];
+                blocks[blockIndex] = block;
+                return { ...message, blocks };
+            });
         },
         addToolCallResponse(threadId: Id, blockId: Id, response: string) {
             console.log("adding tool call response", response);

@@ -41,6 +41,8 @@ class MessageBlock:
             "tool_call_id": self.tool_call_id,
             "tool_call_args": self.tool_call_args,
             "tool_name": self.tool_name,
+            "tool_call_response": self.tool_call_response,
+            "tool_call_error": self.tool_call_error,
             "type": self.type.value,
         }
 
