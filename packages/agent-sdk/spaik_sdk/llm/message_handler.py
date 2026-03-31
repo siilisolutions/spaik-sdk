@@ -1,6 +1,6 @@
 import time
 import uuid
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Dict, List, Optional
 
 from spaik_sdk.attachments.models import Attachment
 from spaik_sdk.llm.streaming.streaming_event_handler import EventType, StreamingEventHandler
@@ -8,6 +8,9 @@ from spaik_sdk.recording.base_recorder import BaseRecorder
 from spaik_sdk.thread.models import MessageBlock, MessageBlockType, ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
 from spaik_sdk.utils.init_logger import init_logger
+
+if TYPE_CHECKING:
+    from spaik_sdk.tools.tool_provider import ToolProvider
 
 logger = init_logger(__name__)
 
@@ -21,11 +24,13 @@ class MessageHandler:
         assistant_name: str,
         assistant_id: str,
         recorder: Optional[BaseRecorder] = None,
+        tool_provider_resolver: Optional[Callable[[str], Optional["ToolProvider"]]] = None,
     ):
         self.thread_container = thread_container
         self.streaming_handler = StreamingEventHandler(recorder)
         self.assistant_name = assistant_name
         self.assistant_id = assistant_id
+        self.tool_provider_resolver = tool_provider_resolver
         self._update_previous_message_count()
 
     def _update_previous_message_count(self) -> None:
@@ -97,10 +102,13 @@ class MessageHandler:
                 assert streaming_event.block_id is not None
                 assert streaming_event.block_type is not None
                 assert streaming_event.message_id is not None
+                tool_provider = self._resolve_tool_provider(streaming_event.tool_name)
                 new_block = MessageBlock(
                     id=streaming_event.block_id,
                     streaming=True,
                     type=streaming_event.block_type,
+                    tool_provider_id=tool_provider.get_provider_id() if tool_provider is not None else None,
+                    tool_provider=tool_provider,
                     tool_call_id=streaming_event.tool_call_id,
                     tool_call_args=streaming_event.tool_args,
                     tool_name=streaming_event.tool_name,
@@ -186,3 +194,8 @@ class MessageHandler:
                     "block_id": streaming_event.block_id,
                     "message_id": streaming_event.message_id,
                 }
+
+    def _resolve_tool_provider(self, tool_name: Optional[str]) -> Optional["ToolProvider"]:
+        if tool_name is None or self.tool_provider_resolver is None:
+            return None
+        return self.tool_provider_resolver(tool_name)

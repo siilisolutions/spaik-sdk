@@ -7,6 +7,7 @@ from spaik_sdk.attachments.models import Attachment
 from spaik_sdk.attachments.provider_support import is_supported_by_provider
 from spaik_sdk.attachments.storage.base_file_storage import BaseFileStorage
 from spaik_sdk.thread.models import MessageBlock, MessageBlockType, ThreadMessage
+from spaik_sdk.tools.tool_provider import ToolProvider
 from spaik_sdk.utils.init_logger import init_logger
 
 logger = init_logger(__name__)
@@ -135,8 +136,9 @@ def _process_message_block(block: MessageBlock) -> str:
     if block.type == MessageBlockType.REASONING:
         return "<thinking/>"
     elif block.type == MessageBlockType.TOOL_USE:
-        tool_name = block.tool_name or "unknown"
-        return f'<tool_call tool="{tool_name}"/>'
+        if block.tool_provider is None:
+            return ToolProvider.render_tool_call_details(block)
+        return block.tool_provider.render_tool_block_for_history(block)
     elif block.type == MessageBlockType.ERROR:
         content = block.content or "unknown error"
         return f'<error msg="{content}"/>'

@@ -1,7 +1,7 @@
 import copy
 import time
 import uuid
-from typing import Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional
 
 from langchain_core.messages import BaseMessage, SystemMessage
 
@@ -24,6 +24,9 @@ from spaik_sdk.thread.models import (
     ToolResponseReceivedEvent,
 )
 from spaik_sdk.utils.init_logger import init_logger
+
+if TYPE_CHECKING:
+    from spaik_sdk.tools.tool_provider import ToolProvider
 
 logger = init_logger(__name__)
 
@@ -333,13 +336,31 @@ class ThreadContainer:
         messages.extend([convert_thread_message_to_langchain(msg) for msg in self.messages])
         return messages
 
-    async def get_langchain_messages_multimodal(self, file_storage: BaseFileStorage, provider_family: str = "openai") -> List[BaseMessage]:
+    async def get_langchain_messages_multimodal(
+        self,
+        file_storage: BaseFileStorage,
+        provider_family: str = "openai",
+    ) -> List[BaseMessage]:
         """Get all messages as LangChain BaseMessages with multimodal content support"""
         messages: List[BaseMessage] = [SystemMessage(content=self.get_system_prompt())]
         for msg in self.messages:
-            converted = await convert_thread_message_to_langchain_multimodal(msg, file_storage, provider_family)
+            converted = await convert_thread_message_to_langchain_multimodal(
+                msg,
+                file_storage,
+                provider_family,
+            )
             messages.append(converted)
         return messages
+
+    def bind_tool_providers(self, tool_providers: List["ToolProvider"]) -> None:
+        provider_by_id = {provider.get_provider_id(): provider for provider in tool_providers}
+        for message in self.messages:
+            for block in message.blocks:
+                if block.type != MessageBlockType.TOOL_USE:
+                    continue
+                if block.tool_provider_id is None:
+                    continue
+                block.tool_provider = provider_by_id.get(block.tool_provider_id)
 
     def get_nof_messages_including_system(self) -> int:
         """Get number of messages including system message"""
