@@ -1,5 +1,6 @@
 import json
 import time
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -10,9 +11,10 @@ from spaik_sdk.thread.models import MessageBlock, MessageBlockType, ThreadMessag
 from spaik_sdk.tools.tool_provider import BaseTool, ToolProvider
 
 
-def parse_tool_call_payload(content: str) -> dict:
+def parse_tool_call_payload(content: str | list[str | dict[str, Any]]) -> dict[str, Any]:
     prefix = "<tool_call>"
     suffix = "</tool_call>"
+    assert isinstance(content, str)
     assert content.startswith(prefix)
     assert content.endswith(suffix)
     return json.loads(content[len(prefix) : -len(suffix)])
