@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
-from spaik_sdk.thread.models import MessageBlock, MessageBlockType, ThreadMessage
+from spaik_sdk.thread.models import BlockAddedEvent, BlockFullyAddedEvent, MessageAddedEvent, MessageBlock, MessageBlockType, ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
 from spaik_sdk.tools.tool_provider import BaseTool, ToolProvider
 
@@ -187,3 +187,83 @@ class TestThreadContainer:
         )
 
         assert messages[1].content == '<custom_tool_call tool="search_docs" id="call-1"/>'
+
+    def test_thread_events_strip_live_tool_provider_references(self):
+        provider = DetailedHistoryToolProvider()
+        thread = ThreadContainer(system_prompt="system prompt")
+        events = []
+        thread.subscribe(events.append)
+
+        initial_message = make_message(
+            "message-1",
+            True,
+            MessageBlock(
+                id="block-1",
+                streaming=False,
+                type=MessageBlockType.TOOL_USE,
+                tool_provider_id=provider.get_provider_id(),
+                tool_provider=provider,
+                tool_name="search_docs",
+                tool_call_id="call-1",
+            ),
+        )
+        thread.add_message(initial_message)
+
+        assert isinstance(events[0], MessageAddedEvent)
+        assert events[0].message.blocks[0].tool_provider is None
+        assert initial_message.blocks[0].tool_provider is provider
+
+        thread.add_message(make_message("message-2", True, MessageBlock(id="block-2", streaming=False, type=MessageBlockType.PLAIN)))
+        thread.add_message_block(
+            "message-2",
+            MessageBlock(
+                id="block-3",
+                streaming=True,
+                type=MessageBlockType.TOOL_USE,
+                tool_provider_id=provider.get_provider_id(),
+                tool_provider=provider,
+                tool_name="search_docs",
+                tool_call_id="call-2",
+            ),
+        )
+
+        block_added_event = next(event for event in events if isinstance(event, BlockAddedEvent) and event.block_id == "block-3")
+        assert block_added_event.block.tool_provider is None
+
+        thread.finalize_streaming_blocks("message-2", ["block-3"])
+
+        block_fully_added_event = next(
+            event for event in events if isinstance(event, BlockFullyAddedEvent) and event.block_id == "block-3"
+        )
+        assert block_fully_added_event.block.tool_provider is None
+
+    def test_bind_tool_providers_rebinds_new_provider_instance_after_serializable_copy(self):
+        original_provider = DetailedHistoryToolProvider()
+        thread = ThreadContainer(system_prompt="system prompt")
+        thread.add_message(
+            make_message(
+                "message-1",
+                True,
+                MessageBlock(
+                    id="block-1",
+                    streaming=False,
+                    type=MessageBlockType.TOOL_USE,
+                    tool_provider_id=original_provider.get_provider_id(),
+                    tool_provider=original_provider,
+                    tool_name="search_docs",
+                    tool_call_id="call-1",
+                ),
+            )
+        )
+
+        reloaded_thread = thread.create_serializable_copy()
+        reloaded_block = reloaded_thread.messages[0].blocks[0]
+
+        assert reloaded_block.tool_provider is None
+        assert reloaded_block.tool_provider_id == original_provider.get_provider_id()
+
+        rebound_provider = DetailedHistoryToolProvider()
+        reloaded_thread.bind_tool_providers([rebound_provider])
+
+        assert reloaded_block.tool_provider is rebound_provider
+        assert reloaded_block.tool_provider is not original_provider
