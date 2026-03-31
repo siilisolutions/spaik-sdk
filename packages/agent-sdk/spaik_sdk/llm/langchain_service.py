@@ -170,6 +170,7 @@ class LangChainService:
         attachments: Optional[List[Attachment]] = None,
     ):
         """Direct execution of stream tokens (core logic)"""
+        self.tool_providers_by_tool_name = self._build_tool_providers_by_tool_name(tools)
         if self.playback is not None:
             # Playback mode - yield recorded tokens
             async for token_data in self.message_handler.process_agent_token_stream(self.playback):
@@ -180,7 +181,6 @@ class LangChainService:
                 yield token_data
             return
 
-        self.tool_providers_by_tool_name = self._build_tool_providers_by_tool_name(tools)
         agent = self.create_executor(tools)
         if user_input is not None:
             self.message_handler.add_user_message(user_input, "user", "user", attachments)

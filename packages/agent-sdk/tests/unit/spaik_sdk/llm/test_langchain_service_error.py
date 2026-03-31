@@ -1,9 +1,11 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from langchain_core.tools import tool
 
 from spaik_sdk.llm.langchain_service import LangChainService
 from spaik_sdk.thread.models import ErrorEvent
+from spaik_sdk.tools.tool_provider import BaseTool, ToolProvider
 
 
 def make_service_with_mocks() -> LangChainService:
@@ -18,8 +20,42 @@ def make_service_with_mocks() -> LangChainService:
     )
 
 
+class EchoToolProvider(ToolProvider):
+    def get_tools(self) -> list[BaseTool]:
+        @tool
+        def echo_tool() -> str:
+            """Echo test tool."""
+            return "ok"
+
+        return [echo_tool]
+
+
 @pytest.mark.unit
 class TestLangChainServiceErrorHandling:
+    @pytest.mark.asyncio
+    async def test_playback_initializes_tool_provider_lookup_before_stream_processing(self):
+        service = make_service_with_mocks()
+        service.playback = MagicMock()
+        provider = EchoToolProvider()
+        tools = provider.get_tools()
+        for provided_tool in tools:
+            setattr(provided_tool, "_spaik_tool_provider", provider)
+
+        resolved_provider = None
+
+        async def fake_process_stream(_stream):
+            nonlocal resolved_provider
+            resolved_provider = service._resolve_tool_provider("echo_tool")
+            if False:
+                yield None
+
+        service.message_handler.process_agent_token_stream = fake_process_stream  # type: ignore[method-assign]
+
+        events = [event async for event in service._execute_stream_tokens_direct(tools=tools)]
+
+        assert events == []
+        assert resolved_provider is provider
+
     @pytest.mark.asyncio
     async def test_execute_stream_tokens_yields_error_event_on_exception(self):
         service = make_service_with_mocks()
