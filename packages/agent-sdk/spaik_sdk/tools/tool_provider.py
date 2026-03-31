@@ -13,7 +13,7 @@ class ToolProvider(ABC):
     Abstract class for tool providers.
     """
 
-    def __init__(self, persist_tool_block_history: bool = True):
+    def __init__(self, persist_tool_block_history: bool = True) -> None:
         self.persist_tool_block_history = persist_tool_block_history
 
     @abstractmethod
@@ -30,7 +30,7 @@ class ToolProvider(ABC):
         return f"{self.__class__.__module__}.{self.__class__.__qualname__}"
 
     def render_tool_block_for_history(self, block: MessageBlock) -> str:
-        if not self.persist_tool_block_history:
+        if not getattr(self, "persist_tool_block_history", False):
             return self.render_tool_call_marker(block)
         return self.render_tool_call_details(block)
 

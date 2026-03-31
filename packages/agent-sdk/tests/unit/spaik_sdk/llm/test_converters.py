@@ -41,6 +41,14 @@ class HiddenHistoryToolProvider(ToolProvider):
         return []
 
 
+class LegacyHistoryToolProvider(ToolProvider):
+    def __init__(self):
+        pass
+
+    def get_tools(self) -> list[BaseTool]:
+        return []
+
+
 @pytest.mark.unit
 class TestConverters:
     def test_convert_thread_message_to_langchain_preserves_tool_block_details(self):
@@ -106,6 +114,31 @@ class TestConverters:
 
     def test_convert_thread_message_to_langchain_keeps_tool_name_when_provider_disables_history_details(self):
         provider = HiddenHistoryToolProvider()
+        thread_message = ThreadMessage(
+            id="message-1",
+            ai=True,
+            author_id="assistant",
+            author_name="assistant",
+            timestamp=int(time.time() * 1000),
+            blocks=[
+                MessageBlock(
+                    id="block-1",
+                    streaming=False,
+                    type=MessageBlockType.TOOL_USE,
+                    tool_provider_id=provider.get_provider_id(),
+                    tool_provider=provider,
+                    tool_name="search_docs",
+                    tool_call_id="call-1",
+                )
+            ],
+        )
+
+        converted = convert_thread_message_to_langchain(thread_message)
+
+        assert converted.content == '<tool_call tool="search_docs"/>'
+
+    def test_convert_thread_message_to_langchain_handles_provider_without_base_init(self):
+        provider = LegacyHistoryToolProvider()
         thread_message = ThreadMessage(
             id="message-1",
             ai=True,
