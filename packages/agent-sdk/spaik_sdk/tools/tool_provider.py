@@ -30,7 +30,7 @@ class ToolProvider(ABC):
         return f"{self.__class__.__module__}.{self.__class__.__qualname__}"
 
     def render_tool_block_for_history(self, block: MessageBlock) -> str:
-        if not getattr(self, "persist_tool_block_history", False):
+        if not getattr(self, "persist_tool_block_history", True):
             return self.render_tool_call_marker(block)
         return self.render_tool_call_details(block)
 
