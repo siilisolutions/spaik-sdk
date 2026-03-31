@@ -77,6 +77,18 @@ class ToolCallTestAgent(BaseAgent):
         return [TestToolProvider()]
 
 
+class DefaultToolProviderAgent(BaseAgent):
+    def __init__(self, **kwargs):
+        super().__init__(
+            system_prompt="test system prompt",
+            llm_model=ModelRegistry.CLAUDE_4_SONNET,
+            **kwargs,
+        )
+
+    def get_tool_providers(self) -> List[ToolProvider]:
+        return [TestToolProvider()]
+
+
 def assert_consumption_equals(actual_consumption: TokenUsage, expected_consumption: TokenUsage):
     """Helper function to assert consumption data matches expected values exactly."""
     # Collect all token mismatches
@@ -276,6 +288,20 @@ class TestBaseAgent:
         # Verify cost estimation works
         cost = BuiltinCostProvider().get_cost_estimate(ModelRegistry.CLAUDE_4_SONNET, total_consumption)
         assert cost.cost > 0
+
+    def test_explicit_empty_tool_providers_disable_default_tools(self):
+        agent = DefaultToolProviderAgent(tool_providers=[])
+
+        assert agent.tool_providers == []
+        assert agent.tools == []
+        assert agent.llm_config.tool_usage is False
+
+    def test_explicit_empty_tools_override_provider_created_tools(self):
+        agent = DefaultToolProviderAgent(tools=[])
+
+        assert len(agent.tool_providers) == 1
+        assert agent.tools == []
+        assert agent.llm_config.tool_usage is False
 
 
 @pytest.mark.unit
