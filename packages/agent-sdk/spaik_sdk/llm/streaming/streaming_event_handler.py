@@ -1,5 +1,5 @@
 import json
-from typing import AsyncGenerator, Optional, Union
+from typing import Any, AsyncGenerator, Optional, Union, cast
 
 from langchain_core.messages import AIMessage, AIMessageChunk
 
@@ -83,9 +83,7 @@ class StreamingEventHandler:
 
                             if self._got_chat_model_stream:
                                 for tool_id, tool_name, tool_args in self._collect_final_tool_calls(msg).values():
-                                    async for streaming_event in self.content_handler.handle_tool_use(
-                                        tool_id, tool_name, tool_args
-                                    ):
+                                    async for streaming_event in self.content_handler.handle_tool_use(tool_id, tool_name, tool_args):
                                         yield streaming_event
 
                             async for streaming_event in self._emit_usage_if_available(msg):
@@ -209,14 +207,15 @@ class StreamingEventHandler:
         if not isinstance(block, dict):
             return None
 
-        if block.get("type") == "tool_use":
-            tool_id = block.get("id") or block.get("tool_use_id")
-            tool_name = block.get("name")
-            tool_args = block.get("input", block.get("args", {}))
-        elif block.get("type") == "function_call":
-            tool_id = block.get("call_id") or block.get("id")
-            tool_name = block.get("name")
-            tool_args = block.get("arguments", block.get("args", {}))
+        block_dict = cast(dict[str, Any], block)
+        if block_dict.get("type") == "tool_use":
+            tool_id = block_dict.get("id") or block_dict.get("tool_use_id")
+            tool_name = block_dict.get("name")
+            tool_args = block_dict.get("input", block_dict.get("args", {}))
+        elif block_dict.get("type") == "function_call":
+            tool_id = block_dict.get("call_id") or block_dict.get("id")
+            tool_name = block_dict.get("name")
+            tool_args = block_dict.get("arguments", block_dict.get("args", {}))
             if isinstance(tool_args, str):
                 try:
                     tool_args = json.loads(tool_args)

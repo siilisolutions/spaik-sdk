@@ -99,7 +99,9 @@ class ThreadContainer:
         """Add a message block to an existing message by message_id"""
         for message in self.messages:
             if message.id == message_id:
-                existing_block_index = next((index for index, existing_block in enumerate(message.blocks) if existing_block.id == block.id), -1)
+                existing_block_index = next(
+                    (index for index, existing_block in enumerate(message.blocks) if existing_block.id == block.id), -1
+                )
                 is_new_block = existing_block_index == -1
                 if is_new_block:
                     message.blocks.append(block)
