@@ -25,7 +25,7 @@ class CustomHistoryToolProvider(ToolProvider):
         return []
 
     def render_tool_block_for_history(self, block: MessageBlock) -> str:
-        return f"<custom_tool_call tool=\"{block.tool_name}\" id=\"{block.tool_call_id}\"/>"
+        return f'<custom_tool_call tool="{block.tool_name}" id="{block.tool_call_id}"/>'
 
 
 class DetailedHistoryToolProvider(ToolProvider):

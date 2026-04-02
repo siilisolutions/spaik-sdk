@@ -26,7 +26,7 @@ class CustomHistoryToolProvider(ToolProvider):
         return []
 
     def render_tool_block_for_history(self, block: MessageBlock) -> str:
-        return f"<custom_tool_call tool=\"{block.tool_name}\" id=\"{block.tool_call_id}\"/>"
+        return f'<custom_tool_call tool="{block.tool_name}" id="{block.tool_call_id}"/>'
 
 
 class DetailedHistoryToolProvider(ToolProvider):
@@ -284,9 +284,7 @@ class TestThreadContainer:
 
         thread.finalize_streaming_blocks("message-2", ["block-3"])
 
-        block_fully_added_event = next(
-            event for event in events if isinstance(event, BlockFullyAddedEvent) and event.block_id == "block-3"
-        )
+        block_fully_added_event = next(event for event in events if isinstance(event, BlockFullyAddedEvent) and event.block_id == "block-3")
         assert block_fully_added_event.block.tool_provider is None
 
     def test_bind_tool_providers_rebinds_new_provider_instance_after_serializable_copy(self):
