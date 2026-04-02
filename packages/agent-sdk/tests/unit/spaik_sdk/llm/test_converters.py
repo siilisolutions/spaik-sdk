@@ -160,7 +160,8 @@ class TestConverters:
 
         converted = convert_thread_message_to_langchain(thread_message)
 
-        assert converted.content == '<tool_call tool="search_docs"/>'
+        payload = parse_tool_call_payload(converted.content)
+        assert payload == {"tool": "search_docs", "tool_call_id": "call-1"}
 
     @pytest.mark.asyncio
     async def test_convert_thread_message_to_langchain_multimodal_uses_tool_history_rendering(self):
