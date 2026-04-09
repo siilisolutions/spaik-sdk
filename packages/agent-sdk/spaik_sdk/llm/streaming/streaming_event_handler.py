@@ -25,6 +25,8 @@ class StreamingEventHandler:
         self.state_manager = StreamingStateManager()
         self.content_handler = StreamingContentHandler(self.block_manager, self.state_manager)
         self._processed_message_ids: set[str] = set()
+        self._processed_tool_ids: set[str] = set()
+        self._tool_args_by_id: dict[str, dict] = {}
         self._final_message: Optional[AIMessageType] = None
         self._got_chat_model_stream: bool = False
 
@@ -32,6 +34,8 @@ class StreamingEventHandler:
         self.block_manager.reset()
         self.state_manager.reset()
         self._processed_message_ids.clear()
+        self._processed_tool_ids.clear()
+        self._tool_args_by_id.clear()
         self._final_message = None
         self._got_chat_model_stream = False
 
@@ -83,8 +87,19 @@ class StreamingEventHandler:
 
                             if self._got_chat_model_stream:
                                 for tool_id, tool_name, tool_args in self._collect_final_tool_calls(msg).values():
-                                    async for streaming_event in self.content_handler.handle_tool_use(tool_id, tool_name, tool_args):
-                                        yield streaming_event
+                                    if tool_id not in self._processed_tool_ids:
+                                        self._processed_tool_ids.add(tool_id)
+                                        self._tool_args_by_id[tool_id] = tool_args
+                                        async for streaming_event in self.content_handler.handle_tool_use(tool_id, tool_name, tool_args):
+                                            yield streaming_event
+                                    else:
+                                        streamed_args = self._tool_args_by_id.get(tool_id, {})
+                                        if not streamed_args and tool_args:
+                                            self._tool_args_by_id[tool_id] = tool_args
+                                            async for streaming_event in self.content_handler.handle_tool_use(
+                                                tool_id, tool_name, tool_args
+                                            ):
+                                                yield streaming_event
 
                             async for streaming_event in self._emit_usage_if_available(msg):
                                 yield streaming_event
@@ -168,6 +183,8 @@ class StreamingEventHandler:
                     continue
 
                 tool_id, tool_name, tool_args = tool_details
+                self._processed_tool_ids.add(tool_id)
+                self._tool_args_by_id[tool_id] = tool_args
                 async for event in self.content_handler.handle_tool_use(tool_id, tool_name, tool_args):
                     yield event
 
