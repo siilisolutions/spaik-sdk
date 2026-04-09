@@ -96,7 +96,9 @@ class StreamingEventHandler:
                                         streamed_args = self._tool_args_by_id.get(tool_id, {})
                                         if not streamed_args and tool_args:
                                             self._tool_args_by_id[tool_id] = tool_args
-                                            async for streaming_event in self.content_handler.handle_tool_use(tool_id, tool_name, tool_args):
+                                            async for streaming_event in self.content_handler.handle_tool_use(
+                                                tool_id, tool_name, tool_args
+                                            ):
                                                 yield streaming_event
 
                             async for streaming_event in self._emit_usage_if_available(msg):
