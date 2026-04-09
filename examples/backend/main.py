@@ -28,7 +28,20 @@ class DemoTool(ToolProvider):
             """Returns the users name."""
             return "Seppo Hovi"
 
-        return [get_secret_greeting, get_user_name]
+        @tool
+        def search_web(query: str, limit: int = 5) -> str:
+            """Search the web for information.
+            
+            Args:
+                query: The search query string
+                limit: Maximum number of results to return (default 5)
+            
+            Returns:
+                Search results as formatted text
+            """
+            return f"Found {limit} results for '{query}':\n1. Example result 1\n2. Example result 2\n3. Example result 3"
+
+        return [get_secret_greeting, get_user_name, search_web]
 
 
 class ImageGeneratorTool(ToolProvider):

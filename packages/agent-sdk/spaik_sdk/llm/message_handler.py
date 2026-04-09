@@ -97,7 +97,6 @@ class MessageHandler:
                 self.thread_container.add_message(ai_message)
 
             elif streaming_event.event_type == EventType.BLOCK_START:
-                logger.debug(f"🔍 Processing BLOCK_START for block: {streaming_event.block_id}")
                 # Add new block to the message
                 assert streaming_event.block_id is not None
                 assert streaming_event.block_type is not None
