@@ -60,22 +60,30 @@ class BaseAgent(ABC):
         logger.debug("Initializing BaseAgent")
         # Generate unique instance ID for trace correlation
         self.agent_instance_id: str = str(uuid.uuid4())
-        self.prompt_loader = prompt_loader or get_prompt_loader(prompt_loader_mode)
-        self.system_prompt = system_prompt or self._get_system_prompt(system_prompt_args, system_prompt_version)
-        self.trace = trace or AgentTrace(
-            self.system_prompt,
-            self.__class__.__name__,
-            trace_sink=trace_sink,
-            agent_instance_id=self.agent_instance_id,
+        self.tool_providers = tool_providers if tool_providers is not None else self.get_tool_providers()
+        self.prompt_loader = prompt_loader if prompt_loader is not None else get_prompt_loader(prompt_loader_mode)
+        self.system_prompt = (
+            system_prompt if system_prompt is not None else self._get_system_prompt(system_prompt_args, system_prompt_version)
         )
-        self.thread_container: ThreadContainer = thread_container or ThreadContainer(self.system_prompt)
-        self.tools = tools or self._create_tools(tool_providers)
-        self.llm_config = llm_config or self.create_llm_config(llm_model, reasoning)
+        self.trace = (
+            trace
+            if trace is not None
+            else AgentTrace(
+                self.system_prompt,
+                self.__class__.__name__,
+                trace_sink=trace_sink,
+                agent_instance_id=self.agent_instance_id,
+            )
+        )
+        self.thread_container = thread_container if thread_container is not None else ThreadContainer(self.system_prompt)
+        self.tools = tools if tools is not None else self._create_tools(self.tool_providers)
+        self.thread_container.bind_tool_providers(self.tool_providers)
+        self.llm_config = llm_config if llm_config is not None else self.create_llm_config(llm_model, reasoning)
         self.recorder = recorder.get_recorder() if recorder is not None else None
         self.playback = recorder.get_playback() if recorder is not None else None
         self.thread_container.subscribe(self._on_thread_event)
         self.cancellation_handle = cancellation_handle
-        self.cost_provider = cost_provider or BuiltinCostProvider()
+        self.cost_provider = cost_provider if cost_provider is not None else BuiltinCostProvider()
 
     def get_response_stream(
         self,
@@ -173,6 +181,7 @@ class BaseAgent(ABC):
         self.thread_container = thread_container
         if self.thread_container.system_prompt is None:
             self.thread_container.system_prompt = self.system_prompt
+        self.thread_container.bind_tool_providers(self.tool_providers)
         self.thread_container.subscribe(self._on_thread_event)
 
     def set_cancellation_handle(self, cancellation_handle: Optional[CancellationHandle]) -> None:
@@ -185,10 +194,14 @@ class BaseAgent(ABC):
         return self.prompt_loader.get_system_prompt(self.__class__, args, version)
 
     def _create_tools(self, tool_providers: Optional[List[ToolProvider]] = None) -> List[BaseTool]:
-        tool_providers = tool_providers or self.get_tool_providers()
+        tool_providers = tool_providers if tool_providers is not None else self.tool_providers
         tools = []
         for provider in tool_providers:
-            tools.extend(provider.get_tools())
+            provider_id = provider.get_provider_id()
+            for tool in provider.get_tools():
+                setattr(tool, "_spaik_tool_provider_id", provider_id)
+                setattr(tool, "_spaik_tool_provider", provider)
+                tools.append(tool)
         return tools
 
     def _create_langchain_service(self, llm_config: Optional[LLMConfig] = None) -> LangChainService:
@@ -199,6 +212,7 @@ class BaseAgent(ABC):
             self.thread_container,
             self.__class__.__name__,
             self.__class__.__name__,
+            self.tool_providers,
             self.recorder,
             self.playback,
             self.cancellation_handle,

@@ -1,14 +1,20 @@
+import json
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from langchain_core.tools import BaseTool, StructuredTool, tool
 from pydantic import BaseModel, Field, create_model
 
+from spaik_sdk.thread.models import MessageBlock
+
 
 class ToolProvider(ABC):
     """
     Abstract class for tool providers.
     """
+
+    def __init__(self, persist_tool_block_history: bool = True) -> None:
+        self.persist_tool_block_history = persist_tool_block_history
 
     @abstractmethod
     def get_tools(self) -> List[BaseTool]:
@@ -19,6 +25,34 @@ class ToolProvider(ABC):
             BaseTool: A Langchain tool
         """
         pass
+
+    def get_provider_id(self) -> str:
+        return f"{self.__class__.__module__}.{self.__class__.__qualname__}"
+
+    def render_tool_block_for_history(self, block: MessageBlock) -> str:
+        if not getattr(self, "persist_tool_block_history", True):
+            return self.render_tool_call_marker(block)
+        return self.render_tool_call_details(block)
+
+    @staticmethod
+    def render_tool_call_marker(block: MessageBlock) -> str:
+        tool_name = block.tool_name or "unknown"
+        return f'<tool_call tool="{tool_name}"/>'
+
+    @staticmethod
+    def render_tool_call_details(block: MessageBlock) -> str:
+        payload: Dict[str, Any] = {"tool": block.tool_name or "unknown"}
+
+        if block.tool_call_id is not None:
+            payload["tool_call_id"] = block.tool_call_id
+        if block.tool_call_args is not None:
+            payload["args"] = block.tool_call_args
+        if block.tool_call_response is not None:
+            payload["response"] = block.tool_call_response
+        if block.tool_call_error is not None:
+            payload["error"] = block.tool_call_error
+
+        return f"<tool_call>{json.dumps(payload, sort_keys=True)}</tool_call>"
 
     @staticmethod
     def create_tool(

@@ -1,13 +1,14 @@
 import json
 import time
 from abc import ABC
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 if TYPE_CHECKING:
     from spaik_sdk.attachments.models import Attachment
     from spaik_sdk.llm.consumption.token_usage import TokenUsage
+    from spaik_sdk.tools.tool_provider import ToolProvider
 
 
 class MessageBlockType(Enum):
@@ -23,6 +24,8 @@ class MessageBlock:
     streaming: bool
     type: MessageBlockType
     content: Optional[str] = None
+    tool_provider_id: Optional[str] = None
+    tool_provider: Optional["ToolProvider"] = field(default=None, repr=False, compare=False)
     tool_call_id: Optional[str] = None
     tool_call_args: Optional[Dict[str, Any]] = None
     tool_name: Optional[str] = None
@@ -34,9 +37,12 @@ class MessageBlock:
             "id": self.id,
             "streaming": self.streaming,
             "content": self.content,
+            "tool_provider_id": self.tool_provider_id,
             "tool_call_id": self.tool_call_id,
             "tool_call_args": self.tool_call_args,
             "tool_name": self.tool_name,
+            "tool_call_response": self.tool_call_response,
+            "tool_call_error": self.tool_call_error,
             "type": self.type.value,
         }
 

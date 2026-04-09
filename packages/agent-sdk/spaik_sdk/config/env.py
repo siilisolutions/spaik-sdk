@@ -1,5 +1,6 @@
 import os
-from typing import Dict, Optional as OptionalType
+from typing import Dict
+from typing import Optional as OptionalType
 
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.model_registry import ModelRegistry

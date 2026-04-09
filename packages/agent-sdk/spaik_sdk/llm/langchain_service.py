@@ -25,6 +25,7 @@ from spaik_sdk.recording.base_playback import BasePlayback
 from spaik_sdk.recording.base_recorder import BaseRecorder
 from spaik_sdk.thread.models import ErrorEvent, MessageBlock, MessageBlockType, ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
+from spaik_sdk.tools.tool_provider import ToolProvider
 from spaik_sdk.utils.init_logger import init_logger
 
 DEBUG = env_config.is_debug_mode("langchain")
@@ -52,6 +53,7 @@ class LangChainService:
         thread_container: ThreadContainer,
         assistant_name: str,
         assistant_id: str,
+        tool_providers: Optional[List[ToolProvider]] = None,
         recorder: Optional[BaseRecorder] = None,
         playback: Optional[BasePlayback] = None,
         cancellation_handle: Optional[CancellationHandle] = None,
@@ -59,7 +61,15 @@ class LangChainService:
         self.llm_config = llm_config
 
         self.thread_container = thread_container
-        self.message_handler = MessageHandler(self.thread_container, assistant_name, assistant_id, recorder)
+        self.tool_providers = tool_providers or []
+        self.tool_providers_by_tool_name: Dict[str, ToolProvider] = {}
+        self.message_handler = MessageHandler(
+            self.thread_container,
+            assistant_name,
+            assistant_id,
+            recorder,
+            tool_provider_resolver=self._resolve_tool_provider,
+        )
         self.is_used = False
         self.recorder = recorder
         self.playback = playback
@@ -70,6 +80,17 @@ class LangChainService:
 
     def _get_model(self):
         return self.llm_config.get_model_wrapper().get_langchain_model()
+
+    def _build_tool_providers_by_tool_name(self, tools: List[BaseTool]) -> Dict[str, ToolProvider]:
+        providers_by_tool_name: Dict[str, ToolProvider] = {}
+        for tool in tools:
+            provider = getattr(tool, "_spaik_tool_provider", None)
+            if isinstance(provider, ToolProvider):
+                providers_by_tool_name[tool.name] = provider
+        return providers_by_tool_name
+
+    def _resolve_tool_provider(self, tool_name: str) -> Optional[ToolProvider]:
+        return self.tool_providers_by_tool_name.get(tool_name)
 
     def get_structured_response(self, input: str, output_schema: Type[T]) -> T:
         # Handle playback mode
@@ -149,6 +170,7 @@ class LangChainService:
         attachments: Optional[List[Attachment]] = None,
     ):
         """Direct execution of stream tokens (core logic)"""
+        self.tool_providers_by_tool_name = self._build_tool_providers_by_tool_name(tools)
         if self.playback is not None:
             # Playback mode - yield recorded tokens
             async for token_data in self.message_handler.process_agent_token_stream(self.playback):

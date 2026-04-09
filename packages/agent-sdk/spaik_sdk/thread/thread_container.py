@@ -1,7 +1,7 @@
 import copy
 import time
 import uuid
-from typing import Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional
 
 from langchain_core.messages import BaseMessage, SystemMessage
 
@@ -24,6 +24,9 @@ from spaik_sdk.thread.models import (
     ToolResponseReceivedEvent,
 )
 from spaik_sdk.utils.init_logger import init_logger
+
+if TYPE_CHECKING:
+    from spaik_sdk.tools.tool_provider import ToolProvider
 
 logger = init_logger(__name__)
 
@@ -89,20 +92,34 @@ class ThreadContainer:
     def add_message(self, msg: ThreadMessage) -> None:
         """Add a new message to the thread"""
         self.messages.append(msg)
-        self._emit_event(MessageAddedEvent(message=copy.deepcopy(msg)))
+        self._emit_event(MessageAddedEvent(message=self._copy_message_without_live_providers(msg)))
         self._increment_version()
 
     def add_message_block(self, message_id: str, block: MessageBlock) -> None:
         """Add a message block to an existing message by message_id"""
         for message in self.messages:
             if message.id == message_id:
-                message.blocks.append(block)
+                existing_block_index = next(
+                    (index for index, existing_block in enumerate(message.blocks) if existing_block.id == block.id), -1
+                )
+                is_new_block = existing_block_index == -1
+                if is_new_block:
+                    message.blocks.append(block)
+                else:
+                    existing_block = message.blocks[existing_block_index]
+                    if block.tool_call_response is None:
+                        block.tool_call_response = existing_block.tool_call_response
+                    if block.tool_call_error is None:
+                        block.tool_call_error = existing_block.tool_call_error
+                    message.blocks[existing_block_index] = block
 
                 # Emit block added event
-                self._emit_event(BlockAddedEvent(message_id=message_id, block_id=block.id, block=copy.deepcopy(block)))
+                self._emit_event(
+                    BlockAddedEvent(message_id=message_id, block_id=block.id, block=self._copy_block_without_live_provider(block))
+                )
 
                 # If it's a tool block, emit tool call started
-                if block.type == MessageBlockType.TOOL_USE and block.tool_call_id:
+                if is_new_block and block.type == MessageBlockType.TOOL_USE and block.tool_call_id:
                     tool_name = block.tool_name or "unknown"
 
                     self._emit_event(
@@ -196,7 +213,13 @@ class ThreadContainer:
                         completed_blocks.append(block.id)
 
                         # Emit block fully added event for each completed block
-                        self._emit_event(BlockFullyAddedEvent(block_id=block.id, message_id=message_id, block=copy.deepcopy(block)))
+                        self._emit_event(
+                            BlockFullyAddedEvent(
+                                block_id=block.id,
+                                message_id=message_id,
+                                block=self._copy_block_without_live_provider(block),
+                            )
+                        )
                 break
 
         if completed_blocks:
@@ -219,7 +242,13 @@ class ThreadContainer:
                     block.content = self.streaming_content[block.id]
                     logger.info(f"🔧 Block {block.id} content: {block.content}")
                 completed_blocks.append(block.id)
-                self._emit_event(BlockFullyAddedEvent(block_id=block.id, message_id=message.id, block=copy.deepcopy(block)))
+                self._emit_event(
+                    BlockFullyAddedEvent(
+                        block_id=block.id,
+                        message_id=message.id,
+                        block=self._copy_block_without_live_provider(block),
+                    )
+                )
             self.finalize_streaming_blocks(message.id, completed_blocks)
         if completed_blocks:
             self._increment_version()
@@ -232,7 +261,7 @@ class ThreadContainer:
         """Mark the message as fully added and emit the event"""
         latest_message = self.get_latest_ai_message()
         if latest_message:
-            self._emit_event(MessageFullyAddedEvent(message=copy.deepcopy(latest_message)))
+            self._emit_event(MessageFullyAddedEvent(message=self._copy_message_without_live_providers(latest_message)))
 
     def is_streaming_active(self) -> bool:
         """Check if any blocks are currently streaming"""
@@ -333,13 +362,31 @@ class ThreadContainer:
         messages.extend([convert_thread_message_to_langchain(msg) for msg in self.messages])
         return messages
 
-    async def get_langchain_messages_multimodal(self, file_storage: BaseFileStorage, provider_family: str = "openai") -> List[BaseMessage]:
+    async def get_langchain_messages_multimodal(
+        self,
+        file_storage: BaseFileStorage,
+        provider_family: str = "openai",
+    ) -> List[BaseMessage]:
         """Get all messages as LangChain BaseMessages with multimodal content support"""
         messages: List[BaseMessage] = [SystemMessage(content=self.get_system_prompt())]
         for msg in self.messages:
-            converted = await convert_thread_message_to_langchain_multimodal(msg, file_storage, provider_family)
+            converted = await convert_thread_message_to_langchain_multimodal(
+                msg,
+                file_storage,
+                provider_family,
+            )
             messages.append(converted)
         return messages
+
+    def bind_tool_providers(self, tool_providers: List["ToolProvider"]) -> None:
+        provider_by_id = {provider.get_provider_id(): provider for provider in tool_providers}
+        for message in self.messages:
+            for block in message.blocks:
+                if block.type != MessageBlockType.TOOL_USE:
+                    continue
+                if block.tool_provider_id is None:
+                    continue
+                block.tool_provider = provider_by_id.get(block.tool_provider_id)
 
     def get_nof_messages_including_system(self) -> int:
         """Get number of messages including system message"""
@@ -450,19 +497,45 @@ class ThreadContainer:
     def create_serializable_copy(self) -> "ThreadContainer":
         """Create a copy of this ThreadContainer that can be safely pickled"""
         # Create new instance without calling __init__ to avoid subscriber initialization
-        copy = ThreadContainer.__new__(ThreadContainer)
+        thread_copy = ThreadContainer.__new__(ThreadContainer)
 
         # Copy all serializable attributes
-        copy.messages = self.messages.copy()
-        copy.streaming_content = self.streaming_content.copy()
-        copy.tool_call_responses = self.tool_call_responses.copy()
-        copy.system_prompt = self.system_prompt
-        copy._version = self._version
-        copy._last_activity_time = self._last_activity_time
-        copy.thread_id = self.thread_id
-        copy.job_id = self.job_id
+        thread_copy.messages = [self._copy_message_without_live_providers(message) for message in self.messages]
+        thread_copy.streaming_content = self.streaming_content.copy()
+        thread_copy.tool_call_responses = copy.deepcopy(self.tool_call_responses)
+        thread_copy.system_prompt = self.system_prompt
+        thread_copy._version = self._version
+        thread_copy._last_activity_time = self._last_activity_time
+        thread_copy.thread_id = self.thread_id
+        thread_copy.job_id = self.job_id
 
         # Initialize empty subscribers list (will be empty when loaded)
-        copy._subscribers = []
+        thread_copy._subscribers = []
 
-        return copy
+        return thread_copy
+
+    def _copy_block_without_live_provider(self, block: MessageBlock) -> MessageBlock:
+        return MessageBlock(
+            id=block.id,
+            streaming=block.streaming,
+            type=block.type,
+            content=block.content,
+            tool_provider_id=block.tool_provider_id,
+            tool_call_id=block.tool_call_id,
+            tool_call_args=copy.deepcopy(block.tool_call_args),
+            tool_name=block.tool_name,
+            tool_call_response=block.tool_call_response,
+            tool_call_error=block.tool_call_error,
+        )
+
+    def _copy_message_without_live_providers(self, message: ThreadMessage) -> ThreadMessage:
+        return ThreadMessage(
+            id=message.id,
+            ai=message.ai,
+            author_id=message.author_id,
+            author_name=message.author_name,
+            timestamp=message.timestamp,
+            blocks=[self._copy_block_without_live_provider(block) for block in message.blocks],
+            consumption_metadata=copy.deepcopy(message.consumption_metadata),
+            attachments=copy.deepcopy(message.attachments),
+        )

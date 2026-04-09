@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 import pytest
-from langchain_core.messages import AIMessageChunk
+from langchain_core.messages import AIMessage, AIMessageChunk
 
 from spaik_sdk.llm.streaming.models import EventType
 from spaik_sdk.llm.streaming.streaming_event_handler import StreamingEventHandler
@@ -22,6 +22,10 @@ def make_chain_end_event(content: str = "", usage_metadata: dict | None = None) 
     if usage_metadata:
         chunk.usage_metadata = usage_metadata  # type: ignore[assignment]
     return {"event": "on_chain_end", "data": {"output": {"messages": [chunk]}}}
+
+
+def make_chat_model_end_event(output: AIMessage | AIMessageChunk) -> dict:
+    return {"event": "on_chat_model_end", "data": {"output": output}}
 
 
 async def collect_events(handler: StreamingEventHandler, raw_events: list[dict]) -> list:
@@ -219,3 +223,30 @@ class TestStreamingEventHandler:
         assert len(tool_response_events) == 1
         assert tool_response_events[0].content == "Weather in Paris: Sunny, 25°C"
         assert tool_response_events[0].tool_call_id == "call_123"
+
+    @pytest.mark.asyncio
+    async def test_emits_final_tool_args_from_chain_end_when_chat_model_end_is_partial(self):
+        handler = StreamingEventHandler()
+        partial_final_message = AIMessage(content="", tool_calls=[{"id": "call_123", "name": "generate_image", "args": {}}])
+        full_final_message = AIMessage(
+            content=[
+                {
+                    "type": "tool_use",
+                    "id": "call_123",
+                    "name": "generate_image",
+                    "input": {"prompt": "portrait of Seppo Hovi"},
+                }
+            ]
+        )
+        raw_events = [
+            make_chat_model_stream_event("", tool_calls=[{"id": "call_123", "name": "generate_image", "args": {}}]),
+            make_chat_model_end_event(partial_final_message),
+            {"event": "on_chain_end", "data": {"output": {"messages": [full_final_message]}}},
+        ]
+
+        events = await collect_events(handler, raw_events)
+
+        tool_use_events = [e for e in events if e.event_type == EventType.TOOL_USE]
+        assert len(tool_use_events) == 2
+        assert tool_use_events[0].tool_args == {}
+        assert tool_use_events[-1].tool_args == {"prompt": "portrait of Seppo Hovi"}
