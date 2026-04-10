@@ -85,6 +85,7 @@ print(agent.get_response_text("What's the weather in Helsinki?"))
 - `get_response_stream(input)` - Async generator for streaming
 - `get_event_stream(input)` - Async generator for ThreadEvents
 - `get_structured_response(prompt, Schema)` - Returns Pydantic model
+- `spawn(task)` - Run as isolated subagent (prevents LangChain callback leaks)
 - `run_cli()` - Interactive CLI mode
 
 ### FastAPI Server

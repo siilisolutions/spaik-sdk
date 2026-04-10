@@ -131,6 +131,23 @@ class MyAgent(BaseAgent):
         ]
 ```
 
+## Subagents
+
+To call one agent from inside another agent's tool, use `spawn()` instead of `get_response()`. This prevents LangChain's callback context from leaking into the subagent, which would otherwise cause the subagent's internal tool calls to appear in the parent thread.
+
+```python
+class ResearchTools(ToolProvider):
+    def get_tools(self) -> list[BaseTool]:
+        @tool
+        def research(topic: str) -> str:
+            """Delegate a research task to a specialist subagent."""
+            sub = ResearchAgent(system_prompt="You are a research specialist.")
+            return sub.spawn(topic).get_text_content()
+        return [research]
+```
+
+For cases where you need to isolate an arbitrary coroutine rather than a full agent call, use the static `BaseAgent.run_isolated(coro)` helper directly.
+
 ## Models
 
 ```python
