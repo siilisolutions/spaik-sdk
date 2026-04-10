@@ -1,4 +1,6 @@
 import asyncio
+import contextvars
+import threading
 import uuid
 from abc import ABC
 from typing import Any, AsyncGenerator, Dict, List, Optional, Type, TypeVar
@@ -139,6 +141,42 @@ class BaseAgent(ABC):
         attachments: Optional[List[Attachment]] = None,
     ) -> str:
         return (await self.get_response_async(user_input, attachments)).get_text_content()
+
+    def spawn(
+        self,
+        task: str,
+        attachments: Optional[List[Attachment]] = None,
+    ) -> "ThreadMessage":
+        """Run this agent as an isolated subagent.
+
+        Prevents LangChain callback context from leaking into this agent's thread,
+        which would cause the subagent's tool calls to appear in the parent thread.
+        """
+        return BaseAgent.run_isolated(self.get_response_async(task, attachments))
+
+    @staticmethod
+    def run_isolated(coro: Any) -> Any:
+        """Run a coroutine in a blank ContextVar context.
+
+        Use this when calling a nested agent from inside a tool so that LangChain's
+        callback handlers (stored in ContextVars) are not inherited by the subagent.
+        """
+        result: list = []
+        error: list = []
+
+        def _thread() -> None:
+            ctx = contextvars.Context()
+            try:
+                ctx.run(lambda: result.append(asyncio.run(coro)))
+            except Exception as exc:
+                error.append(exc)
+
+        t = threading.Thread(target=_thread)
+        t.start()
+        t.join()
+        if error:
+            raise error[0]
+        return result[0]
 
     def get_structured_response(self, prompt: str, output_schema: Type[T]) -> T:
         self.trace.add_structured_response_input(prompt, output_schema)
