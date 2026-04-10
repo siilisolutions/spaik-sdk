@@ -7,6 +7,9 @@ from spaik_sdk.llm.cancellation_handle import CancellationHandle
 from spaik_sdk.server.response.response_generator import OnCheckpoint, ResponseGenerator
 from spaik_sdk.thread.models import MessageFullyAddedEvent, ThreadEvent, ToolResponseReceivedEvent
 from spaik_sdk.thread.thread_container import ThreadContainer
+from spaik_sdk.utils.init_logger import init_logger
+
+logger = init_logger(__name__)
 
 TAgent = TypeVar("TAgent", bound=BaseAgent)
 
@@ -29,7 +32,10 @@ class AgentResponseGenerator(ResponseGenerator):
 
         async for event in self.call_agent(self.agent):
             if on_checkpoint and isinstance(event, _CHECKPOINT_EVENT_TYPES):
-                await on_checkpoint()
+                try:
+                    await on_checkpoint()
+                except Exception:
+                    logger.exception("Checkpoint failed; stream continues")
             if not event.is_publishable():
                 continue
             yield self._convert_event(event, thread.thread_id)

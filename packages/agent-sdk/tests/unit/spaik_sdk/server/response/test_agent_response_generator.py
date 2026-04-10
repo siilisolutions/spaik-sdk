@@ -109,3 +109,19 @@ async def test_no_on_checkpoint_does_not_raise():
     chunks = [c async for c in sut.stream_response(_make_thread(), on_checkpoint=None)]
 
     assert len(chunks) == 1
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_checkpoint_failure_does_not_abort_stream():
+    """A storage error in on_checkpoint must not propagate and kill the stream."""
+    tool_event = ToolResponseReceivedEvent(tool_call_id="tc1", response="r1", block_id="b1")
+    msg_event = MessageFullyAddedEvent(message=_make_message())
+    sut, _ = _make_sut(tool_event, msg_event)
+    checkpoint = AsyncMock(side_effect=RuntimeError("storage unavailable"))
+
+    chunks = [c async for c in sut.stream_response(_make_thread(), on_checkpoint=checkpoint)]
+
+    # Both publishable events still yielded despite checkpoint errors
+    assert len(chunks) == 2
+    assert checkpoint.await_count == 2
