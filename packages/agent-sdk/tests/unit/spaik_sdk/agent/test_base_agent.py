@@ -1,3 +1,5 @@
+import asyncio
+import contextvars
 import time
 import uuid
 from typing import List, Optional
@@ -361,3 +363,91 @@ class TestBaseAgentInstanceId:
 
         # The agent's instance ID should match the trace's instance ID
         assert agent.agent_instance_id == agent.trace.agent_instance_id
+
+
+@pytest.mark.unit
+class TestRunIsolated:
+    """Tests for BaseAgent.run_isolated() and spawn() context isolation."""
+
+    def test_run_isolated_does_not_inherit_context_var(self):
+        """A ContextVar set in the parent is invisible inside run_isolated."""
+        _var: contextvars.ContextVar[str | None] = contextvars.ContextVar("_test_isolation", default=None)
+        _var.set("parent_value")
+
+        async def read_var() -> str | None:
+            return _var.get()
+
+        result = BaseAgent.run_isolated(read_var())
+        assert result is None
+
+    def test_run_isolated_returns_coroutine_result(self):
+        """run_isolated returns whatever the coroutine resolves to."""
+
+        async def compute() -> int:
+            return 42
+
+        assert BaseAgent.run_isolated(compute()) == 42
+
+    def test_run_isolated_propagates_exceptions(self):
+        """Exceptions raised inside the coroutine are re-raised by run_isolated."""
+
+        async def boom() -> None:
+            raise ValueError("inner error")
+
+        with pytest.raises(ValueError, match="inner error"):
+            BaseAgent.run_isolated(boom())
+
+    def test_spawn_uses_isolated_context(self):
+        """spawn() executes get_response_async in a blank context.
+
+        Simulates the LangChain callback leak scenario: a ContextVar is set before
+        calling spawn() (as it would be during normal agent execution) and verified
+        to be absent inside the spawned coroutine.
+        """
+        _callback_var: contextvars.ContextVar[str | None] = contextvars.ContextVar("_lc_callbacks", default=None)
+        _callback_var.set("fake_langchain_handler")
+
+        from unittest.mock import MagicMock
+
+        context_seen_by_spawn: list[str | None] = []
+        fake_message = MagicMock()
+
+        async def mock_response_async(
+            user_input: str | None = None,
+            attachments: object = None,
+        ) -> object:
+            context_seen_by_spawn.append(_callback_var.get())
+            return fake_message
+
+        agent = ConcreteTestAgent(recording_name="test_spawn_isolation")
+        agent.get_response_async = mock_response_async  # type: ignore[method-assign]
+
+        agent.spawn("test task")
+
+        assert context_seen_by_spawn == [None], f"spawn() leaked a parent ContextVar into the subagent. Got: {context_seen_by_spawn}"
+
+    def test_run_isolated_can_be_called_concurrently(self):
+        """Multiple run_isolated calls don't interfere with each other."""
+        import threading as _threading
+
+        results: list[int] = []
+        errors: list[Exception] = []
+
+        async def slow_compute(value: int) -> int:
+            await asyncio.sleep(0.01)
+            return value * 2
+
+        def _run(v: int) -> None:
+            try:
+                results.append(BaseAgent.run_isolated(slow_compute(v)))
+            except Exception as exc:
+                errors.append(exc)
+
+        threads = [_threading.Thread(target=_run, args=(i,)) for i in range(5)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert not errors
+        assert sorted(results) == [0, 2, 4, 6, 8]
