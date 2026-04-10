@@ -1,130 +1,72 @@
 """
-Subagent example: orchestrator delegates focused tasks to isolated subagents.
+Demonstrates spawning a nested agent from inside a tool without leaking
+the parent agent's LangChain callback context.
 
-Demonstrates:
-- A SubAgent with its own tools and system prompt
-- A MainAgent that spawns subagents via a tool
-- The _run_isolated() helper that prevents LangChain callback ContextVars
-  from leaking the subagent's tool calls into the main thread stream.
+Without isolation the subagent's tool calls bleed into the parent thread.
+With spawn() they stay inside the subagent's own ThreadContainer.
 
-The leak occurs because asyncio.run() copies the calling coroutine's
-ContextVar context, which includes LangChain's internal callback handlers.
-Running in a new thread with a fresh contextvars.Context() prevents this.
-
-See: SUBAGENT_ISOLATION.md in the repo root for details and SDK-level options.
+Run:
+    uv run python examples/agents/subagent_example.py
 """
-import asyncio
-import contextvars
-import threading
 
 from dotenv import load_dotenv
 
 from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.thread.models import MessageBlockType
 from spaik_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
 
 
-# ── Isolation helper ──────────────────────────────────────────────────────────
-
-def run_isolated(coro):
-    """Run a coroutine in a new thread with a blank ContextVar context.
-
-    Use this instead of asyncio.run() when running a nested BaseAgent from
-    inside a tool call. Without this, LangChain's callback ContextVars are
-    inherited and the subagent's tool_use blocks appear in the main thread stream.
-    """
-    result: list = []
-    error: list = []
-
-    def _thread():
-        ctx = contextvars.Context()  # no inherited ContextVars
-        try:
-            ctx.run(lambda: result.append(asyncio.run(coro)))
-        except Exception as exc:
-            error.append(exc)
-
-    t = threading.Thread(target=_thread)
-    t.start()
-    t.join()
-    if error:
-        raise error[0]
-    return result[0]
-
-
-# ── SubAgent ──────────────────────────────────────────────────────────────────
-
-class ResearchTools(ToolProvider):
-    """Toy research tools for the subagent."""
-
+class EchoTools(ToolProvider):
     def get_tools(self) -> list[BaseTool]:
         @tool
-        def lookup(topic: str) -> str:
-            """Look up a fact about a topic (stub — replace with real web/DB call)."""
-            facts = {
-                "python": "Python is a high-level, interpreted programming language.",
-                "asyncio": "asyncio is Python's standard library for async I/O.",
-                "langchain": "LangChain is a framework for building LLM applications.",
-            }
-            return facts.get(topic.lower(), f"No fact found for '{topic}'.")
+        def echo(message: str) -> str:
+            """Echo the message back."""
+            return message
 
-        return [lookup]
+        return [echo]
 
 
-class ResearchSubAgent(BaseAgent):
+class SubAgent(BaseAgent):
     def get_tool_providers(self) -> list[ToolProvider]:
-        return [ResearchTools()]
+        return [EchoTools()]
 
-
-# ── Orchestrator ──────────────────────────────────────────────────────────────
 
 class SpawnTools(ToolProvider):
-    """Gives the orchestrator a spawn_subagent tool."""
-
     def get_tools(self) -> list[BaseTool]:
         @tool
-        def spawn_subagent(task: str) -> str:
-            """Spawn a focused subagent to research a single topic.
+        def spawn_sub(task: str) -> str:
+            """Delegate a task to a subagent that echoes the message."""
+            sub = SubAgent(system_prompt="Use the echo tool to echo the message exactly.")
+            msg = sub.spawn(task)
+            return msg.get_text_content()
 
-            The subagent runs in complete isolation — its tool calls do not
-            appear in the main thread stream."""
-            subagent = ResearchSubAgent(
-                system_prompt=(
-                    "You are a focused research subagent. "
-                    "Use the lookup tool to answer the given question, "
-                    "then return a concise answer."
-                )
-            )
-            message = run_isolated(subagent.get_response_async(task))
-            return message.get_text_content()
-
-        return [spawn_subagent]
+        return [spawn_sub]
 
 
-class OrchestratorAgent(BaseAgent):
+class MainAgent(BaseAgent):
     def get_tool_providers(self) -> list[ToolProvider]:
         return [SpawnTools()]
 
 
-# ── Entry point ───────────────────────────────────────────────────────────────
+def main() -> None:
+    agent = MainAgent(system_prompt="Use spawn_sub to delegate tasks.")
+    response = agent.get_response("Spawn a subagent that echoes: hello world")
+
+    parent_tool_names = [
+        b.tool_name
+        for b in response.blocks
+        if b.type == MessageBlockType.TOOL_USE and b.tool_name is not None
+    ]
+    print(f"Parent thread tool calls: {parent_tool_names}")
+    print("  -> should only contain ['spawn_sub'], not 'echo'")
+
+    assert parent_tool_names == ["spawn_sub"], (
+        f"Expected only ['spawn_sub'] but got {parent_tool_names}. "
+        "The subagent's tool calls leaked into the parent thread."
+    )
+    print("\nAll good — subagent context isolated correctly.")
+
 
 if __name__ == "__main__":
     load_dotenv()
-
-    orchestrator = OrchestratorAgent(
-        system_prompt=(
-            "You are an orchestrator. When asked a question, use spawn_subagent "
-            "to delegate the research. Summarise the findings in your reply."
-        )
-    )
-
-    response = orchestrator.get_response_text(
-        "What is Python and what is asyncio? Use one subagent per question."
-    )
-
-    print("\n=== Orchestrator response ===")
-    print(response)
-
-    print("\n=== Main thread tool blocks ===")
-    for msg in orchestrator.thread_container.messages:
-        for block in msg.blocks:
-            if block.type.value == "tool_use":
-                print(f"  [{block.tool_name}]  (should only see spawn_subagent here)")
+    main()
