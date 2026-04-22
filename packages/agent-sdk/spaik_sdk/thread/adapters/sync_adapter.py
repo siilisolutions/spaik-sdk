@@ -60,6 +60,10 @@ class SyncAdapter:
                 # Give it a moment to finalize
                 await asyncio.sleep(0.1)
                 return self.container.get_latest_ai_message()
+            # Yield to the event loop so this coroutine does not seize it.
+            # Without this, the loop spins without awaiting anything, blocking
+            # every other task until `timeout` elapses.
+            await asyncio.sleep(0.01)
 
         # Timeout - return what we have
         return self.container.get_latest_ai_message()
