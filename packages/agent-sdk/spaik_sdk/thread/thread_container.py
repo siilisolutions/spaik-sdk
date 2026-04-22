@@ -116,7 +116,12 @@ class ThreadContainer:
             break
 
     def add_tool_call_response(self, response: ToolCallResponse) -> None:
-        """Record a tool call response and finalize the matching tool-use block."""
+        """Record a tool call response and finalize the matching tool-use block.
+
+        Always emits ToolResponseReceivedEvent. BlockFullyAddedEvent is emitted via
+        _mark_block_complete only on the streaming->done transition, so calling this
+        twice for the same tool_call_id emits the completion event at most once.
+        """
         self.tool_call_responses[response.id] = response
 
         target_message_id: Optional[str] = None
