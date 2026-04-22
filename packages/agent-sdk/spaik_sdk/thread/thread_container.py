@@ -37,27 +37,22 @@ class ThreadContainer:
         self.streaming_content: Dict[str, str] = {}
         self.tool_call_responses: Dict[str, ToolCallResponse] = {}
         self.system_prompt = system_prompt
-        # Single event stream with multiple subscribers
         self._subscribers: List[Callable[[ThreadEvent], None]] = []
 
-        # Version tracking
         self._version = 0
         self._last_activity_time = int(time.time() * 1000)
         self.thread_id = str(uuid.uuid4())
         self.job_id = "unknown"
 
     def subscribe(self, callback: Callable[[ThreadEvent], None]) -> None:
-        """Subscribe to the event stream"""
         if callback not in self._subscribers:
             self._subscribers.append(callback)
 
     def unsubscribe(self, callback: Callable[[ThreadEvent], None]) -> None:
-        """Unsubscribe from the event stream"""
         if callback in self._subscribers:
             self._subscribers.remove(callback)
 
     def _emit_event(self, event: ThreadEvent) -> None:
-        """Emit a typed event to all subscribers"""
         for callback in self._subscribers:
             try:
                 callback(event)
@@ -65,117 +60,98 @@ class ThreadContainer:
                 logger.error(f"Event callback error: {e}")
 
     def _increment_version(self) -> None:
-        """Increment version and update activity time"""
         self._version += 1
         self._last_activity_time = int(time.time() * 1000)
 
     def get_version(self) -> int:
-        """Get current version for incremental updates"""
         return self._version
 
     def get_last_activity_time(self) -> int:
-        """Get timestamp of last activity"""
         return self._last_activity_time
 
     def add_streaming_message_chunk(self, block_id: str, content: str) -> None:
-        """Update streaming content by appending new content to existing content for the block_id"""
         if block_id in self.streaming_content:
             self.streaming_content[block_id] += content
         else:
             self.streaming_content[block_id] = content
 
-        # Emit streaming update event
         self._emit_event(StreamingUpdatedEvent(block_id=block_id, content=content, total_content=self.streaming_content[block_id]))
-
         self._increment_version()
 
     def add_message(self, msg: ThreadMessage) -> None:
-        """Add a new message to the thread"""
         self.messages.append(msg)
         self._emit_event(MessageAddedEvent(message=self._copy_message_without_live_providers(msg)))
         self._increment_version()
 
     def add_message_block(self, message_id: str, block: MessageBlock) -> None:
-        """Add a message block to an existing message by message_id"""
         for message in self.messages:
-            if message.id == message_id:
-                existing_block_index = next(
-                    (index for index, existing_block in enumerate(message.blocks) if existing_block.id == block.id), -1
-                )
-                is_new_block = existing_block_index == -1
-                if is_new_block:
-                    message.blocks.append(block)
-                else:
-                    existing_block = message.blocks[existing_block_index]
-                    if block.tool_call_response is None:
-                        block.tool_call_response = existing_block.tool_call_response
-                    if block.tool_call_error is None:
-                        block.tool_call_error = existing_block.tool_call_error
-                    message.blocks[existing_block_index] = block
+            if message.id != message_id:
+                continue
 
-                # Emit block added event
+            existing_block_index = next((index for index, existing_block in enumerate(message.blocks) if existing_block.id == block.id), -1)
+            is_new_block = existing_block_index == -1
+            if is_new_block:
+                message.blocks.append(block)
+            else:
+                existing_block = message.blocks[existing_block_index]
+                if block.tool_call_response is None:
+                    block.tool_call_response = existing_block.tool_call_response
+                if block.tool_call_error is None:
+                    block.tool_call_error = existing_block.tool_call_error
+                message.blocks[existing_block_index] = block
+
+            self._emit_event(BlockAddedEvent(message_id=message_id, block_id=block.id, block=self._copy_block_without_live_provider(block)))
+
+            if is_new_block and block.type == MessageBlockType.TOOL_USE and block.tool_call_id:
                 self._emit_event(
-                    BlockAddedEvent(message_id=message_id, block_id=block.id, block=self._copy_block_without_live_provider(block))
+                    ToolCallStartedEvent(
+                        tool_call_id=block.tool_call_id,
+                        tool_name=block.tool_name or "unknown",
+                        message_id=message_id,
+                        block_id=block.id,
+                    )
                 )
 
-                # If it's a tool block, emit tool call started
-                if is_new_block and block.type == MessageBlockType.TOOL_USE and block.tool_call_id:
-                    tool_name = block.tool_name or "unknown"
-
-                    self._emit_event(
-                        ToolCallStartedEvent(tool_call_id=block.tool_call_id, tool_name=tool_name, message_id=message_id, block_id=block.id)
-                    )
-
-                self._increment_version()
-                break
+            self._increment_version()
+            break
 
     def add_tool_call_response(self, response: ToolCallResponse) -> None:
-        """Add a tool call response by its ID"""
+        """Record a tool call response and finalize the matching tool-use block.
+
+        Always emits ToolResponseReceivedEvent. BlockFullyAddedEvent is emitted via
+        _mark_block_complete only on the streaming->done transition, so calling this
+        twice for the same tool_call_id emits the completion event at most once.
+        """
         self.tool_call_responses[response.id] = response
 
-        # Find the corresponding block ID
-        block_id = None
+        target_message_id: Optional[str] = None
+        target_block: Optional[MessageBlock] = None
         for message in self.messages:
             for block in message.blocks:
                 if block.tool_call_id == response.id:
-                    block.streaming = False
                     block.tool_call_response = response.response
                     block.tool_call_error = response.error
-                    block_id = block.id
+                    target_block = block
+                    target_message_id = message.id
                     break
-            if block_id:
+            if target_block is not None:
                 break
 
-        # Emit tool response event
+        block_id = target_block.id if target_block is not None else None
         self._emit_event(
             ToolResponseReceivedEvent(tool_call_id=response.id, response=response.response, error=response.error, block_id=block_id)
         )
 
+        if target_block is not None and target_message_id is not None:
+            self._mark_block_complete(target_message_id, target_block)
+
         self._increment_version()
 
     def update_tool_use_block_with_response(self, tool_call_id: str, response: str, error: Optional[str] = None) -> None:
-        """Update a tool use block with the tool response and mark it as completed."""
-        logger.debug(f"🔧 DEBUG: Updating tool response for {tool_call_id}")
-        logger.debug(f"🔧 DEBUG: Response: {response[:100]}...")
-        logger.debug(f"🔧 DEBUG: Error: {error}")
-
-        # Add the tool response to our responses dict
-        tool_response = ToolCallResponse(id=tool_call_id, response=response, error=error)
-        self.add_tool_call_response(tool_response)
-
-        # Find the message and block with this tool_call_id and mark it as non-streaming
-        for message in self.messages:
-            for block in message.blocks:
-                if block.tool_call_id == tool_call_id:
-                    block.streaming = False
-                    logger.debug(f"🔧 DEBUG: Found and updated block {block.id} for tool {tool_call_id}")
-                    self._increment_version()
-                    return
-
-        logger.debug(f"🔧 DEBUG: Could not find block for tool_call_id: {tool_call_id}")
+        """Record a tool response and finalize its block. Thin wrapper over add_tool_call_response."""
+        self.add_tool_call_response(ToolCallResponse(id=tool_call_id, response=response, error=error))
 
     def add_error_message(self, error_text: str, author_id: str = "system", author_name: str = "system") -> str:
-        """Add an error message and return the message ID"""
         message_id = str(uuid.uuid4())
         error_message = ThreadMessage(
             id=message_id,
@@ -197,74 +173,57 @@ class ThreadContainer:
 
     def finalize_streaming_blocks(self, message_id: str, block_ids: List[str]) -> None:
         """Mark specified blocks as non-streaming (completed)."""
-        completed_blocks = []
+        completed_blocks: List[str] = []
 
         for message in self.messages:
-            if message.id == message_id:
-                for block in message.blocks:
-                    if block.id in block_ids and block.streaming:
-                        block.streaming = False
-                        # Move content from streaming_content to block.content when streaming finishes
-                        if block.id in self.streaming_content:
-                            block.content = self.streaming_content[block.id]
-                            # lets not do this, access is needed at least for now
-                            # # Optionally remove from streaming_content to save memory
-                            # del self.streaming_content[block.id]
-                        completed_blocks.append(block.id)
-
-                        # Emit block fully added event for each completed block
-                        self._emit_event(
-                            BlockFullyAddedEvent(
-                                block_id=block.id,
-                                message_id=message_id,
-                                block=self._copy_block_without_live_provider(block),
-                            )
-                        )
-                break
+            if message.id != message_id:
+                continue
+            for block in message.blocks:
+                if block.id in block_ids and self._mark_block_complete(message_id, block):
+                    completed_blocks.append(block.id)
+            break
 
         if completed_blocks:
             self._increment_version()
-
-            # Check if streaming has ended
             if not self.is_streaming_active():
                 self._emit_event(StreamingEndedEvent(message_id=message_id, completed_blocks=completed_blocks))
 
     def cancel_generation(self) -> None:
-        """Cancel the generation"""
+        """Cancel the generation and finalize any in-flight blocks."""
         logger.info(f"Cancelling generation. Current streaming content: {self.streaming_content}")
-        logger.info(f"Messages: {self.messages}")
         for message in self.messages:
-            completed_blocks = []
+            completed_blocks: List[str] = []
             for block in message.blocks:
-                block.streaming = False
-                # Move content from streaming_content to block.content when streaming finishes
-                if block.id in self.streaming_content:
-                    block.content = self.streaming_content[block.id]
-                    logger.info(f"🔧 Block {block.id} content: {block.content}")
-                completed_blocks.append(block.id)
-                self._emit_event(
-                    BlockFullyAddedEvent(
-                        block_id=block.id,
-                        message_id=message.id,
-                        block=self._copy_block_without_live_provider(block),
-                    )
-                )
-            self.finalize_streaming_blocks(message.id, completed_blocks)
-        if completed_blocks:
-            self._increment_version()
+                if self._mark_block_complete(message.id, block):
+                    completed_blocks.append(block.id)
+            if completed_blocks:
+                self._increment_version()
+                if not self.is_streaming_active():
+                    self._emit_event(StreamingEndedEvent(message_id=message.id, completed_blocks=completed_blocks))
 
-            # Check if streaming has ended
-            if not self.is_streaming_active():
-                self._emit_event(StreamingEndedEvent(message_id=message.id, completed_blocks=completed_blocks))
+    def _mark_block_complete(self, message_id: str, block: MessageBlock) -> bool:
+        """Finalize a streaming block: flush buffered content, flip streaming flag,
+        emit BlockFullyAddedEvent. Idempotent; returns True iff the block transitioned."""
+        if not block.streaming:
+            return False
+        block.streaming = False
+        if block.id in self.streaming_content:
+            block.content = self.streaming_content[block.id]
+        self._emit_event(
+            BlockFullyAddedEvent(
+                block_id=block.id,
+                message_id=message_id,
+                block=self._copy_block_without_live_provider(block),
+            )
+        )
+        return True
 
     def complete_generation(self) -> None:
-        """Mark the message as fully added and emit the event"""
         latest_message = self.get_latest_ai_message()
         if latest_message:
             self._emit_event(MessageFullyAddedEvent(message=self._copy_message_without_live_providers(latest_message)))
 
     def is_streaming_active(self) -> bool:
-        """Check if any blocks are currently streaming"""
         for message in self.messages:
             for block in message.blocks:
                 if block.streaming:
@@ -272,37 +231,29 @@ class ThreadContainer:
         return False
 
     def get_latest_ai_message(self) -> Optional[ThreadMessage]:
-        """Get the most recent AI message"""
         for message in reversed(self.messages):
             if message.ai:
                 return message
         return None
 
     def get_latest_message(self) -> ThreadMessage:
-        """Get the most recent message"""
         return self.messages[-1]
 
     def get_message_by_id(self, message_id: str) -> Optional[ThreadMessage]:
-        """Get message by ID"""
         for message in self.messages:
             if message.id == message_id:
                 return message
         return None
 
     def get_block_content(self, block: MessageBlock) -> str:
-        """Get content for a specific block"""
-        # First check if block has content directly
         if block.content is not None:
             return block.content
 
-        # For streaming blocks, check streaming_content
         if block.id in self.streaming_content:
             return self.streaming_content[block.id]
 
-        if block.type == MessageBlockType.TOOL_USE:
-            if block.tool_call_id and block.tool_call_id in self.tool_call_responses:
-                response = self.tool_call_responses[block.tool_call_id]
-                return response.response
+        if block.type == MessageBlockType.TOOL_USE and block.tool_call_id and block.tool_call_id in self.tool_call_responses:
+            return self.tool_call_responses[block.tool_call_id].response
 
         return ""
 
@@ -312,44 +263,31 @@ class ThreadContainer:
         return self.system_prompt
 
     def get_streaming_blocks(self) -> List[str]:
-        """Get list of currently streaming block IDs"""
-        streaming_blocks = []
-        for message in self.messages:
-            for block in message.blocks:
-                if block.streaming:
-                    streaming_blocks.append(block.id)
-        return streaming_blocks
+        return [block.id for message in self.messages for block in message.blocks if block.streaming]
 
     def has_errors(self) -> bool:
-        """Check if there are any error blocks or tool errors"""
         for message in self.messages:
             for block in message.blocks:
                 if block.type == MessageBlockType.ERROR:
                     return True
 
-        for response in self.tool_call_responses.values():
-            if response.error:
-                return True
-
-        return False
+        return any(response.error for response in self.tool_call_responses.values())
 
     def get_final_text_content(self) -> str:
-        """Get clean final text from the latest AI message"""
         latest_message = self.get_latest_ai_message()
         if not latest_message:
             return ""
 
-        text_parts = []
+        text_parts: List[str] = []
         for block in latest_message.blocks:
-            if block.type == MessageBlockType.PLAIN and not block.streaming:
-                content = self.get_block_content(block)
-                if content:
-                    text_parts.append(content)
-
+            if block.type != MessageBlockType.PLAIN or block.streaming:
+                continue
+            content = self.get_block_content(block)
+            if content:
+                text_parts.append(content)
         return " ".join(text_parts).strip()
 
     def _find_message_id_by_block(self, block_id: str) -> Optional[str]:
-        """Find message ID that contains the given block ID"""
         for message in self.messages:
             for block in message.blocks:
                 if block.id == block_id:
@@ -357,9 +295,8 @@ class ThreadContainer:
         return None
 
     def get_langchain_messages(self) -> List[BaseMessage]:
-        """Get all messages as LangChain BaseMessages"""
         messages: List[BaseMessage] = [SystemMessage(content=self.get_system_prompt())]
-        messages.extend([convert_thread_message_to_langchain(msg) for msg in self.messages])
+        messages.extend(convert_thread_message_to_langchain(msg) for msg in self.messages)
         return messages
 
     async def get_langchain_messages_multimodal(
@@ -367,7 +304,6 @@ class ThreadContainer:
         file_storage: BaseFileStorage,
         provider_family: str = "openai",
     ) -> List[BaseMessage]:
-        """Get all messages as LangChain BaseMessages with multimodal content support"""
         messages: List[BaseMessage] = [SystemMessage(content=self.get_system_prompt())]
         for msg in self.messages:
             converted = await convert_thread_message_to_langchain_multimodal(
@@ -389,11 +325,9 @@ class ThreadContainer:
                 block.tool_provider = provider_by_id.get(block.tool_provider_id)
 
     def get_nof_messages_including_system(self) -> int:
-        """Get number of messages including system message"""
         return len(self.messages) + 1
 
     def add_consumption_metadata(self, message_id: str, consumption_metadata: TokenUsage) -> None:
-        """Add consumption metadata to a specific message"""
         for message in self.messages:
             if message.id == message_id:
                 message.consumption_metadata = consumption_metadata
@@ -401,7 +335,6 @@ class ThreadContainer:
                 break
 
     def get_total_consumption(self) -> TokenUsage:
-        """Calculate total consumption across all messages with consumption metadata"""
         total_tokens = TokenUsage()
 
         for message in self.messages:
@@ -417,21 +350,18 @@ class ThreadContainer:
         return total_tokens
 
     def get_consumption_by_message(self, message_id: str) -> Optional[TokenUsage]:
-        """Get consumption metadata for a specific message"""
         for message in self.messages:
             if message.id == message_id and message.consumption_metadata:
                 return message.consumption_metadata
         return None
 
     def get_latest_token_usage(self) -> Optional[TokenUsage]:
-        """Get consumption metadata for the latest message"""
         latest_message = self.get_latest_ai_message()
         if latest_message and latest_message.consumption_metadata:
             return latest_message.consumption_metadata
         return None
 
     def __str__(self) -> str:
-        """String representation of the entire thread container"""
         lines = ["=== THREAD CONTAINER ==="]
         lines.append(f"Version: {self._version} | Active streaming: {self.is_streaming_active()}")
 
@@ -450,7 +380,6 @@ class ThreadContainer:
                     stream_indicator = "✅"
                 tool_info = f" | tool_id: {block.tool_call_id}" if block.tool_call_id else ""
 
-                # Get content preview for the block
                 content = self.get_block_content(block)
                 content_preview = content[:50] + "..." if len(content) > 50 else content
                 content_info = f" | {repr(content_preview)}" if content else " (no content)"
@@ -470,7 +399,6 @@ class ThreadContainer:
             if response.error:
                 lines.append(f"    Error: {response.error}")
 
-        # Add consumption summary
         total_consumption = self.get_total_consumption()
         consumption_messages = sum(1 for msg in self.messages if msg.consumption_metadata)
         total_messages = len(self.messages)
@@ -491,15 +419,11 @@ class ThreadContainer:
         return "\n".join(lines)
 
     def print_all(self) -> None:
-        """Print everything to console for debugging"""
         print(str(self))
 
     def create_serializable_copy(self) -> "ThreadContainer":
-        """Create a copy of this ThreadContainer that can be safely pickled"""
-        # Create new instance without calling __init__ to avoid subscriber initialization
+        """Create a copy that can be safely pickled, with live providers and subscribers stripped."""
         thread_copy = ThreadContainer.__new__(ThreadContainer)
-
-        # Copy all serializable attributes
         thread_copy.messages = [self._copy_message_without_live_providers(message) for message in self.messages]
         thread_copy.streaming_content = self.streaming_content.copy()
         thread_copy.tool_call_responses = copy.deepcopy(self.tool_call_responses)
@@ -508,10 +432,7 @@ class ThreadContainer:
         thread_copy._last_activity_time = self._last_activity_time
         thread_copy.thread_id = self.thread_id
         thread_copy.job_id = self.job_id
-
-        # Initialize empty subscribers list (will be empty when loaded)
         thread_copy._subscribers = []
-
         return thread_copy
 
     def _copy_block_without_live_provider(self, block: MessageBlock) -> MessageBlock:

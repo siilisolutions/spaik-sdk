@@ -1,10 +1,20 @@
 """Unit tests for tracing module - NoOpTraceSink, configure_tracing, get_trace_sink resolution, agent instance ID."""
 
+import time
 import uuid
 from unittest.mock import MagicMock
 
 import pytest
 
+from spaik_sdk.thread.models import (
+    BlockFullyAddedEvent,
+    MessageBlock,
+    MessageBlockType,
+    ThreadEvent,
+    ThreadMessage,
+    ToolCallResponse,
+)
+from spaik_sdk.thread.thread_container import ThreadContainer
 from spaik_sdk.tracing import (
     AgentTrace,
     LocalTraceSink,
@@ -340,6 +350,46 @@ class TestAgentTrace:
         trace2 = AgentTrace(system_prompt="test2")
 
         assert trace1.agent_instance_id != trace2.agent_instance_id
+
+    def test_trace_records_tool_blocks_from_thread_container_lifecycle(self, clean_env):
+        """Tool calls must show up in traces via the standard BlockFullyAddedEvent flow."""
+        trace = AgentTrace(system_prompt="system prompt")
+        thread = ThreadContainer(system_prompt="system prompt")
+
+        def forward(event: ThreadEvent) -> None:
+            if isinstance(event, BlockFullyAddedEvent):
+                trace.add_block(event.block)
+
+        thread.subscribe(forward)
+
+        message_id = "message-1"
+        thread.add_message(
+            ThreadMessage(
+                id=message_id,
+                ai=True,
+                author_id="assistant",
+                author_name="assistant",
+                timestamp=int(time.time() * 1000),
+                blocks=[],
+            )
+        )
+        thread.add_message_block(
+            message_id,
+            MessageBlock(
+                id="tool-1",
+                streaming=True,
+                type=MessageBlockType.TOOL_USE,
+                tool_name="calculator",
+                tool_call_id="call-1",
+                tool_call_args={"expression": "2 + 2"},
+            ),
+        )
+        thread.add_tool_call_response(ToolCallResponse(id="call-1", response="4"))
+        thread.finalize_streaming_blocks(message_id, ["tool-1"])
+
+        rendered = trace.to_string(include_system_prompt=False)
+        assert "🔧: calculator" in rendered
+        assert '"expression": "2 + 2"' in rendered
 
 
 @pytest.mark.unit

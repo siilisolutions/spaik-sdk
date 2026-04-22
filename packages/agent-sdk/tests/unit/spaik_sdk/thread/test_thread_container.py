@@ -7,7 +7,16 @@ from unittest.mock import MagicMock
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
-from spaik_sdk.thread.models import BlockAddedEvent, BlockFullyAddedEvent, MessageAddedEvent, MessageBlock, MessageBlockType, ThreadMessage
+from spaik_sdk.thread.models import (
+    BlockAddedEvent,
+    BlockFullyAddedEvent,
+    MessageAddedEvent,
+    MessageBlock,
+    MessageBlockType,
+    ThreadMessage,
+    ToolCallResponse,
+    ToolResponseReceivedEvent,
+)
 from spaik_sdk.thread.thread_container import ThreadContainer
 from spaik_sdk.tools.tool_provider import BaseTool, ToolProvider
 
@@ -317,3 +326,58 @@ class TestThreadContainer:
 
         assert reloaded_block.tool_provider is rebound_provider
         assert reloaded_block.tool_provider is not original_provider
+
+    def test_add_tool_call_response_completes_the_tool_block_and_emits_block_fully_added_event(self):
+        thread = ThreadContainer(system_prompt="system prompt")
+        thread.add_message(make_message("message-1", True, MessageBlock(id="plain-1", streaming=False, type=MessageBlockType.PLAIN)))
+        thread.add_message_block(
+            "message-1",
+            MessageBlock(
+                id="tool-1",
+                streaming=True,
+                type=MessageBlockType.TOOL_USE,
+                tool_name="search",
+                tool_call_id="call-1",
+                tool_call_args={"q": "hi"},
+            ),
+        )
+
+        events: list[object] = []
+        thread.subscribe(events.append)
+
+        thread.add_tool_call_response(ToolCallResponse(id="call-1", response="hits: 3"))
+
+        tool_block = thread.messages[0].blocks[1]
+        assert tool_block.streaming is False
+        assert tool_block.tool_call_response == "hits: 3"
+
+        response_events = [event for event in events if isinstance(event, ToolResponseReceivedEvent)]
+        fully_added_events = [event for event in events if isinstance(event, BlockFullyAddedEvent) and event.block_id == "tool-1"]
+
+        assert len(response_events) == 1
+        assert len(fully_added_events) == 1
+        assert fully_added_events[0].block.tool_name == "search"
+        assert fully_added_events[0].block.tool_call_response == "hits: 3"
+        assert fully_added_events[0].block.streaming is False
+
+    def test_finalize_streaming_blocks_does_not_re_emit_for_already_completed_tool_block(self):
+        thread = ThreadContainer(system_prompt="system prompt")
+        thread.add_message(make_message("message-1", True, MessageBlock(id="plain-1", streaming=False, type=MessageBlockType.PLAIN)))
+        thread.add_message_block(
+            "message-1",
+            MessageBlock(
+                id="tool-1",
+                streaming=True,
+                type=MessageBlockType.TOOL_USE,
+                tool_name="search",
+                tool_call_id="call-1",
+            ),
+        )
+        thread.add_tool_call_response(ToolCallResponse(id="call-1", response="done"))
+
+        events: list[BlockFullyAddedEvent] = []
+        thread.subscribe(lambda event: events.append(event) if isinstance(event, BlockFullyAddedEvent) else None)
+
+        thread.finalize_streaming_blocks("message-1", ["tool-1"])
+
+        assert events == []
