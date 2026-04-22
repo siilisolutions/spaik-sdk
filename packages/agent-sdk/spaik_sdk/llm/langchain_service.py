@@ -76,11 +76,8 @@ class LangChainService:
         self.cancellation_handle = cancellation_handle
 
     def create_executor(self, tools: list[BaseTool]):
-        # Wrap tools in a ToolNode with handle_tool_errors=True so runtime tool
-        # exceptions (network errors, HTTP errors, etc.) become ToolMessage
-        # errors the LLM can react to, instead of escaping and crashing the
-        # agent loop. The LangGraph default re-raises anything that isn't a
-        # tool-arg validation error, which kills streaming mid-run.
+        # handle_tool_errors=True: the LangGraph default re-raises non-validation
+        # tool exceptions, which kills the agent loop silently. See issue #61.
         tool_node = ToolNode(tools, handle_tool_errors=True)
         return create_react_agent(self._get_model(), tool_node)  # type: ignore[deprecated]
 

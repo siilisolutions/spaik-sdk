@@ -9,10 +9,6 @@ from spaik_sdk.llm.langchain_service import LangChainService
 @pytest.mark.unit
 class TestCreateExecutorToolErrorHandling:
     def test_wraps_tools_in_tool_node_with_error_handling(self):
-        # Regression test for issue #61: the LangGraph default tool error
-        # handler re-raises any runtime tool exception, killing the agent
-        # loop. We now wrap tools in a ToolNode with handle_tool_errors=True
-        # so errors become ToolMessage errors the LLM can react to.
         @tool
         def sample_tool(x: int) -> int:
             """Sample tool."""

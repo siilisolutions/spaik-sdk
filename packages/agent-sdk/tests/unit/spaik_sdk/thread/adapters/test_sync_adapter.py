@@ -9,8 +9,7 @@ from spaik_sdk.thread.thread_container import ThreadContainer
 
 
 def _streaming_container() -> ThreadContainer:
-    # Build a container that reports active streaming so the early-return
-    # branch of SyncAdapter.wait_for_completion_async never fires.
+    # Keeps the adapter in its polling loop (no early return).
     container = ThreadContainer()
     container.messages.append(
         ThreadMessage(
@@ -29,12 +28,7 @@ def _streaming_container() -> ThreadContainer:
 @pytest.mark.unit
 class TestSyncAdapterWaitForCompletion:
     async def test_yields_to_event_loop_while_waiting(self):
-        # Regression test for subagent freeze (issue #61).
-        #
-        # Previously `wait_for_completion_async` spun on `time.time()` without
-        # awaiting anything when the stream had not yet ended, seizing the
-        # event loop for the entire timeout. A concurrent coroutine would be
-        # unable to make progress until the adapter returned.
+        # Regression for #61: the polling loop used to seize the event loop.
         container = _streaming_container()
         adapter = SyncAdapter(container)
 
