@@ -29,29 +29,31 @@ def _streaming_container() -> ThreadContainer:
 class TestSyncAdapterWaitForCompletion:
     async def test_yields_to_event_loop_while_waiting(self):
         # Regression for #61: the polling loop used to seize the event loop.
+        # A sibling task running alongside the wait must get CPU time *during*
+        # the poll, not only after it returns.
         container = _streaming_container()
         adapter = SyncAdapter(container)
 
         ticks = 0
+        adapter_done = False
 
         async def tick():
             nonlocal ticks
-            while ticks < 3:
+            while not adapter_done:
                 ticks += 1
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(0.005)
 
-        start = time.time()
-        await asyncio.wait_for(
-            asyncio.gather(adapter.wait_for_completion_async(timeout=0.2), tick()),
-            timeout=1.0,
-        )
-        elapsed = time.time() - start
+        tick_task = asyncio.create_task(tick())
+        await adapter.wait_for_completion_async(timeout=0.2)
+        adapter_done = True
+        await tick_task
 
-        assert ticks == 3
-        assert elapsed < 0.5
+        # With the bug the sibling was starved for the full 0.2s and reported 0
+        # ticks. With the fix it runs every ~5ms, so expect well over 10.
+        assert ticks > 10
 
     async def test_returns_promptly_once_streaming_ends(self):
-        container = ThreadContainer()
+        container = _streaming_container()
         adapter = SyncAdapter(container)
 
         async def end_streaming_soon():
