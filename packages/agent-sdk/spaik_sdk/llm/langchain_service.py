@@ -10,7 +10,8 @@ from langchain_core.tools import BaseTool
 # Using create_react_agent because create_agent from langchain.agents
 # uses invoke() internally and does NOT emit on_chat_model_stream events,
 # which breaks token-level streaming. See: https://github.com/langchain-ai/langchain/issues/34017
-from langgraph.prebuilt import create_react_agent  # type: ignore[deprecated]
+from langgraph.graph.state import CompiledStateGraph
+from langgraph.prebuilt import ToolNode, create_react_agent  # type: ignore[deprecated]
 from pydantic import BaseModel
 
 from spaik_sdk.attachments.file_storage_provider import get_file_storage
@@ -75,8 +76,11 @@ class LangChainService:
         self.playback = playback
         self.cancellation_handle = cancellation_handle
 
-    def create_executor(self, tools: list[BaseTool]):
-        return create_react_agent(self._get_model(), tools)  # type: ignore[deprecated]
+    def create_executor(self, tools: list[BaseTool]) -> CompiledStateGraph:
+        # handle_tool_errors=True: the LangGraph default re-raises non-validation
+        # tool exceptions, which kills the agent loop silently. See issue #61.
+        tool_node = ToolNode(tools, handle_tool_errors=True)
+        return create_react_agent(self._get_model(), tool_node)  # type: ignore[deprecated]
 
     def _get_model(self):
         return self.llm_config.get_model_wrapper().get_langchain_model()
