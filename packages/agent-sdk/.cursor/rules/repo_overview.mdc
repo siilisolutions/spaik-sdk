@@ -54,7 +54,7 @@ Multi-provider LLM support with factory pattern:
 - **[config/env.py](mdc:config/env.py)** - Environment variable management
 - **[app/prompt/prompt_loader.py](mdc:app/prompt/prompt_loader.py)** - Static prompt loading from markdown
 - **[app/tracing/agent_trace.py](mdc:app/tracing/agent_trace.py)** - Execution tracing for debugging
-- **[app/tracing/trace_sink.py](mdc:app/tracing/trace_sink.py)** - Pluggable trace persistence for local, noop, or custom sinks
+- **[spaik_sdk/tracing/trace_sink.py](mdc:spaik_sdk/tracing/trace_sink.py)** - Pluggable trace persistence for local, noop, or custom sinks
 - **[app/utils/init_logger.py](mdc:app/utils/init_logger.py)** - Logging utilities
 
 ## Key Technologies & Dependencies
