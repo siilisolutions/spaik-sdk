@@ -219,12 +219,15 @@ ModelRegistry.CLAUDE_4_5_SONNET
 ModelRegistry.CLAUDE_4_5_OPUS
 ModelRegistry.CLAUDE_4_6_SONNET
 ModelRegistry.CLAUDE_4_6_OPUS
+ModelRegistry.CLAUDE_4_7_OPUS
 
 # OpenAI
 ModelRegistry.GPT_4_1
 ModelRegistry.GPT_4O
 ModelRegistry.O4_MINI
 ModelRegistry.GPT_5_4
+ModelRegistry.GPT_5_4_NANO
+ModelRegistry.GPT_5_5
 
 # Google
 ModelRegistry.GEMINI_2_5_FLASH
@@ -242,7 +245,7 @@ ModelRegistry.KIMI_K2_THINKING
 # Aliases
 ModelRegistry.from_name("sonnet")      # CLAUDE_4_6_SONNET
 ModelRegistry.from_name("gpt 4.1")     # GPT_4_1
-ModelRegistry.from_name("gemini 2.5")  # GEMINI_2_5_FLASH
+ModelRegistry.from_name("opus")        # CLAUDE_4_7_OPUS
 
 # Custom model
 from spaik_sdk.models.llm_model import LLMModel

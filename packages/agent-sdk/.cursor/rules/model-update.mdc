@@ -188,7 +188,7 @@ If adding a model from a brand new provider:
 
 ---
 
-## 6. MODELS IN REGISTRY (last updated 2026-03-02)
+## 6. MODELS IN REGISTRY (last updated 2026-04-29)
 
 This section is a snapshot — update it whenever you run a model update pass.
 
@@ -206,8 +206,9 @@ This section is a snapshot — update it whenever you run a model update pass.
 | `CLAUDE_4_5_OPUS` | `claude-opus-4-5-20251101` | Yes | |
 | `CLAUDE_4_6_OPUS` | `claude-opus-4-6` | Yes | $5/$25/MTok. 128K max output. |
 | `CLAUDE_4_6_SONNET` | `claude-sonnet-4-6` | Yes | $3/$15/MTok. 64K max output. |
+| `CLAUDE_4_7_OPUS` | `claude-opus-4-7` | No extended thinking | $5/$25/MTok. Requires `top_p=0.99`; no `thinking` or `temperature`. |
 
-**Naming note**: 4.6+ models dropped the date suffix — `claude-opus-4-6` is both the API ID and the alias.
+**Naming note**: 4.6+ Opus/Sonnet models dropped the date suffix — e.g. `claude-opus-4-7` is both the API ID and the alias.
 
 ### OpenAI
 
@@ -242,6 +243,13 @@ This section is a snapshot — update it whenever you run a model update pass.
 | `GPT_5_2_CODEX` | `gpt-5.2-codex` | Yes |
 | `GPT_5_2_PRO` | `gpt-5.2-pro` | Yes |
 | `GPT_5_3_CODEX` | `gpt-5.3-codex` | Yes |
+| `GPT_5_3_CHAT` | `gpt-5.3-chat-latest` | No |
+| `GPT_5_4` | `gpt-5.4` | Yes |
+| `GPT_5_4_PRO` | `gpt-5.4-pro` | Yes |
+| `GPT_5_4_MINI` | `gpt-5.4-mini` | Yes |
+| `GPT_5_4_NANO` | `gpt-5.4-nano` | Yes |
+| `GPT_5_5` | `gpt-5.5` | Yes |
+| `GPT_5_5_PRO` | `gpt-5.5-pro` | Yes |
 
 ### Google Gemini
 
@@ -251,8 +259,9 @@ This section is a snapshot — update it whenever you run a model update pass.
 | `GEMINI_2_5_FLASH` | `gemini-2.5-flash` | |
 | `GEMINI_2_5_PRO` | `gemini-2.5-pro` | |
 | `GEMINI_3_FLASH_PREVIEW` | `gemini-3-flash-preview` | |
-| `GEMINI_3_PRO_PREVIEW` | `gemini-3-pro-preview` | Retiring March 9, 2026 |
+| `GEMINI_3_PRO_PREVIEW` | `gemini-3-pro-preview` | Shut down March 9, 2026; now points to Gemini 3.1 Pro Preview |
 | `GEMINI_3_1_PRO` | `gemini-3.1-pro-preview` | 1M context |
+| `GEMINI_3_1_FLASH_LITE` | `gemini-3.1-flash-lite-preview` | 1M context |
 
 ---
 
@@ -291,8 +300,15 @@ After completing an update pass, always report:
 - [OpenAI GPT-5.1 for Developers](https://openai.com/index/gpt-5-1-for-developers/)
 - [OpenAI Introducing GPT-5.2](https://openai.com/index/introducing-gpt-5-2/)
 - [OpenAI Introducing GPT-5.3-Codex](https://openai.com/index/introducing-gpt-5-3-codex/)
+- [OpenAI GPT-5.4 Model](https://developers.openai.com/api/docs/models/gpt-5.4)
+- [OpenAI GPT-5.4 Mini Model](https://developers.openai.com/api/docs/models/gpt-5.4-mini)
+- [OpenAI GPT-5.4 Nano Model](https://developers.openai.com/api/docs/models/gpt-5.4-nano)
+- [OpenAI GPT-5.5 Model](https://developers.openai.com/api/docs/models/gpt-5.5)
+- [OpenAI GPT-5.5 Pro Model](https://developers.openai.com/api/docs/models/gpt-5.5-pro)
 - [Google Gemini API Models](https://ai.google.dev/gemini-api/docs/models)
+- [Google Gemini API Pricing](https://ai.google.dev/gemini-api/docs/pricing)
 - [Google Gemini 3.1 Pro Preview (Vertex AI)](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/3-1-pro)
 - [Google Gemini 2.5 Flash-Lite](https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash-lite)
+- [Azure OpenAI Models](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/models)
 - [Azure AI Foundry What's New Dec 2025/Jan 2026](https://devblogs.microsoft.com/foundry/whats-new-in-microsoft-foundry-dec-2025-jan-2026/)
 - [Azure Claude Opus 4.6 Blog](https://azure.microsoft.com/en-us/blog/claude-opus-4-6-anthropics-powerful-model-for-coding-agents-and-enterprise-workflows-is-now-available-in-microsoft-foundry-on-azure/)

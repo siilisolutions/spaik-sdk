@@ -17,7 +17,7 @@ class AnthropicModelFactory(BaseModelFactory):
         return {"type": "ephemeral"}
 
     def get_model_specific_config(self, config: LLMConfig) -> Dict[str, Any]:
-        allow_reasoning = config.reasoning and not config.structured_response
+        allow_reasoning = config.reasoning and config.model.reasoning and not config.structured_response
         model_config: Dict[str, Any] = {
             "model_name": config.model.name,
             "streaming": config.streaming,
@@ -27,6 +27,8 @@ class AnthropicModelFactory(BaseModelFactory):
         # Handle thinking mode via model_kwargs for LangChain compatibility
         if allow_reasoning:
             model_config["thinking"] = {"type": "enabled", "budget_tokens": config.reasoning_budget_tokens}
+        elif config.model == ModelRegistry.CLAUDE_4_7_OPUS:
+            model_config["top_p"] = 0.99
         else:
             model_config["temperature"] = config.temperature
 

@@ -13,6 +13,7 @@ from spaik_sdk.models.providers.base_provider import BaseProvider
 # Model name -> Environment variable for Azure deployment name
 AZURE_DEPLOYMENT_ENV_VARS: Dict[str, str] = {
     # Anthropic models (Azure AI Foundry)
+    "claude-opus-4-7": "AZURE_CLAUDE_OPUS_4_7_DEPLOYMENT",
     "claude-opus-4-6": "AZURE_CLAUDE_OPUS_4_6_DEPLOYMENT",
     "claude-sonnet-4-6": "AZURE_CLAUDE_SONNET_4_6_DEPLOYMENT",
     # OpenAI models
@@ -49,6 +50,8 @@ AZURE_DEPLOYMENT_ENV_VARS: Dict[str, str] = {
     "gpt-5.4": "AZURE_GPT_5_4_DEPLOYMENT",
     "gpt-5.4-pro": "AZURE_GPT_5_4_PRO_DEPLOYMENT",
     "gpt-5.4-mini": "AZURE_GPT_5_4_MINI_DEPLOYMENT",
+    "gpt-5.4-nano": "AZURE_GPT_5_4_NANO_DEPLOYMENT",
+    "gpt-5.5": "AZURE_GPT_5_5_DEPLOYMENT",
     # DeepSeek models (Azure AI Foundry)
     "DeepSeek-V3-0324": "AZURE_DEEPSEEK_V3_DEPLOYMENT",
     "DeepSeek-V3.1": "AZURE_DEEPSEEK_V3_1_DEPLOYMENT",

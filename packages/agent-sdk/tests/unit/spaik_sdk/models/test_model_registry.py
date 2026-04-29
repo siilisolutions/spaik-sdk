@@ -12,6 +12,9 @@ class TestModelRegistry:
             ("opus 4.5", "claude-opus-4-5-20251101"),
             ("claude opus 4.5", "claude-opus-4-5-20251101"),
             ("claude 4.5 opus", "claude-opus-4-5-20251101"),
+            ("opus", "claude-opus-4-7"),
+            ("opus 4.7", "claude-opus-4-7"),
+            ("claude opus 4.7", "claude-opus-4-7"),
             ("gpt 5.1", "gpt-5.1"),
             ("gpt 5.1 codex", "gpt-5.1-codex"),
             ("gpt 5.1 codex mini", "gpt-5.1-codex-mini"),
@@ -22,6 +25,9 @@ class TestModelRegistry:
             ("gpt 5.4", "gpt-5.4"),
             ("gpt 5.4 pro", "gpt-5.4-pro"),
             ("gpt 5.4 mini", "gpt-5.4-mini"),
+            ("gpt 5.4 nano", "gpt-5.4-nano"),
+            ("gpt 5.5", "gpt-5.5"),
+            ("gpt 5.5 pro", "gpt-5.5-pro"),
             ("gemini 3 flash", "gemini-3-flash-preview"),
             ("gemini 3.0 flash", "gemini-3-flash-preview"),
             ("gemini 3 pro", "gemini-3-pro-preview"),
@@ -38,6 +44,7 @@ class TestModelRegistry:
         "model_name",
         [
             "claude-opus-4-5-20251101",
+            "claude-opus-4-7",
             "gpt-5.1",
             "gpt-5.1-codex",
             "gpt-5.1-codex-mini",
@@ -48,6 +55,9 @@ class TestModelRegistry:
             "gpt-5.4",
             "gpt-5.4-pro",
             "gpt-5.4-mini",
+            "gpt-5.4-nano",
+            "gpt-5.5",
+            "gpt-5.5-pro",
             "gemini-3-flash-preview",
             "gemini-3-pro-preview",
             "gemini-3.1-pro-preview",
@@ -67,6 +77,11 @@ class TestModelRegistry:
         assert ModelRegistry.GPT_5_4.reasoning is True
         assert ModelRegistry.GPT_5_4_PRO.reasoning is True
         assert ModelRegistry.GPT_5_4_MINI.reasoning is True
+        assert ModelRegistry.GPT_5_4_NANO.reasoning is True
+
+    def test_gpt_5_5_variants_have_reasoning_enabled(self):
+        assert ModelRegistry.GPT_5_5.reasoning is True
+        assert ModelRegistry.GPT_5_5_PRO.reasoning is True
 
     def test_gemini_3_models_use_google_family(self):
         assert ModelRegistry.GEMINI_3_FLASH.family == LLMFamilies.GOOGLE
@@ -74,8 +89,10 @@ class TestModelRegistry:
         assert ModelRegistry.GEMINI_3_1_PRO.family == LLMFamilies.GOOGLE
         assert ModelRegistry.GEMINI_3_1_FLASH_LITE.family == LLMFamilies.GOOGLE
 
-    def test_claude_4_5_opus_uses_anthropic_family(self):
+    def test_claude_opus_models_use_anthropic_family(self):
         assert ModelRegistry.CLAUDE_4_5_OPUS.family == LLMFamilies.ANTHROPIC
+        assert ModelRegistry.CLAUDE_4_7_OPUS.family == LLMFamilies.ANTHROPIC
+        assert ModelRegistry.CLAUDE_4_7_OPUS.reasoning is False
 
     def test_ambiguous_model_name_raises_error(self):
         with pytest.raises(ValueError, match="Ambiguous"):
@@ -89,10 +106,14 @@ class TestModelRegistry:
         all_models = ModelRegistry.get_all()
         model_names = {m.name for m in all_models}
         assert "claude-opus-4-5-20251101" in model_names
+        assert "claude-opus-4-7" in model_names
         assert "gpt-5.1" in model_names
         assert "gpt-5.2" in model_names
         assert "gpt-5.4" in model_names
         assert "gpt-5.4-pro" in model_names
+        assert "gpt-5.4-nano" in model_names
+        assert "gpt-5.5" in model_names
+        assert "gpt-5.5-pro" in model_names
         assert "gemini-3-flash-preview" in model_names
         assert "gemini-3-pro-preview" in model_names
         assert "gemini-3.1-pro-preview" in model_names

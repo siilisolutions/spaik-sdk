@@ -167,6 +167,12 @@ class TestOpenAIModelFactoryReasoning:
             ModelRegistry.GPT_5_1_CODEX_MAX,
             ModelRegistry.GPT_5_2,
             ModelRegistry.GPT_5_2_PRO,
+            ModelRegistry.GPT_5_4,
+            ModelRegistry.GPT_5_4_PRO,
+            ModelRegistry.GPT_5_4_MINI,
+            ModelRegistry.GPT_5_4_NANO,
+            ModelRegistry.GPT_5_5,
+            ModelRegistry.GPT_5_5_PRO,
         ],
     )
     def test_reasoning_true_enables_responses_api_for_all_reasoning_models(self, factory, model):
@@ -220,6 +226,9 @@ class TestOpenAIModelFactoryParameterized:
             (ModelRegistry.GPT_5_4, "none"),
             (ModelRegistry.GPT_5_4_PRO, "none"),
             (ModelRegistry.GPT_5_4_MINI, "none"),
+            (ModelRegistry.GPT_5_4_NANO, "none"),
+            (ModelRegistry.GPT_5_5, "none"),
+            (ModelRegistry.GPT_5_5_PRO, "none"),
             # GPT-5 base models -> effort='minimal'
             (ModelRegistry.GPT_5, "minimal"),
             (ModelRegistry.GPT_5_MINI, "minimal"),

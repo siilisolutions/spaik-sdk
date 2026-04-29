@@ -113,7 +113,9 @@ from spaik_sdk.models.model_registry import ModelRegistry
 # Direct access
 ModelRegistry.CLAUDE_4_SONNET
 ModelRegistry.CLAUDE_4_6_SONNET
+ModelRegistry.CLAUDE_4_7_OPUS
 ModelRegistry.GPT_4_1
+ModelRegistry.GPT_5_5
 ModelRegistry.GEMINI_2_5_FLASH
 ModelRegistry.DEEPSEEK_V3_2
 ModelRegistry.GROK_4
@@ -121,7 +123,7 @@ ModelRegistry.GROK_4
 # By alias
 ModelRegistry.from_name("sonnet")      # CLAUDE_4_6_SONNET
 ModelRegistry.from_name("gpt 4.1")     # GPT_4_1
-ModelRegistry.from_name("opus 4.5")    # CLAUDE_4_5_OPUS
+ModelRegistry.from_name("opus")        # CLAUDE_4_7_OPUS
 ```
 
 ## React Hooks (packages/agent-sdk-hooks/)
