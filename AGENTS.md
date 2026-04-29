@@ -25,8 +25,8 @@ agent-sdk/
 
 - `agent/base_agent.py` - Main agent class, handles prompts, tools, streaming
 - `models/model_registry.py` - LLM model definitions and aliases
-- `models/providers/` - Provider implementations (OpenAI, Anthropic, Google, Ollama)
-- `tools/tool_provider.py` - Tool definition system using LangChain
+- `models/providers/` - Provider implementations (OpenAI, Anthropic, Google, Azure AI Foundry, DeepSeek, Mistral, Meta Llama, Cohere, xAI, Moonshot, Ollama)
+- `tools/tool_provider.py` - Tool definition system using LangChain. Use `persist_tool_block_history=False` or override `render_tool_block_for_history()` to control how provider-owned tool calls replay into model history.
 - `thread/` - Conversation state, message blocks, event streaming
 - `server/api/routers/api_builder.py` - FastAPI router factory
 - `orchestration/base_orchestrator.py` - Code-first workflow orchestration
@@ -86,6 +86,8 @@ print(agent.get_response_text("What's the weather in Helsinki?"))
 - `get_event_stream(input)` - Async generator for ThreadEvents
 - `get_structured_response(prompt, Schema)` - Returns Pydantic model
 - `spawn(task)` - Run as isolated subagent (prevents LangChain callback leaks)
+- `get_langchain_model()` - Return the underlying LangChain chat model
+- `get_react_agent()` - Return a LangGraph ReAct agent wired with the agent's tools
 - `run_cli()` - Interactive CLI mode
 
 ### FastAPI Server
@@ -110,11 +112,14 @@ from spaik_sdk.models.model_registry import ModelRegistry
 
 # Direct access
 ModelRegistry.CLAUDE_4_SONNET
+ModelRegistry.CLAUDE_4_6_SONNET
 ModelRegistry.GPT_4_1
 ModelRegistry.GEMINI_2_5_FLASH
+ModelRegistry.DEEPSEEK_V3_2
+ModelRegistry.GROK_4
 
 # By alias
-ModelRegistry.from_name("sonnet")      # CLAUDE_4_SONNET
+ModelRegistry.from_name("sonnet")      # CLAUDE_4_6_SONNET
 ModelRegistry.from_name("gpt 4.1")     # GPT_4_1
 ModelRegistry.from_name("opus 4.5")    # CLAUDE_4_5_OPUS
 ```
@@ -198,7 +203,7 @@ bun run dev:backend            # Start example backend
 ## Environment Variables
 
 ```bash
-# LLM Providers (at least one required)
+# Direct mode: at least one LLM provider API key required
 ANTHROPIC_API_KEY=sk-ant-...
 OPENAI_API_KEY=sk-...
 GOOGLE_API_KEY=...
@@ -207,6 +212,12 @@ GOOGLE_API_KEY=...
 AZURE_API_KEY=...
 AZURE_ENDPOINT=https://your-resource.openai.azure.com/
 DEFAULT_MODEL=claude-sonnet-4-20250514
+
+# Proxy mode for centralized LLM routing
+LLM_AUTH_MODE=proxy
+LLM_PROXY_BASE_URL=https://llm-proxy.example.com
+LLM_PROXY_API_KEY=proxy-key
+LLM_PROXY_HEADERS=X-Team:Agents,X-App:Demo
 ```
 
 ## API Endpoints
@@ -236,4 +247,4 @@ Python tests use pytest with recorded LLM responses for determinism:
 
 ## License
 
-MIT - Copyright (c) 2025 Siili Solutions Oyj
+MIT - Copyright (c) 2026 Siili Solutions Oyj

@@ -29,7 +29,7 @@ This is a Python-based Agent SDK for building various kinds of agentic + AI solu
 
 #### **LLM Integration** (`app/models/`)
 Multi-provider LLM support with factory pattern:
-- **Supported Providers**: Anthropic (Claude), OpenAI (GPT), Google (Gemini), Azure AI Foundry
+- **Supported Providers**: Anthropic (Claude), OpenAI (GPT), Google (Gemini), Azure AI Foundry, DeepSeek, Mistral, Meta Llama, Cohere, xAI (Grok), Moonshot (Kimi), Ollama
 - **[app/models/llm_types.py](mdc:app/models/llm_types.py)** - Model enums and provider types
 - **[app/models/llm_config.py](mdc:app/models/llm_config.py)** - LLM configuration dataclass
 - **[app/models/factories/](mdc:app/models/factories)** - Model factory implementations per provider
@@ -48,11 +48,13 @@ Multi-provider LLM support with factory pattern:
 #### **Tool System** (`app/tools/`)
 - **[app/tools/tool_provider.py](mdc:app/tools/tool_provider.py)** - Abstract base for creating agent tools
 - Supports LangChain BaseTool integration with Pydantic schemas
+- Tool providers own their replay policy through `persist_tool_block_history`, `get_provider_id()`, and `render_tool_block_for_history()`
 
 #### **Configuration & Infrastructure**
 - **[config/env.py](mdc:config/env.py)** - Environment variable management
 - **[app/prompt/prompt_loader.py](mdc:app/prompt/prompt_loader.py)** - Static prompt loading from markdown
 - **[app/tracing/agent_trace.py](mdc:app/tracing/agent_trace.py)** - Execution tracing for debugging
+- **[app/tracing/trace_sink.py](mdc:app/tracing/trace_sink.py)** - Pluggable trace persistence for local, noop, or custom sinks
 - **[app/utils/init_logger.py](mdc:app/utils/init_logger.py)** - Logging utilities
 
 ## Key Technologies & Dependencies

@@ -1,4 +1,4 @@
-# Siili Coding Agents
+# Spaik Coding Agents
 
 Pre-built coding agents for AI-assisted software development.
 

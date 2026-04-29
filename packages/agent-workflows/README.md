@@ -8,10 +8,10 @@ Spaik SDK is an open-source project developed by engineers at Siili Solutions Oy
 
 ```bash
 # Install globally with uvx (recommended)
-uvx siili-agent-workflows --help
+uvx spaik-agent-workflows --help
 
 # Or install with pip
-pip install siili-agent-workflows
+pip install spaik-agent-workflows
 
 # Or install locally for development
 cd packages/agent-workflows
@@ -22,16 +22,16 @@ uv sync
 
 ```bash
 # Run a workflow by name
-siili-agent-workflows my-workflow --param value
+spaik-agent-workflows my-workflow --param value
 
 # List all available workflows
-siili-agent-workflows --list
+spaik-agent-workflows --list
 
 # Validate a workflow without running
-siili-agent-workflows my-workflow --validate
+spaik-agent-workflows my-workflow --validate
 
 # Show help
-siili-agent-workflows --help
+spaik-agent-workflows --help
 ```
 
 ## Workflow Discovery
@@ -40,7 +40,7 @@ Workflows are discovered from multiple locations (in order):
 
 1. **Current directory**: `./workflow-name.yml`, `./workflow-name.yaml`, etc.
 2. **Local workflows dir**: `./.agent_workflows/workflow-name.yml`
-3. **Global config**: `~/.config/siili-agent-workflows/workflow-name.yml`
+3. **Global config**: `~/.config/spaik-agent-workflows/workflow-name.yml`
 4. **Bundled**: Workflows shipped with the package
 
 Supported extensions: `.yml`, `.yaml`, `.agent-workflow.yml`, `.agent-workflow.yaml`
@@ -49,7 +49,7 @@ Supported extensions: `.yml`, `.yaml`, `.agent-workflow.yml`, `.agent-workflow.y
 
 Environment files are loaded in order (later overrides earlier):
 
-1. `~/.config/siili-agent-workflows/.env` (global)
+1. `~/.config/spaik-agent-workflows/.env` (global)
 2. `./.env` (current directory)
 3. `--env-file <path>` (explicit)
 
@@ -103,7 +103,7 @@ jobs:
 You can also pass variables as positional args:
 
 ```bash
-siili-agent-workflows apply-template --template agent --path ./my-agent
+spaik-agent-workflows apply-template --template agent --path ./my-agent
 ```
 
 ## Built-in Plugins
