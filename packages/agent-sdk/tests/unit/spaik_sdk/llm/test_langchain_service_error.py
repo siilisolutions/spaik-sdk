@@ -96,10 +96,10 @@ class TestLangChainServiceErrorHandling:
                 assert events[0].error_type == "unknown"
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("recursion_limit", [3, 401])
-    async def test_execute_stream_tokens_passes_configured_langgraph_recursion_limit(self, recursion_limit: int):
+    @pytest.mark.parametrize("max_agent_steps", [3, 401])
+    async def test_execute_stream_tokens_passes_configured_max_agent_steps(self, max_agent_steps: int):
         service = make_service_with_mocks()
-        service.llm_config.langgraph_recursion_limit = recursion_limit
+        service.llm_config.max_agent_steps = max_agent_steps
 
         captured_config: RunnableConfig | None = None
         fake_agent = MagicMock()
@@ -128,4 +128,4 @@ class TestLangChainServiceErrorHandling:
 
         assert events == []
         assert captured_config is not None
-        assert captured_config["recursion_limit"] == recursion_limit
+        assert captured_config["recursion_limit"] == max_agent_steps

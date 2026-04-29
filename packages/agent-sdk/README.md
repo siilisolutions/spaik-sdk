@@ -117,7 +117,7 @@ agent = WeatherAgent(system_prompt="You provide weather info.")
 print(agent.get_response_text("What's the weather in Tokyo?"))
 ```
 
-For unusually long LangGraph tool loops, set `LLMConfig.langgraph_recursion_limit` above the default `100`.
+For unusually long tool loops, set `LLMConfig.max_agent_steps` above the default `100`.
 
 ### Built-in Tool Providers
 
