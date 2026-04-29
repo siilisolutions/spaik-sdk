@@ -174,7 +174,17 @@ Factories at `spaik_sdk/models/factories/`:
 - OpenAI factory: handles reasoning effort levels, `use_responses_api`. Update if new models need different behavior.
 - Google factory: handles thinking_budget. All Gemini models use same logic.
 
-### 5.5 (If new provider) Add new factory + provider
+### 5.5 Documentation — always keep model examples in sync
+
+When model defaults, recommended aliases, or visible registry examples change, update:
+
+- `README.md` — root package overview and model examples
+- `packages/agent-sdk/README.md` — Python SDK model examples
+- `AGENTS.md` — assistant guidance and model registry examples
+
+Do this as part of the same change as the model registry update, not as a later cleanup.
+
+### 5.6 (If new provider) Add new factory + provider
 
 If adding a model from a brand new provider:
 1. Create `spaik_sdk/models/llm_families.py` constant
