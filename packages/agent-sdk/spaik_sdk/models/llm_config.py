@@ -18,6 +18,7 @@ class LLMConfig:
     reasoning_effort: str = "medium"  # Options: "low", "medium", "high"
     max_output_tokens: Optional[int] = None
     reasoning_budget_tokens: int = 4096
+    max_agent_steps: int = 100
     temperature: float = 0.1
     structured_response: bool = False
 

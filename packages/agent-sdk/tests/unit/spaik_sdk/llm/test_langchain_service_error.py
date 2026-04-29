@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
 from spaik_sdk.llm.langchain_service import LangChainService
@@ -93,3 +94,38 @@ class TestLangChainServiceErrorHandling:
                     events.append(event)
 
                 assert events[0].error_type == "unknown"
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("max_agent_steps", [3, 401])
+    async def test_execute_stream_tokens_passes_configured_max_agent_steps(self, max_agent_steps: int):
+        service = make_service_with_mocks()
+        service.llm_config.max_agent_steps = max_agent_steps
+
+        captured_config: RunnableConfig | None = None
+        fake_agent = MagicMock()
+
+        async def empty_agent_stream():
+            if False:
+                yield None
+
+        def fake_astream_events(_input, *, version: str, config: RunnableConfig):
+            nonlocal captured_config
+            assert version == "v2"
+            captured_config = config
+            return empty_agent_stream()
+
+        async def fake_process_stream(_agent_stream):
+            if False:
+                yield None
+
+        fake_agent.astream_events.side_effect = fake_astream_events
+        service.create_executor = MagicMock(return_value=fake_agent)  # type: ignore[method-assign]
+        service.message_handler.process_agent_token_stream = fake_process_stream  # type: ignore[method-assign]
+
+        with patch("spaik_sdk.llm.langchain_service.get_file_storage", return_value=None):
+            with patch.object(service.thread_container, "get_langchain_messages", return_value=[]):
+                events = [event async for event in service._execute_stream_tokens_direct(tools=[])]
+
+        assert events == []
+        assert captured_config is not None
+        assert captured_config["recursion_limit"] == max_agent_steps
