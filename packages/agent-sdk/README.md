@@ -24,10 +24,12 @@ print(agent.get_response_text("Hello!"))
 
 ## Features
 
-- **Multi-LLM Support**: OpenAI, Anthropic, Google, Azure, Ollama
+- **Multi-LLM Support**: OpenAI, Anthropic, Google, Azure AI Foundry, DeepSeek, Mistral, Meta Llama, Cohere, xAI (Grok), Moonshot (Kimi), Ollama
 - **Unified API**: Same interface across all providers
 - **Streaming**: Real-time response streaming via SSE
 - **Tools**: Function calling with LangChain integration
+- **Subagents**: Isolated nested agent execution with `spawn()`
+- **Tracing**: Configurable trace persistence with pluggable sinks
 - **Structured Output**: Pydantic model responses
 - **Server**: FastAPI with thread persistence, auth, file uploads
 - **Audio**: Text-to-speech and speech-to-text
@@ -90,6 +92,17 @@ print(recipe.name)
 agent.run_cli()  # Starts interactive chat in terminal
 ```
 
+### LangGraph Interop
+
+Expose the configured LangChain model and a ready-to-use LangGraph ReAct agent when you need to compose Spaik agents into custom LangChain or LangGraph workflows.
+
+```python
+agent = MyAgent(system_prompt="You are helpful.")
+
+llm = agent.get_langchain_model()
+react_agent = agent.get_react_agent()
+```
+
 ## Tools
 
 ```python
@@ -133,6 +146,33 @@ class MyAgent(BaseAgent):
         ]
 ```
 
+### Controlling Tool-Call Replay in History
+
+Each `ToolProvider` controls how its tool-use blocks are rendered back into model history when a thread is replayed. By default, the replay contains the tool name, call id, arguments, response, and error state.
+
+Use `persist_tool_block_history=False` when a provider should replay only a name marker instead of full call details. This is useful for tools whose output is large, sensitive, or not useful to show the model again.
+
+```python
+class SearchTools(ToolProvider):
+    def __init__(self) -> None:
+        super().__init__(persist_tool_block_history=False)
+
+    def get_tools(self) -> list[BaseTool]:
+        ...
+```
+
+Override `render_tool_block_for_history()` when you need provider-specific history text.
+
+```python
+from spaik_sdk.thread.models import MessageBlock
+
+class SearchTools(ToolProvider):
+    def render_tool_block_for_history(self, block: MessageBlock) -> str:
+        return f'<search tool="{block.tool_name}" />'
+```
+
+Tool-use blocks persist the owning provider id on the thread, so after a thread reload the SDK rebinds the correct `ToolProvider` and applies the same history-rendering policy. Override `get_provider_id()` if a provider needs a stable id across package or class renames.
+
 ## Subagents
 
 To call one agent from inside another agent's tool, use `spawn()` instead of `get_response()`. This prevents LangChain's callback context from leaking into the subagent, which would otherwise cause the subagent's internal tool calls to appear in the parent thread.
@@ -150,6 +190,23 @@ class ResearchTools(ToolProvider):
 
 For cases where you need to isolate an arbitrary coroutine rather than a full agent call, use the static `BaseAgent.run_isolated(coro)` helper directly.
 
+## Tracing
+
+Every agent run produces an `AgentTrace`. Configure trace persistence with the `trace_sink` constructor argument or the `TRACE_SINK_MODE` environment variable.
+
+```python
+from spaik_sdk.tracing.local_trace_sink import LocalTraceSink
+from spaik_sdk.tracing.noop_trace_sink import NoOpTraceSink
+
+# Disable trace persistence
+agent = MyAgent(system_prompt="...", trace_sink=NoOpTraceSink())
+
+# Write traces to a custom directory
+agent = MyAgent(system_prompt="...", trace_sink=LocalTraceSink(traces_dir="./custom-traces"))
+```
+
+`TRACE_SINK_MODE=local` forces local file traces and `TRACE_SINK_MODE=noop` disables trace persistence. Implement `TraceSink` for remote or database-backed trace storage.
+
 ## Models
 
 ```python
@@ -160,18 +217,30 @@ ModelRegistry.CLAUDE_4_SONNET
 ModelRegistry.CLAUDE_4_OPUS
 ModelRegistry.CLAUDE_4_5_SONNET
 ModelRegistry.CLAUDE_4_5_OPUS
+ModelRegistry.CLAUDE_4_6_SONNET
+ModelRegistry.CLAUDE_4_6_OPUS
 
 # OpenAI
 ModelRegistry.GPT_4_1
 ModelRegistry.GPT_4O
 ModelRegistry.O4_MINI
+ModelRegistry.GPT_5_4
 
 # Google
 ModelRegistry.GEMINI_2_5_FLASH
 ModelRegistry.GEMINI_2_5_PRO
+ModelRegistry.GEMINI_3_1_PRO
+
+# Azure AI Foundry and other provider families
+ModelRegistry.DEEPSEEK_V3_2
+ModelRegistry.MISTRAL_LARGE_3
+ModelRegistry.LLAMA_4_MAVERICK
+ModelRegistry.COHERE_COMMAND_A
+ModelRegistry.GROK_4
+ModelRegistry.KIMI_K2_THINKING
 
 # Aliases
-ModelRegistry.from_name("sonnet")      # CLAUDE_4_SONNET
+ModelRegistry.from_name("sonnet")      # CLAUDE_4_6_SONNET
 ModelRegistry.from_name("gpt 4.1")     # GPT_4_1
 ModelRegistry.from_name("gemini 2.5")  # GEMINI_2_5_FLASH
 
@@ -250,6 +319,8 @@ api_builder = ApiBuilder.stateful(
 )
 ```
 
+Long-running streams are checkpointed incrementally. The built-in response generator calls `update_thread` after each `ToolResponseReceivedEvent` and `MessageFullyAddedEvent`, so completed tool results and messages survive crashes or restarts during a run.
+
 ## Orchestration
 
 Code-first workflow orchestration without graph DSLs:
@@ -300,7 +371,7 @@ result = orchestrator.run_sync()
 Environment variables:
 
 ```bash
-# LLM Providers (at least one required)
+# Direct mode: at least one LLM provider API key required
 ANTHROPIC_API_KEY=sk-ant-...
 OPENAI_API_KEY=sk-...
 GOOGLE_API_KEY=...
@@ -310,6 +381,17 @@ AZURE_API_KEY=...
 AZURE_ENDPOINT=https://your-resource.openai.azure.com/
 DEFAULT_MODEL=claude-sonnet-4-20250514
 ```
+
+### Proxy Mode
+
+Set `LLM_AUTH_MODE=proxy` to route every provider through a single proxy endpoint such as LiteLLM or an internal gateway. Provider API keys are not required in this mode.
+
+| Env Variable | Description |
+|--------------|-------------|
+| `LLM_AUTH_MODE` | `direct` (default) or `proxy` |
+| `LLM_PROXY_BASE_URL` | Proxy endpoint URL |
+| `LLM_PROXY_API_KEY` | Auth key sent to the proxy |
+| `LLM_PROXY_HEADERS` | Extra headers, comma-separated `Key:Value` pairs |
 
 ## Development
 

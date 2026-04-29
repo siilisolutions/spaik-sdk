@@ -287,7 +287,7 @@ function Chat({ threadId }) {
 SSE events handled:
 - `streaming_updated` - Content delta
 - `block_added` - New block started
-- `block_fully_added` - Block completed
+- `block_fully_added` - Block completed, including `tool_use` blocks
 - `message_fully_added` - Message completed
 - `tool_response_received` - Tool result
 

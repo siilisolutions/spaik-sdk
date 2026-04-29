@@ -14,10 +14,12 @@ Siili Solutions Oyj assumes no liability for the use of this software.
 ## Features
 
 **Python SDK**
-- Multi-provider support: OpenAI, Anthropic, Google, Azure, Ollama
+- Multi-provider support: OpenAI, Anthropic, Google, Azure AI Foundry, DeepSeek, Mistral, Meta Llama, Cohere, xAI (Grok), Moonshot (Kimi), Ollama
 - Unified API across all providers
 - Streaming responses with SSE
 - Tool/function calling with LangChain
+- Isolated subagents with `spawn()`
+- Configurable trace persistence
 - Structured outputs via Pydantic
 - FastAPI server with thread persistence
 - File attachments and audio (TTS/STT)
@@ -41,9 +43,10 @@ Siili Solutions Oyj assumes no liability for the use of this software.
 | Package | Description | npm/PyPI |
 |---------|-------------|----------|
 | `spaik-sdk` | Python SDK | [PyPI](https://pypi.org/project/spaik-sdk/) |
-| `spaik-sdk-react` | React hooks | npm |
-| `spaik-sdk-material` | Material UI components | npm |
+| `spaik-sdk-react` | React hooks | [npm](https://www.npmjs.com/package/spaik-sdk-react) |
+| `spaik-sdk-material` | Material UI components | [npm](https://www.npmjs.com/package/spaik-sdk-material) |
 | `spaik-coding-agents` | Pre-built coding agents | [PyPI](https://pypi.org/project/spaik-coding-agents/) |
+| `spaik-agent-workflows` | YAML-driven workflow engine | [PyPI](https://pypi.org/project/spaik-agent-workflows/) |
 
 ## Quick Start
 
@@ -79,6 +82,21 @@ class MyAgent(BaseAgent):
 
 agent = MyAgent(system_prompt="You can search for information.")
 print(agent.get_response_text("Search for Python tutorials"))
+```
+
+### Subagents
+
+Use `spawn()` when one agent calls another agent from inside a tool. It runs the subagent in an isolated context so the subagent's internal tool calls do not leak into the parent thread.
+
+```python
+class ResearchTools(ToolProvider):
+    def get_tools(self) -> list[BaseTool]:
+        @tool
+        def research(topic: str) -> str:
+            """Delegate a research task to a specialist subagent."""
+            sub = ResearchAgent(system_prompt="You are a research specialist.")
+            return sub.spawn(topic).get_text_content()
+        return [research]
 ```
 
 ### FastAPI Server
@@ -187,7 +205,7 @@ Open `http://localhost:5173`
 ## Environment Variables
 
 ```bash
-# At least one LLM provider API key required
+# Direct mode: at least one LLM provider API key required
 ANTHROPIC_API_KEY=sk-ant-...
 OPENAI_API_KEY=sk-...
 GOOGLE_API_KEY=...
@@ -196,6 +214,17 @@ GOOGLE_API_KEY=...
 AZURE_API_KEY=...
 AZURE_ENDPOINT=https://your-resource.openai.azure.com/
 DEFAULT_MODEL=claude-sonnet-4-20250514
+```
+
+### Proxy Mode
+
+Set `LLM_AUTH_MODE=proxy` to route all provider traffic through one LLM proxy endpoint, such as LiteLLM or an internal gateway.
+
+```bash
+LLM_AUTH_MODE=proxy
+LLM_PROXY_BASE_URL=https://llm-proxy.example.com
+LLM_PROXY_API_KEY=proxy-key
+LLM_PROXY_HEADERS=X-Team:Agents,X-App:Demo
 ```
 
 ## Model Support
@@ -208,25 +237,40 @@ ModelRegistry.CLAUDE_4_SONNET
 ModelRegistry.CLAUDE_4_OPUS
 ModelRegistry.CLAUDE_4_5_SONNET
 ModelRegistry.CLAUDE_4_5_OPUS
+ModelRegistry.CLAUDE_4_6_SONNET
+ModelRegistry.CLAUDE_4_6_OPUS
 
 # OpenAI
 ModelRegistry.GPT_4_1
 ModelRegistry.GPT_4O
 ModelRegistry.O4_MINI
+ModelRegistry.GPT_5_4
 
 # Google
 ModelRegistry.GEMINI_2_5_FLASH
 ModelRegistry.GEMINI_2_5_PRO
+ModelRegistry.GEMINI_3_1_PRO
+
+# Azure AI Foundry and other provider families
+ModelRegistry.DEEPSEEK_V3_2
+ModelRegistry.MISTRAL_LARGE_3
+ModelRegistry.LLAMA_4_MAVERICK
+ModelRegistry.COHERE_COMMAND_A
+ModelRegistry.GROK_4
+ModelRegistry.KIMI_K2_THINKING
 
 # Aliases
-ModelRegistry.from_name("sonnet")  # -> CLAUDE_4_SONNET
-ModelRegistry.from_name("opus")    # -> CLAUDE_4_5_OPUS
+ModelRegistry.from_name("sonnet")  # -> CLAUDE_4_6_SONNET
+ModelRegistry.from_name("opus")    # -> CLAUDE_4_6_OPUS
 ```
 
 ## Documentation
 
 - [Python SDK](packages/agent-sdk/README.md)
 - [React Hooks](packages/agent-sdk-hooks/README.md)
+- [Material UI Components](packages/agent-sdk-material/README.md)
+- [Agent Workflows](packages/agent-workflows/README.md)
+- [Coding Agents](packages/coding-agents/README.md)
 - [Examples](examples/)
 
 ## Development
@@ -246,7 +290,7 @@ bun run build:material
 
 ## License
 
-MIT - Copyright (c) 2025 Siili Solutions Oyj
+MIT - Copyright (c) 2026 Siili Solutions Oyj
 
 ## Security and Compliance Notice
 
