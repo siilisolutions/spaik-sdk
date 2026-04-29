@@ -42,8 +42,6 @@ if DEBUG:
 
     set_debug(True)
 
-config = RunnableConfig(recursion_limit=100)
-
 T = TypeVar("T", bound=BaseModel)
 
 
@@ -198,6 +196,7 @@ class LangChainService:
             messages = self.thread_container.get_langchain_messages()
 
         # Use astream_events to get individual token events
+        config = RunnableConfig(recursion_limit=self.llm_config.langgraph_recursion_limit)
         agent_stream = agent.astream_events({"messages": messages}, version="v2", config=config)
 
         # Let MessageHandler handle the token stream processing
