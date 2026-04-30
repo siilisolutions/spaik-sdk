@@ -390,6 +390,7 @@ class TestAgentTrace:
         rendered = trace.to_string(include_system_prompt=False)
         assert "🔧: calculator" in rendered
         assert '"expression": "2 + 2"' in rendered
+        assert "🔧 response: 4" in rendered
 
 
 @pytest.mark.unit

@@ -50,7 +50,12 @@ class AgentTrace:
         elif block.type == MessageBlockType.REASONING:
             self.add_step(f"🧠: {block.content}")
         elif block.type == MessageBlockType.TOOL_USE:
-            self.add_step(f"🔧: {block.tool_name} {json.dumps(block.tool_call_args, indent=2)}")
+            tool_step = f"🔧: {block.tool_name} {json.dumps(block.tool_call_args, indent=2)}"
+            if block.tool_call_response is not None:
+                tool_step += f"\n\n🔧 response: {block.tool_call_response}"
+            if block.tool_call_error is not None:
+                tool_step += f"\n\n🚨 tool error: {block.tool_call_error}"
+            self.add_step(tool_step)
         elif block.type == MessageBlockType.ERROR:
             self.add_step(f"🚨: {block.content}")
         else:
