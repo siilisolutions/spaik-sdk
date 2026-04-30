@@ -386,10 +386,26 @@ class TestAgentTrace:
         )
         thread.add_tool_call_response(ToolCallResponse(id="call-1", response="4"))
         thread.finalize_streaming_blocks(message_id, ["tool-1"])
+        thread.add_message_block(
+            message_id,
+            MessageBlock(
+                id="tool-err",
+                streaming=True,
+                type=MessageBlockType.TOOL_USE,
+                tool_name="fragile_tool",
+                tool_call_id="call-err",
+                tool_call_args={"input": "bad"},
+            ),
+        )
+        thread.add_tool_call_response(ToolCallResponse(id="call-err", response="", error="tool failed"))
+        thread.finalize_streaming_blocks(message_id, ["tool-err"])
 
         rendered = trace.to_string(include_system_prompt=False)
         assert "🔧: calculator" in rendered
         assert '"expression": "2 + 2"' in rendered
+        assert "🔧 response: 4" in rendered
+        assert "🔧: fragile_tool" in rendered
+        assert "🚨 tool error: tool failed" in rendered
 
 
 @pytest.mark.unit
