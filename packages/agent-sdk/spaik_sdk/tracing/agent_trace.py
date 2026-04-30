@@ -10,6 +10,12 @@ from spaik_sdk.tracing.get_trace_sink import get_trace_sink
 from spaik_sdk.tracing.trace_sink import TraceSink
 
 
+def _format_trace_payload(payload: object) -> str:
+    if isinstance(payload, str):
+        return payload
+    return json.dumps(payload, indent=2, default=str)
+
+
 class AgentTrace:
     def __init__(
         self,
@@ -52,9 +58,9 @@ class AgentTrace:
         elif block.type == MessageBlockType.TOOL_USE:
             tool_step = f"🔧: {block.tool_name} {json.dumps(block.tool_call_args, indent=2)}"
             if block.tool_call_response is not None:
-                tool_step += f"\n\n🔧 response: {block.tool_call_response}"
+                tool_step += f"\n\n🔧 response: {_format_trace_payload(block.tool_call_response)}"
             if block.tool_call_error is not None:
-                tool_step += f"\n\n🚨 tool error: {block.tool_call_error}"
+                tool_step += f"\n\n🚨 tool error: {_format_trace_payload(block.tool_call_error)}"
             self.add_step(tool_step)
         elif block.type == MessageBlockType.ERROR:
             self.add_step(f"🚨: {block.content}")
