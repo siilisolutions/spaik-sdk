@@ -167,8 +167,8 @@ class StreamingEventHandler:
                         async for event in self.content_handler.handle_regular_content(block.get("text", "")):
                             yield event
                         self.state_manager.mark_text_content_received()
-                    elif block_type in ("reasoning", "thinking"):
-                        reasoning = block.get("reasoning", "") or block.get("thinking", "")
+                    elif block_type in ("reasoning", "thinking", "reasoning_summary"):
+                        reasoning = block.get("reasoning", "") or block.get("thinking", "") or block.get("text", "")
                         async for event in self.content_handler.handle_reasoning_content(reasoning):
                             yield event
                 elif isinstance(block, str) and block:
