@@ -385,6 +385,41 @@ AZURE_ENDPOINT=https://your-resource.openai.azure.com/
 DEFAULT_MODEL=claude-sonnet-4-20250514
 ```
 
+### Azure Authentication
+
+Azure uses API key authentication from env vars by default:
+
+```bash
+MODEL_PROVIDER=azure
+AZURE_API_KEY=...
+AZURE_API_VERSION=2025-04-01-preview
+AZURE_ENDPOINT=https://your-resource.openai.azure.com/
+AZURE_GPT_4O_DEPLOYMENT=your-deployment-name
+```
+
+For Microsoft Entra ID or custom auth, pass an `AzureProvider` to `LLMConfig`:
+
+```bash
+pip install azure-identity
+```
+
+```python
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+from spaik_sdk.models.llm_config import LLMConfig
+from spaik_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.models.providers.azure_provider import AzureProvider
+
+token_provider = get_bearer_token_provider(
+    DefaultAzureCredential(),
+    "https://cognitiveservices.azure.com/.default",
+)
+
+llm_config = LLMConfig(
+    model=ModelRegistry.GPT_4O,
+    provider=AzureProvider(azure_ad_token_provider=token_provider),
+)
+```
+
 ### Proxy Mode
 
 Set `LLM_AUTH_MODE=proxy` to route every provider through a single proxy endpoint such as LiteLLM or an internal gateway. Provider API keys are not required in this mode.
