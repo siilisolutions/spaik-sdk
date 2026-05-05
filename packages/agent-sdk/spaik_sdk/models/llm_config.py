@@ -11,6 +11,7 @@ from spaik_sdk.models.providers.provider_type import ProviderType
 class LLMConfig:
     model: LLMModel
     provider_type: Optional[ProviderType] = None
+    provider: Optional[BaseProvider] = None
     reasoning: bool = True
     tool_usage: bool = True
     streaming: bool = True
@@ -35,6 +36,8 @@ class LLMConfig:
         return factory.create_model(self, provider)
 
     def get_provider(self) -> BaseProvider:
+        if self.provider is not None:
+            return self.provider
         return BaseProvider.create_provider(self.provider_type)
 
     def get_factory(self):

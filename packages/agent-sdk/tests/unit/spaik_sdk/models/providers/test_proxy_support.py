@@ -151,6 +151,22 @@ class TestOpenAIProviderProxy:
 
 
 @pytest.mark.unit
+class TestLLMConfigProviderInjection:
+    def test_explicit_provider_overrides_provider_type(self):
+        provider = AzureProvider(api_key="azure-api-key")
+        config = LLMConfig(
+            model=LLMModel(family="openai", name="gpt-4o", reasoning=False, prompt_caching=False),
+            provider_type=None,
+            provider=provider,
+            reasoning=False,
+            tool_usage=False,
+            streaming=False,
+        )
+
+        assert config.get_provider() is provider
+
+
+@pytest.mark.unit
 class TestGoogleProviderProxy:
     def test_proxy_mode(self, monkeypatch):
         for k, v in PROXY_ENV.items():
@@ -190,6 +206,83 @@ class TestAzureProviderProxy:
         assert result["api_key"] == "sk-proxy-key"
         assert result["azure_endpoint"] == "https://proxy.example.com/v1"
         assert result["default_headers"] == {"X-Tenant": "abc", "X-Region": "us"}
+
+    def test_direct_mode_uses_api_key_by_default(self, monkeypatch):
+        for k, v in DIRECT_ENV.items():
+            monkeypatch.setenv(k, v)
+        monkeypatch.setenv("AZURE_API_KEY", "azure-api-key")
+        monkeypatch.setenv("AZURE_API_VERSION", "2025-04-01-preview")
+        monkeypatch.setenv("AZURE_ENDPOINT", "https://azure.example.com")
+        monkeypatch.delenv("LLM_PROXY_BASE_URL", raising=False)
+        monkeypatch.delenv("LLM_PROXY_API_KEY", raising=False)
+        monkeypatch.delenv("LLM_PROXY_HEADERS", raising=False)
+
+        provider = AzureProvider()
+        result = provider.get_model_config(_make_config("azure", "gpt-4o"))
+
+        assert result["api_key"] == "azure-api-key"
+        assert result["api_version"] == "2025-04-01-preview"
+        assert result["azure_endpoint"] == "https://azure.example.com"
+        assert "azure_ad_token_provider" not in result
+
+    def test_direct_mode_uses_explicit_api_key(self, monkeypatch):
+        for k, v in DIRECT_ENV.items():
+            monkeypatch.setenv(k, v)
+        monkeypatch.setenv("AZURE_API_KEY", "env-api-key")
+        monkeypatch.setenv("AZURE_API_VERSION", "2025-04-01-preview")
+        monkeypatch.setenv("AZURE_ENDPOINT", "https://azure.example.com")
+        monkeypatch.delenv("LLM_PROXY_BASE_URL", raising=False)
+        monkeypatch.delenv("LLM_PROXY_API_KEY", raising=False)
+        monkeypatch.delenv("LLM_PROXY_HEADERS", raising=False)
+
+        provider = AzureProvider(api_key="explicit-api-key")
+        result = provider.get_model_config(_make_config("azure", "gpt-4o"))
+
+        assert result["api_key"] == "explicit-api-key"
+
+    def test_direct_mode_uses_credential_token_provider(self, monkeypatch):
+        for k, v in DIRECT_ENV.items():
+            monkeypatch.setenv(k, v)
+        monkeypatch.setenv("AZURE_API_VERSION", "2025-04-01-preview")
+        monkeypatch.setenv("AZURE_ENDPOINT", "https://azure.example.com")
+        monkeypatch.delenv("AZURE_API_KEY", raising=False)
+        monkeypatch.delenv("LLM_PROXY_BASE_URL", raising=False)
+        monkeypatch.delenv("LLM_PROXY_API_KEY", raising=False)
+        monkeypatch.delenv("LLM_PROXY_HEADERS", raising=False)
+
+        def token_provider():
+            return "token"
+
+        provider = AzureProvider(azure_ad_token_provider=token_provider)
+        result = provider.get_model_config(_make_config("azure", "gpt-4o"))
+
+        assert result["azure_ad_token_provider"] is token_provider
+        assert result["api_version"] == "2025-04-01-preview"
+        assert result["azure_endpoint"] == "https://azure.example.com"
+        assert "api_key" not in result
+
+    def test_direct_mode_uses_explicit_endpoint_and_api_version(self, monkeypatch):
+        for k, v in DIRECT_ENV.items():
+            monkeypatch.setenv(k, v)
+        monkeypatch.setenv("AZURE_API_KEY", "azure-api-key")
+        monkeypatch.setenv("AZURE_API_VERSION", "env-version")
+        monkeypatch.setenv("AZURE_ENDPOINT", "https://env.example.com")
+        monkeypatch.delenv("LLM_PROXY_BASE_URL", raising=False)
+        monkeypatch.delenv("LLM_PROXY_API_KEY", raising=False)
+        monkeypatch.delenv("LLM_PROXY_HEADERS", raising=False)
+
+        provider = AzureProvider(azure_endpoint="https://explicit.example.com", api_version="explicit-version")
+        result = provider.get_model_config(_make_config("azure", "gpt-4o"))
+
+        assert result["api_version"] == "explicit-version"
+        assert result["azure_endpoint"] == "https://explicit.example.com"
+
+    def test_rejects_api_key_and_token_provider_together(self):
+        def token_provider():
+            return "token"
+
+        with pytest.raises(ValueError, match="either api_key or azure_ad_token_provider"):
+            AzureProvider(api_key="api-key", azure_ad_token_provider=token_provider)
 
 
 @pytest.mark.unit

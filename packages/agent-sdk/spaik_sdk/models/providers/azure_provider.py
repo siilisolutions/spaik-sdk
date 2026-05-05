@@ -1,5 +1,6 @@
 import os
-from typing import Any, Collection, Dict, Set
+from collections.abc import Callable
+from typing import Any, Collection, Dict, Optional, Set
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_openai import AzureChatOpenAI
@@ -79,6 +80,20 @@ AZURE_DEPLOYMENT_ENV_VARS: Dict[str, str] = {
 
 
 class AzureProvider(BaseProvider):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        azure_ad_token_provider: Optional[Callable[[], str]] = None,
+        azure_endpoint: Optional[str] = None,
+        api_version: Optional[str] = None,
+    ) -> None:
+        if api_key and azure_ad_token_provider:
+            raise ValueError("Pass either api_key or azure_ad_token_provider, not both")
+        self.api_key = api_key
+        self.azure_ad_token_provider = azure_ad_token_provider
+        self.azure_endpoint = azure_endpoint
+        self.api_version = api_version
+
     def get_supported_models(self) -> Collection[LLMModel]:
         supported: Set[LLMModel] = set()
         for model_name in AZURE_DEPLOYMENT_ENV_VARS.keys():
@@ -93,14 +108,18 @@ class AzureProvider(BaseProvider):
         if env_config.is_proxy_mode():
             return self._get_proxy_config("api_key", "azure_endpoint", "default_headers")
 
-        return {
-            "api_key": self._get_required_env("AZURE_API_KEY"),
-            "api_version": self._get_required_env("AZURE_API_VERSION"),
-            "azure_endpoint": self._get_required_env("AZURE_ENDPOINT"),
+        result: Dict[str, Any] = {
+            "api_version": self.api_version or self._get_required_env("AZURE_API_VERSION"),
+            "azure_endpoint": self.azure_endpoint or self._get_required_env("AZURE_ENDPOINT"),
         }
+        if self.azure_ad_token_provider:
+            result["azure_ad_token_provider"] = self.azure_ad_token_provider
+            return result
+        result["api_key"] = self.api_key or self._get_required_env("AZURE_API_KEY")
+        return result
 
     def create_langchain_model(self, config: LLMConfig, full_config: Dict[str, Any]) -> BaseChatModel:
-        full_config["deployment_name"] = self._get_deployment_name(config.model.name)
+        full_config["azure_deployment"] = self._get_deployment_name(config.model.name)
         return AzureChatOpenAI(**full_config)
 
     def _get_deployment_name(self, model_name: str) -> str:
