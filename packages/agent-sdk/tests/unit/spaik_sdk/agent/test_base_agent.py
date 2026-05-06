@@ -14,7 +14,9 @@ from spaik_sdk.agent.base_agent import BaseAgent
 from spaik_sdk.llm.cancellation_handle import CancellationHandle
 from spaik_sdk.llm.consumption.token_usage import TokenUsage
 from spaik_sdk.llm.cost.builtin_cost_provider import BuiltinCostProvider
+from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.models.providers.provider_type import ProviderType
 from spaik_sdk.recording.conditional_recorder import ConditionalRecorder
 from spaik_sdk.recording.impl.local_recorder import LocalRecorder
 from spaik_sdk.thread.models import MessageBlockType
@@ -89,6 +91,14 @@ class DefaultToolProviderAgent(BaseAgent):
 
     def get_tool_providers(self) -> List[ToolProvider]:
         return [TestToolProvider()]
+
+
+class ConfigOnlyAgent(BaseAgent):
+    def __init__(self, **kwargs):
+        super().__init__(
+            system_prompt="test system prompt",
+            **kwargs,
+        )
 
 
 def assert_consumption_equals(actual_consumption: TokenUsage, expected_consumption: TokenUsage):
@@ -304,6 +314,52 @@ class TestBaseAgent:
         assert len(agent.tool_providers) == 1
         assert agent.tools == []
         assert agent.llm_config.tool_usage is False
+
+    def test_llm_config_without_model_uses_explicit_llm_model(self):
+        agent = ConfigOnlyAgent(
+            llm_config=LLMConfig(tool_usage=False, streaming=False),
+            llm_model=ModelRegistry.GPT_4_1,
+        )
+
+        assert agent.llm_config.model == ModelRegistry.GPT_4_1
+        assert agent.llm_config.provider_type == ProviderType.OPENAI_DIRECT
+
+    def test_llm_config_without_model_uses_default_model(self, monkeypatch):
+        monkeypatch.setenv("DEFAULT_MODEL", "claude-sonnet-4-20250514")
+        monkeypatch.delenv("MODEL_PROVIDER", raising=False)
+
+        agent = ConfigOnlyAgent(
+            llm_config=LLMConfig(tool_usage=False, streaming=False),
+        )
+
+        assert agent.llm_config.model == ModelRegistry.CLAUDE_4_SONNET
+        assert agent.llm_config.provider_type == ProviderType.ANTHROPIC
+
+    def test_llm_config_model_takes_precedence_over_llm_model_argument(self):
+        agent = ConfigOnlyAgent(
+            llm_config=LLMConfig(
+                model=ModelRegistry.GEMINI_2_5_FLASH,
+                tool_usage=False,
+                streaming=False,
+            ),
+            llm_model=ModelRegistry.CLAUDE_4_SONNET,
+        )
+
+        assert agent.llm_config.model == ModelRegistry.GEMINI_2_5_FLASH
+        assert agent.llm_config.provider_type == ProviderType.GOOGLE
+
+    def test_llm_config_preserves_explicit_provider_type(self):
+        agent = ConfigOnlyAgent(
+            llm_config=LLMConfig(
+                tool_usage=False,
+                streaming=False,
+                provider_type=ProviderType.AZURE_AI_FOUNDRY,
+            ),
+            llm_model=ModelRegistry.GPT_4_1,
+        )
+
+        assert agent.llm_config.model == ModelRegistry.GPT_4_1
+        assert agent.llm_config.provider_type == ProviderType.AZURE_AI_FOUNDRY
 
 
 @pytest.mark.unit

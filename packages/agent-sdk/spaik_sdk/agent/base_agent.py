@@ -3,6 +3,7 @@ import contextvars
 import threading
 import uuid
 from abc import ABC
+from dataclasses import replace
 from typing import Any, AsyncGenerator, Dict, List, Optional, Type, TypeVar
 
 from langchain_core.language_models import BaseChatModel
@@ -80,7 +81,9 @@ class BaseAgent(ABC):
         self.thread_container = thread_container if thread_container is not None else ThreadContainer(self.system_prompt)
         self.tools = tools if tools is not None else self._create_tools(self.tool_providers)
         self.thread_container.bind_tool_providers(self.tool_providers)
-        self.llm_config = llm_config if llm_config is not None else self.create_llm_config(llm_model, reasoning)
+        self.llm_config = (
+            self._normalize_llm_config(llm_config, llm_model) if llm_config is not None else self.create_llm_config(llm_model, reasoning)
+        )
         self.recorder = recorder.get_recorder() if recorder is not None else None
         self.playback = recorder.get_playback() if recorder is not None else None
         self.thread_container.subscribe(self._on_thread_event)
@@ -198,6 +201,24 @@ class BaseAgent(ABC):
             provider_type=self._resolve_provider_type(llm_model),
             reasoning=reasoning if reasoning is not None else llm_model.reasoning,
             tool_usage=len(self.tools) > 0,
+        )
+
+    def _normalize_llm_config(self, llm_config: LLMConfig, llm_model: Optional[LLMModel] = None) -> LLMConfig:
+        resolved_model = llm_config.model if llm_config.model is not None else llm_model
+        if resolved_model is None:
+            resolved_model = self.get_llm_model()
+
+        provider_type = llm_config.provider_type
+        if provider_type is None:
+            provider_type = self._resolve_provider_type(resolved_model)
+
+        if llm_config.model is resolved_model and llm_config.provider_type is provider_type:
+            return llm_config
+
+        return replace(
+            llm_config,
+            model=resolved_model,
+            provider_type=provider_type,
         )
 
     def _resolve_provider_type(self, llm_model: LLMModel) -> ProviderType:

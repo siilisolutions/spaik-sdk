@@ -1,5 +1,5 @@
 from dataclasses import dataclass, replace
-from typing import Optional
+from typing import Optional, cast
 
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.llm_wrapper import LLMWrapper
@@ -9,7 +9,7 @@ from spaik_sdk.models.providers.provider_type import ProviderType
 
 @dataclass
 class LLMConfig:
-    model: LLMModel
+    model: LLMModel = cast(LLMModel, None)
     provider_type: Optional[ProviderType] = None
     provider: Optional[BaseProvider] = None
     reasoning: bool = True
