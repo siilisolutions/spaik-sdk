@@ -50,7 +50,7 @@ class ConcreteTestAgent(BaseAgent):
         )
 
 
-class TestToolProvider(ToolProvider):
+class SecretGreetingToolProvider(ToolProvider):
     def get_tools(self) -> List[BaseTool]:
         @tool
         def get_secret_greeting() -> str:
@@ -78,7 +78,7 @@ class ToolCallTestAgent(BaseAgent):
         )
 
     def get_tool_providers(self) -> List[ToolProvider]:
-        return [TestToolProvider()]
+        return [SecretGreetingToolProvider()]
 
 
 class DefaultToolProviderAgent(BaseAgent):
@@ -90,7 +90,7 @@ class DefaultToolProviderAgent(BaseAgent):
         )
 
     def get_tool_providers(self) -> List[ToolProvider]:
-        return [TestToolProvider()]
+        return [SecretGreetingToolProvider()]
 
 
 class ConfigOnlyAgent(BaseAgent):
