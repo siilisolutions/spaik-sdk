@@ -188,6 +188,36 @@ class TestStreamingEventHandler:
         assert token_events[0].content == "Answer"
 
     @pytest.mark.asyncio
+    async def test_handles_openai_reasoning_summary_list_blocks(self):
+        handler = StreamingEventHandler()
+        chunk = AIMessageChunk(
+            content=[
+                {
+                    "type": "reasoning",
+                    "id": "rs_123",
+                    "summary": [
+                        {"type": "summary_text", "text": "I checked the constraints. "},
+                        {"type": "summary_text", "text": "Then I answered."},
+                    ],
+                }
+            ]
+        )
+        raw_events = [
+            {"event": "on_chat_model_stream", "data": {"chunk": chunk}},
+            make_chat_model_stream_event("Answer"),
+            make_chain_end_event(),
+        ]
+
+        events = await collect_events(handler, raw_events)
+
+        reasoning_events = [e for e in events if e.event_type == EventType.REASONING]
+        token_events = [e for e in events if e.event_type == EventType.TOKEN]
+        assert len(reasoning_events) == 1
+        assert reasoning_events[0].content == "I checked the constraints. Then I answered."
+        assert len(token_events) == 1
+        assert token_events[0].content == "Answer"
+
+    @pytest.mark.asyncio
     async def test_handles_tool_calls(self):
         handler = StreamingEventHandler()
         raw_events = [

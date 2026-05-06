@@ -46,10 +46,10 @@ class OpenAIModelFactory(BaseModelFactory):
             if config.reasoning:
                 # User wants reasoning enabled - use configured effort
                 if config.reasoning_summary:
-                    model_kwargs["reasoning"] = {"effort": config.reasoning_effort, "summary": config.reasoning_summary}
+                    model_config["reasoning"] = {"effort": config.reasoning_effort, "summary": config.reasoning_summary}
             else:
                 # User wants reasoning disabled - use model's minimum effort level
-                model_kwargs["reasoning"] = {"effort": config.model.reasoning_min_effort}
+                model_config["reasoning"] = {"effort": config.model.reasoning_min_effort}
         else:
             # Model doesn't support reasoning
             model_config["temperature"] = config.temperature

@@ -33,7 +33,7 @@ class TestOpenAIModelFactoryReasoning:
         # Should still use Responses API (model supports it)
         assert model_config["use_responses_api"] is True
         # But reasoning should be disabled per user preference
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "none"
+        assert model_config["reasoning"]["effort"] == "none"
 
     # Tests for GPT-5.1+ models (support effort='none' for full disable)
 
@@ -46,7 +46,7 @@ class TestOpenAIModelFactoryReasoning:
 
         model_config = factory.get_model_specific_config(config)
 
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "none"
+        assert model_config["reasoning"]["effort"] == "none"
 
     def test_reasoning_false_gpt_5_1_codex_sets_effort_none(self, factory):
         """When reasoning=False on GPT-5.1-codex model, reasoning effort is 'none'."""
@@ -57,7 +57,7 @@ class TestOpenAIModelFactoryReasoning:
 
         model_config = factory.get_model_specific_config(config)
 
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "none"
+        assert model_config["reasoning"]["effort"] == "none"
 
     def test_reasoning_false_gpt_5_1_codex_mini_sets_effort_none(self, factory):
         """When reasoning=False on GPT-5.1-codex-mini model, reasoning effort is 'none'."""
@@ -68,7 +68,7 @@ class TestOpenAIModelFactoryReasoning:
 
         model_config = factory.get_model_specific_config(config)
 
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "none"
+        assert model_config["reasoning"]["effort"] == "none"
 
     def test_reasoning_false_gpt_5_1_codex_max_sets_effort_none(self, factory):
         """When reasoning=False on GPT-5.1-codex-max model, reasoning effort is 'none'."""
@@ -79,7 +79,7 @@ class TestOpenAIModelFactoryReasoning:
 
         model_config = factory.get_model_specific_config(config)
 
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "none"
+        assert model_config["reasoning"]["effort"] == "none"
 
     def test_reasoning_false_gpt_5_2_sets_effort_none(self, factory):
         """When reasoning=False on GPT-5.2 model, reasoning effort is 'none'."""
@@ -90,7 +90,7 @@ class TestOpenAIModelFactoryReasoning:
 
         model_config = factory.get_model_specific_config(config)
 
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "none"
+        assert model_config["reasoning"]["effort"] == "none"
 
     def test_reasoning_false_gpt_5_2_pro_sets_effort_none(self, factory):
         """When reasoning=False on GPT-5.2-pro model, reasoning effort is 'none'."""
@@ -101,7 +101,7 @@ class TestOpenAIModelFactoryReasoning:
 
         model_config = factory.get_model_specific_config(config)
 
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "none"
+        assert model_config["reasoning"]["effort"] == "none"
 
     # Tests for GPT-5 base models (only support effort='minimal')
 
@@ -114,7 +114,7 @@ class TestOpenAIModelFactoryReasoning:
 
         model_config = factory.get_model_specific_config(config)
 
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "minimal"
+        assert model_config["reasoning"]["effort"] == "minimal"
 
     def test_reasoning_false_gpt_5_mini_sets_effort_minimal(self, factory):
         """When reasoning=False on GPT-5-mini model, reasoning effort is 'minimal'."""
@@ -125,7 +125,7 @@ class TestOpenAIModelFactoryReasoning:
 
         model_config = factory.get_model_specific_config(config)
 
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "minimal"
+        assert model_config["reasoning"]["effort"] == "minimal"
 
     def test_reasoning_false_gpt_5_nano_sets_effort_minimal(self, factory):
         """When reasoning=False on GPT-5-nano model, reasoning effort is 'minimal'."""
@@ -136,7 +136,7 @@ class TestOpenAIModelFactoryReasoning:
 
         model_config = factory.get_model_specific_config(config)
 
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "minimal"
+        assert model_config["reasoning"]["effort"] == "minimal"
 
     # Tests for reasoning=True (existing behavior preserved)
 
@@ -152,8 +152,8 @@ class TestOpenAIModelFactoryReasoning:
         model_config = factory.get_model_specific_config(config)
 
         assert model_config["use_responses_api"] is True
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "high"
-        assert model_config["model_kwargs"]["reasoning"]["summary"] == "detailed"
+        assert model_config["reasoning"]["effort"] == "high"
+        assert model_config["reasoning"]["summary"] == "detailed"
 
     @pytest.mark.parametrize(
         "model",
@@ -202,7 +202,7 @@ class TestOpenAIModelFactoryReasoning:
 
         assert model_config["temperature"] == 0.7
         assert "use_responses_api" not in model_config
-        assert "reasoning" not in model_config.get("model_kwargs", {})
+        assert "reasoning" not in model_config
 
 
 @pytest.mark.unit
@@ -244,7 +244,7 @@ class TestOpenAIModelFactoryParameterized:
 
         model_config = factory.get_model_specific_config(config)
 
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == expected_effort
+        assert model_config["reasoning"]["effort"] == expected_effort
 
 
 @pytest.mark.unit
@@ -302,4 +302,4 @@ class TestOpenAIModelFactoryParallelToolCalls:
         model_config = factory.get_model_specific_config(config)
 
         assert model_config["model_kwargs"]["parallel_tool_calls"] is True
-        assert model_config["model_kwargs"]["reasoning"]["effort"] == "high"
+        assert model_config["reasoning"]["effort"] == "high"
