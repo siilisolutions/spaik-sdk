@@ -29,6 +29,8 @@ class _CallableTokenCredential(TokenCredential):
 
 def openai_v1_endpoint_from_project_endpoint(project_endpoint: str) -> str:
     parsed = urlparse(project_endpoint.rstrip("/"))
+    if not parsed.scheme or not parsed.netloc:
+        raise ValueError(f"Invalid AZURE_FOUNDRY_PROJECT_ENDPOINT: {project_endpoint!r}")
     return f"{parsed.scheme}://{parsed.netloc}/openai/v1"
 
 

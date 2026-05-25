@@ -49,6 +49,10 @@ class TestOpenaiV1EndpointFromProject:
     def test_derives_openai_v1_path(self):
         assert openai_v1_endpoint_from_project_endpoint(PROJECT_ENDPOINT) == OPENAI_V1_ENDPOINT
 
+    def test_rejects_invalid_project_endpoint(self):
+        with pytest.raises(ValueError, match="Invalid AZURE_FOUNDRY_PROJECT_ENDPOINT"):
+            openai_v1_endpoint_from_project_endpoint("not-a-url")
+
 
 @pytest.mark.unit
 class TestAzureFoundryProviderDirect:
