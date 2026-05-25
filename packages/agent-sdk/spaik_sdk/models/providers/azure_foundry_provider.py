@@ -1,7 +1,6 @@
-import os
 import time
 from collections.abc import Callable
-from typing import Any, Collection, Dict, Optional, Set
+from typing import Any, Collection, Dict, Optional
 from urllib.parse import urlparse
 
 from azure.core.credentials import AccessToken, TokenCredential
@@ -11,8 +10,11 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from spaik_sdk.config.env import env_config
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.llm_model import LLMModel
-from spaik_sdk.models.model_registry import ModelRegistry
-from spaik_sdk.models.providers.azure_deployments import AZURE_DEPLOYMENT_ENV_VARS
+from spaik_sdk.models.providers.azure_deployments import (
+    get_azure_supported_models,
+    get_deployment_name,
+    get_required_env,
+)
 from spaik_sdk.models.providers.base_provider import BaseProvider
 
 
@@ -20,12 +22,12 @@ class _CallableTokenCredential(TokenCredential):
     def __init__(self, token_provider: Callable[[], str]) -> None:
         self._token_provider = token_provider
 
-    def get_token(self, *scopes: str, **kwargs: Any) -> AccessToken:
-        del scopes, kwargs
+    def get_token(self, *_scopes: str, **kwargs: Any) -> AccessToken:
+        del kwargs
         return AccessToken(self._token_provider(), int(time.time()) + 3600)
 
 
-def _openai_v1_endpoint_from_project_endpoint(project_endpoint: str) -> str:
+def openai_v1_endpoint_from_project_endpoint(project_endpoint: str) -> str:
     parsed = urlparse(project_endpoint.rstrip("/"))
     return f"{parsed.scheme}://{parsed.netloc}/openai/v1"
 
@@ -44,43 +46,24 @@ class AzureFoundryProvider(BaseProvider):
         self.project_endpoint = project_endpoint
 
     def get_supported_models(self) -> Collection[LLMModel]:
-        supported: Set[LLMModel] = set()
-        for model_name in AZURE_DEPLOYMENT_ENV_VARS.keys():
-            try:
-                model = ModelRegistry.from_name(model_name)
-                supported.add(model)
-            except ValueError:
-                pass
-        return supported
+        return get_azure_supported_models()
 
     def get_model_config(self, config: LLMConfig) -> Dict[str, Any]:
         if env_config.is_proxy_mode():
             return self._get_proxy_config("credential", "endpoint", "default_headers")
 
-        project_endpoint = self.project_endpoint or self._get_required_env("AZURE_FOUNDRY_PROJECT_ENDPOINT")
+        project_endpoint = self.project_endpoint or get_required_env("AZURE_FOUNDRY_PROJECT_ENDPOINT")
         if self.azure_ad_token_provider:
             return {
                 "project_endpoint": project_endpoint,
                 "credential": _CallableTokenCredential(self.azure_ad_token_provider),
             }
-        api_key = self.api_key or self._get_required_env("AZURE_FOUNDRY_API_KEY")
+        api_key = self.api_key or get_required_env("AZURE_FOUNDRY_API_KEY")
         return {
-            "endpoint": _openai_v1_endpoint_from_project_endpoint(project_endpoint),
+            "endpoint": openai_v1_endpoint_from_project_endpoint(project_endpoint),
             "credential": api_key,
         }
 
     def create_langchain_model(self, config: LLMConfig, full_config: Dict[str, Any]) -> BaseChatModel:
-        full_config["model"] = self._get_deployment_name(config.model.name)
+        full_config["model"] = get_deployment_name(config.model.name)
         return AzureAIOpenAIApiChatModel(**full_config)
-
-    def _get_deployment_name(self, model_name: str) -> str:
-        env_var = AZURE_DEPLOYMENT_ENV_VARS.get(model_name)
-        if not env_var:
-            raise ValueError(f"Model '{model_name}' not supported on Azure. Add it to AZURE_DEPLOYMENT_ENV_VARS.")
-        return os.environ.get(env_var, model_name)
-
-    def _get_required_env(self, key: str) -> str:
-        value = os.environ.get(key)
-        if not value:
-            raise ValueError(f"Environment variable {key} is required but not set")
-        return value

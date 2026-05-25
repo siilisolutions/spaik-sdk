@@ -1,4 +1,8 @@
-from typing import Dict
+import os
+from typing import Collection, Dict, Set
+
+from spaik_sdk.models.llm_model import LLMModel
+from spaik_sdk.models.model_registry import ModelRegistry
 
 AZURE_DEPLOYMENT_ENV_VARS: Dict[str, str] = {
     "claude-opus-4-7": "AZURE_CLAUDE_OPUS_4_7_DEPLOYMENT",
@@ -57,3 +61,27 @@ AZURE_DEPLOYMENT_ENV_VARS: Dict[str, str] = {
     "grok-code-fast-1": "AZURE_GROK_CODE_FAST_1_DEPLOYMENT",
     "Kimi-K2-Thinking": "AZURE_KIMI_K2_THINKING_DEPLOYMENT",
 }
+
+
+def get_azure_supported_models() -> Collection[LLMModel]:
+    supported: Set[LLMModel] = set()
+    for model_name in AZURE_DEPLOYMENT_ENV_VARS:
+        try:
+            supported.add(ModelRegistry.from_name(model_name))
+        except ValueError:
+            pass
+    return supported
+
+
+def get_deployment_name(model_name: str) -> str:
+    env_var = AZURE_DEPLOYMENT_ENV_VARS.get(model_name)
+    if not env_var:
+        raise ValueError(f"Model '{model_name}' not supported on Azure. Add it to AZURE_DEPLOYMENT_ENV_VARS.")
+    return os.environ.get(env_var, model_name)
+
+
+def get_required_env(key: str) -> str:
+    value = os.environ.get(key)
+    if not value:
+        raise ValueError(f"Environment variable {key} is required but not set")
+    return value

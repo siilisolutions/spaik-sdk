@@ -1,5 +1,3 @@
-"""Unit tests for AzureFoundryProvider."""
-
 from unittest.mock import patch
 
 import pytest
@@ -8,7 +6,7 @@ from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.providers.azure_foundry_provider import (
     AzureFoundryProvider,
-    _openai_v1_endpoint_from_project_endpoint,
+    openai_v1_endpoint_from_project_endpoint,
 )
 from spaik_sdk.models.providers.base_provider import BaseProvider
 from spaik_sdk.models.providers.provider_type import ProviderType
@@ -49,7 +47,7 @@ class TestProviderTypeAliases:
 @pytest.mark.unit
 class TestOpenaiV1EndpointFromProject:
     def test_derives_openai_v1_path(self):
-        assert _openai_v1_endpoint_from_project_endpoint(PROJECT_ENDPOINT) == OPENAI_V1_ENDPOINT
+        assert openai_v1_endpoint_from_project_endpoint(PROJECT_ENDPOINT) == OPENAI_V1_ENDPOINT
 
 
 @pytest.mark.unit
