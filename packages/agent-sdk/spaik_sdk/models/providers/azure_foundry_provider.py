@@ -24,7 +24,10 @@ class _CallableTokenCredential(TokenCredential):
 
     def get_token(self, *_scopes: str, **kwargs: Any) -> AccessToken:
         del kwargs
-        return AccessToken(self._token_provider(), int(time.time()) + 3600)
+        result = self._token_provider()
+        if isinstance(result, AccessToken):
+            return result
+        return AccessToken(str(result), int(time.time()) + 300)
 
 
 def openai_v1_endpoint_from_project_endpoint(project_endpoint: str) -> str:
