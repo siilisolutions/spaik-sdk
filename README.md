@@ -210,9 +210,15 @@ ANTHROPIC_API_KEY=sk-ant-...
 OPENAI_API_KEY=sk-...
 GOOGLE_API_KEY=...
 
-# Optional
+# Optional — classic Azure OpenAI (*.openai.azure.com)
 AZURE_API_KEY=...
 AZURE_ENDPOINT=https://your-resource.openai.azure.com/
+
+# Optional — Azure AI Foundry project endpoint
+# MODEL_PROVIDER=foundry
+# AZURE_FOUNDRY_PROJECT_ENDPOINT=https://your-resource.services.ai.azure.com/api/projects/your-project
+# AZURE_FOUNDRY_API_KEY=...
+
 DEFAULT_MODEL=claude-sonnet-4-20250514
 ```
 

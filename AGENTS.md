@@ -25,7 +25,7 @@ agent-sdk/
 
 - `agent/base_agent.py` - Main agent class, handles prompts, tools, streaming
 - `models/model_registry.py` - LLM model definitions and aliases
-- `models/providers/` - Provider implementations (OpenAI, Anthropic, Google, Azure AI Foundry, DeepSeek, Mistral, Meta Llama, Cohere, xAI, Moonshot, Ollama)
+- `models/providers/` - Provider implementations (OpenAI, Anthropic, Google, Azure OpenAI, Azure AI Foundry project endpoint, DeepSeek, Mistral, Meta Llama, Cohere, xAI, Moonshot, Ollama)
 - `tools/tool_provider.py` - Tool definition system using LangChain. Use `persist_tool_block_history=False` or override `render_tool_block_for_history()` to control how provider-owned tool calls replay into model history.
 - `thread/` - Conversation state, message blocks, event streaming
 - `server/api/routers/api_builder.py` - FastAPI router factory
@@ -210,9 +210,14 @@ ANTHROPIC_API_KEY=sk-ant-...
 OPENAI_API_KEY=sk-...
 GOOGLE_API_KEY=...
 
-# Optional
+# Optional — classic Azure OpenAI
 AZURE_API_KEY=...
 AZURE_ENDPOINT=https://your-resource.openai.azure.com/
+
+# Optional — Azure AI Foundry project (MODEL_PROVIDER=foundry)
+# AZURE_FOUNDRY_PROJECT_ENDPOINT=https://resource.services.ai.azure.com/api/projects/project
+# AZURE_FOUNDRY_API_KEY=...
+
 DEFAULT_MODEL=claude-sonnet-4-20250514
 
 # Proxy mode for centralized LLM routing
