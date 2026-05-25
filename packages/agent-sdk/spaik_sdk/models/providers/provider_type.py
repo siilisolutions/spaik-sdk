@@ -5,6 +5,7 @@ from typing import Dict, Type, TypeVar
 
 class ProviderType(Enum):
     ANTHROPIC = "anthropic"
+    AZURE_OPENAI = "azure_openai"
     AZURE_AI_FOUNDRY = "azure_ai_foundry"
     OPENAI_DIRECT = "openai"
     GOOGLE = "google"
@@ -58,8 +59,10 @@ class ProviderType(Enum):
 PROVIDER_ALIASES = {
     "claude": ProviderType.ANTHROPIC,
     "ollama": ProviderType.OLLAMA,
-    "azure": ProviderType.AZURE_AI_FOUNDRY,
+    "azure": ProviderType.AZURE_OPENAI,
+    "azure_openai": ProviderType.AZURE_OPENAI,
     "foundry": ProviderType.AZURE_AI_FOUNDRY,
+    "azure_foundry": ProviderType.AZURE_AI_FOUNDRY,
     "openai": ProviderType.OPENAI_DIRECT,
     "google": ProviderType.GOOGLE,
     "gemini": ProviderType.GOOGLE,
