@@ -168,7 +168,7 @@ class StreamingEventHandler:
                             yield event
                         self.state_manager.mark_text_content_received()
                     elif block_type in ("reasoning", "thinking", "reasoning_summary"):
-                        reasoning = block.get("reasoning", "") or block.get("thinking", "") or block.get("text", "")
+                        reasoning = self._extract_reasoning_content(block)
                         async for event in self.content_handler.handle_reasoning_content(reasoning):
                             yield event
                 elif isinstance(block, str) and block:
@@ -187,6 +187,17 @@ class StreamingEventHandler:
                 self._tool_args_by_id[tool_id] = tool_args
                 async for event in self.content_handler.handle_tool_use(tool_id, tool_name, tool_args):
                     yield event
+
+    def _extract_reasoning_content(self, block: dict[str, Any]) -> str:
+        reasoning = block.get("reasoning") or block.get("thinking") or block.get("text")
+        if isinstance(reasoning, str):
+            return reasoning
+
+        summary = block.get("summary")
+        if not isinstance(summary, list):
+            return ""
+
+        return "".join(item.get("text", "") for item in summary if isinstance(item, dict))
 
     def _collect_final_tool_calls(self, message: AIMessageType) -> dict[str, tuple[str, str, dict]]:
         final_tool_calls = {

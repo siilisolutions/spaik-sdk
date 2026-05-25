@@ -17,11 +17,9 @@ class OpenAIModelFactory(BaseModelFactory):
         return model in OpenAIModelFactory.MODELS
 
     def supports_model_config(self, config: LLMConfig) -> bool:
-        # First check basic model support
         if not self.supports_model(config.model):
             return False
         if config.reasoning and not config.model.reasoning:
-            # let's not fail here, but we should log a warning
             logger.warning(f"Model {config.model} does not support reasoning")
         return True
 
@@ -37,21 +35,15 @@ class OpenAIModelFactory(BaseModelFactory):
         if config.tool_usage:
             model_kwargs["parallel_tool_calls"] = True
 
-        # Handle reasoning configuration based on user preference (config.reasoning)
-        # and model capability (config.model.reasoning)
         if config.model.reasoning:
-            # Model supports reasoning - check user preference
             model_config["use_responses_api"] = True
 
             if config.reasoning:
-                # User wants reasoning enabled - use configured effort
                 if config.reasoning_summary:
-                    model_kwargs["reasoning"] = {"effort": config.reasoning_effort, "summary": config.reasoning_summary}
+                    model_config["reasoning"] = {"effort": config.reasoning_effort, "summary": config.reasoning_summary}
             else:
-                # User wants reasoning disabled - use model's minimum effort level
-                model_kwargs["reasoning"] = {"effort": config.model.reasoning_min_effort}
+                model_config["reasoning"] = {"effort": config.model.reasoning_min_effort}
         else:
-            # Model doesn't support reasoning
             model_config["temperature"] = config.temperature
 
         if model_kwargs:
