@@ -379,84 +379,33 @@ ANTHROPIC_API_KEY=sk-ant-...
 OPENAI_API_KEY=sk-...
 GOOGLE_API_KEY=...
 
-# Optional
-AZURE_API_KEY=...
-AZURE_ENDPOINT=https://your-resource.openai.azure.com/
 DEFAULT_MODEL=claude-sonnet-4-20250514
 ```
 
-### Azure Authentication
+Azure env vars are documented below ([Azure: two providers](#azure-two-providers)).
 
-Azure uses API key authentication from env vars by default:
+### Azure: two providers
+
+Use `azure` for the older Azure OpenAI endpoint style and `foundry` for the newer Azure AI Foundry project endpoint style. The SDK does not infer this from the URL.
 
 ```bash
+# Azure OpenAI: https://{resource}.openai.azure.com/
 MODEL_PROVIDER=azure
-AZURE_API_KEY=...
-AZURE_API_VERSION=2025-04-01-preview
 AZURE_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_GPT_4O_DEPLOYMENT=your-deployment-name
-```
+AZURE_API_VERSION=2024-02-15-preview
+AZURE_API_KEY=...
+AZURE_GPT_4_1_MINI_DEPLOYMENT=your-deployment-name
 
-For Microsoft Entra ID or custom auth, pass an `AzureProvider` to `LLMConfig`:
-
-```bash
-pip install azure-identity
-```
-
-```python
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-from spaik_sdk.models.llm_config import LLMConfig
-from spaik_sdk.models.model_registry import ModelRegistry
-from spaik_sdk.models.providers.azure_provider import AzureProvider
-
-token_provider = get_bearer_token_provider(
-    DefaultAzureCredential(),
-    "https://cognitiveservices.azure.com/.default",
-)
-
-llm_config = LLMConfig(
-    model=ModelRegistry.GPT_4O,
-    provider=AzureProvider(azure_ad_token_provider=token_provider),
-)
-```
-
-### Azure AI Foundry (project endpoint)
-
-For Azure AI Foundry project URLs (`https://{resource}.services.ai.azure.com/api/projects/{project}`), use the Foundry provider. This uses `AzureAIOpenAIApiChatModel` from `langchain-azure-ai`, not classic `*.openai.azure.com` endpoints.
-
-```bash
+# Azure AI Foundry project: https://{resource}.services.ai.azure.com/api/projects/{project}
 MODEL_PROVIDER=foundry
 AZURE_FOUNDRY_PROJECT_ENDPOINT=https://your-resource.services.ai.azure.com/api/projects/your-project
 AZURE_FOUNDRY_API_KEY=...
-AZURE_GPT_4O_DEPLOYMENT=your-deployment-name
-DEFAULT_MODEL=gpt-4o
+AZURE_GPT_4_1_MINI_DEPLOYMENT=your-deployment-name
 ```
 
-With an API key, the SDK connects via the resource OpenAI-compatible endpoint (`/openai/v1`) derived from your project URL. Deployment env vars are the same as for classic Azure (see Azure Authentication above).
+Full env reference: [`env.example`](env.example). Deployment mapping: [`spaik_sdk/models/providers/azure_deployments.py`](spaik_sdk/models/providers/azure_deployments.py).
 
-For Microsoft Entra ID against the project endpoint, pass `AzureFoundryProvider` to `LLMConfig`:
-
-```python
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-from spaik_sdk.models.llm_config import LLMConfig
-from spaik_sdk.models.model_registry import ModelRegistry
-from spaik_sdk.models.providers.azure_foundry_provider import AzureFoundryProvider
-
-token_provider = get_bearer_token_provider(
-    DefaultAzureCredential(),
-    "https://ai.azure.com/.default",
-)
-
-llm_config = LLMConfig(
-    model=ModelRegistry.GPT_4O,
-    provider=AzureFoundryProvider(
-        project_endpoint="https://your-resource.services.ai.azure.com/api/projects/your-project",
-        azure_ad_token_provider=token_provider,
-    ),
-)
-```
-
-**Migration:** `MODEL_PROVIDER=azure` selects classic Azure OpenAI (`AzureChatOpenAI`). `MODEL_PROVIDER=foundry` selects the Foundry project provider. The enum value `azure_ai_foundry` now maps to the Foundry provider (previously it selected classic Azure).
+For Microsoft Entra ID or mixed-provider apps, pass `AzureProvider` or `AzureFoundryProvider` directly through `LLMConfig`. Classic Azure uses scope `https://cognitiveservices.azure.com/.default`; Foundry uses `https://ai.azure.com/.default`.
 
 ### Proxy Mode
 
