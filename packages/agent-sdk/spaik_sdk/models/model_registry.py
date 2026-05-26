@@ -70,10 +70,13 @@ class ModelRegistry:
     GEMINI_2_5_FLASH_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-flash", prompt_caching=True)
     GEMINI_2_5_PRO_MAY_2025 = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-2.5-pro", prompt_caching=True)
     GEMINI_3_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-flash-preview", prompt_caching=True)
+    GEMINI_3_5_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.5-flash", prompt_caching=True)
     # Gemini 3 Pro: deprecated on Google API March 9, 2026
     GEMINI_3_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3-pro-preview", prompt_caching=True)
     GEMINI_3_1_PRO = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.1-pro-preview", prompt_caching=True)
-    GEMINI_3_1_FLASH_LITE = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.1-flash-lite-preview", prompt_caching=True)
+    GEMINI_3_1_FLASH_LITE = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.1-flash-lite", prompt_caching=True)
+    # Gemini 3.1 Flash-Lite preview: shut down May 25, 2026
+    GEMINI_3_1_FLASH_LITE_PREVIEW = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.1-flash-lite-preview", prompt_caching=True)
 
     # DeepSeek models
     DEEPSEEK_V3 = LLMModel(family=LLMFamilies.DEEPSEEK, name="DeepSeek-V3-0324")
@@ -214,11 +217,13 @@ class ModelRegistry:
             "gemini 2.5 pro": cls.GEMINI_2_5_PRO,
             "gemini 3 flash": cls.GEMINI_3_FLASH,
             "gemini 3.0 flash": cls.GEMINI_3_FLASH,
+            "gemini 3.5 flash": cls.GEMINI_3_5_FLASH,
             "gemini 3 pro": cls.GEMINI_3_PRO,
             "gemini 3.0 pro": cls.GEMINI_3_PRO,
             "gemini 3.1 pro": cls.GEMINI_3_1_PRO,
             "gemini 3.1 pro preview": cls.GEMINI_3_1_PRO,
             "gemini 3.1 flash lite": cls.GEMINI_3_1_FLASH_LITE,
+            "gemini 3.1 flash lite preview": cls.GEMINI_3_1_FLASH_LITE_PREVIEW,
             # DeepSeek aliases
             "deepseek": cls.DEEPSEEK_V3_2,
             "deepseek v3": cls.DEEPSEEK_V3,

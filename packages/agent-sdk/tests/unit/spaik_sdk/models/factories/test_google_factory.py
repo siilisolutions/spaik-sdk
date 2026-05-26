@@ -70,9 +70,11 @@ class TestGoogleModelFactoryReasoning:
             ModelRegistry.GEMINI_2_5_FLASH,
             ModelRegistry.GEMINI_2_5_PRO,
             ModelRegistry.GEMINI_3_FLASH,
+            ModelRegistry.GEMINI_3_5_FLASH,
             ModelRegistry.GEMINI_3_PRO,
             ModelRegistry.GEMINI_3_1_PRO,
             ModelRegistry.GEMINI_3_1_FLASH_LITE,
+            ModelRegistry.GEMINI_3_1_FLASH_LITE_PREVIEW,
         ],
     )
     def test_reasoning_false_works_for_all_gemini_models(self, factory, model):
@@ -93,9 +95,11 @@ class TestGoogleModelFactoryReasoning:
             ModelRegistry.GEMINI_2_5_FLASH,
             ModelRegistry.GEMINI_2_5_PRO,
             ModelRegistry.GEMINI_3_FLASH,
+            ModelRegistry.GEMINI_3_5_FLASH,
             ModelRegistry.GEMINI_3_PRO,
             ModelRegistry.GEMINI_3_1_PRO,
             ModelRegistry.GEMINI_3_1_FLASH_LITE,
+            ModelRegistry.GEMINI_3_1_FLASH_LITE_PREVIEW,
         ],
     )
     def test_reasoning_true_works_for_all_gemini_models(self, factory, model):

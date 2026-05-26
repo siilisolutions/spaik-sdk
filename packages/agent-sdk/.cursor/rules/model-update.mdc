@@ -198,7 +198,7 @@ If adding a model from a brand new provider:
 
 ---
 
-## 6. MODELS IN REGISTRY (last updated 2026-04-29)
+## 6. MODELS IN REGISTRY (last updated 2026-05-26)
 
 This section is a snapshot — update it whenever you run a model update pass.
 
@@ -268,10 +268,12 @@ This section is a snapshot — update it whenever you run a model update pass.
 | `GEMINI_2_5_FLASH_LITE` | `gemini-2.5-flash-lite` | Fastest/cheapest in 2.5 family |
 | `GEMINI_2_5_FLASH` | `gemini-2.5-flash` | |
 | `GEMINI_2_5_PRO` | `gemini-2.5-pro` | |
-| `GEMINI_3_FLASH_PREVIEW` | `gemini-3-flash-preview` | |
-| `GEMINI_3_PRO_PREVIEW` | `gemini-3-pro-preview` | Shut down March 9, 2026; now points to Gemini 3.1 Pro Preview |
+| `GEMINI_3_FLASH` | `gemini-3-flash-preview` | Preview; GA successor is Gemini 3.5 Flash |
+| `GEMINI_3_5_FLASH` | `gemini-3.5-flash` | GA May 2026; $1.50/$9.00/MTok |
+| `GEMINI_3_PRO` | `gemini-3-pro-preview` | Deprecated on Google API March 9, 2026 |
 | `GEMINI_3_1_PRO` | `gemini-3.1-pro-preview` | 1M context |
-| `GEMINI_3_1_FLASH_LITE` | `gemini-3.1-flash-lite-preview` | 1M context |
+| `GEMINI_3_1_FLASH_LITE` | `gemini-3.1-flash-lite` | GA May 2026; $0.25/$1.50/MTok |
+| `GEMINI_3_1_FLASH_LITE_PREVIEW` | `gemini-3.1-flash-lite-preview` | Shut down May 25, 2026 |
 
 ---
 

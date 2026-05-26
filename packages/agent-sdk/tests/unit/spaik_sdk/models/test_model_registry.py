@@ -33,7 +33,9 @@ class TestModelRegistry:
             ("gemini 3 pro", "gemini-3-pro-preview"),
             ("gemini 3.0 pro", "gemini-3-pro-preview"),
             ("gemini 3.1 pro", "gemini-3.1-pro-preview"),
-            ("gemini 3.1 flash lite", "gemini-3.1-flash-lite-preview"),
+            ("gemini 3.5 flash", "gemini-3.5-flash"),
+            ("gemini 3.1 flash lite", "gemini-3.1-flash-lite"),
+            ("gemini 3.1 flash lite preview", "gemini-3.1-flash-lite-preview"),
         ],
     )
     def test_from_name_alias_lookup_new_models(self, alias: str, expected_model_name: str):
@@ -60,7 +62,9 @@ class TestModelRegistry:
             "gpt-5.5-pro",
             "gemini-3-flash-preview",
             "gemini-3-pro-preview",
+            "gemini-3.5-flash",
             "gemini-3.1-pro-preview",
+            "gemini-3.1-flash-lite",
             "gemini-3.1-flash-lite-preview",
         ],
     )
@@ -87,7 +91,9 @@ class TestModelRegistry:
         assert ModelRegistry.GEMINI_3_FLASH.family == LLMFamilies.GOOGLE
         assert ModelRegistry.GEMINI_3_PRO.family == LLMFamilies.GOOGLE
         assert ModelRegistry.GEMINI_3_1_PRO.family == LLMFamilies.GOOGLE
+        assert ModelRegistry.GEMINI_3_5_FLASH.family == LLMFamilies.GOOGLE
         assert ModelRegistry.GEMINI_3_1_FLASH_LITE.family == LLMFamilies.GOOGLE
+        assert ModelRegistry.GEMINI_3_1_FLASH_LITE_PREVIEW.family == LLMFamilies.GOOGLE
 
     def test_claude_opus_models_use_anthropic_family(self):
         assert ModelRegistry.CLAUDE_4_5_OPUS.family == LLMFamilies.ANTHROPIC
@@ -116,5 +122,7 @@ class TestModelRegistry:
         assert "gpt-5.5-pro" in model_names
         assert "gemini-3-flash-preview" in model_names
         assert "gemini-3-pro-preview" in model_names
+        assert "gemini-3.5-flash" in model_names
         assert "gemini-3.1-pro-preview" in model_names
+        assert "gemini-3.1-flash-lite" in model_names
         assert "gemini-3.1-flash-lite-preview" in model_names
