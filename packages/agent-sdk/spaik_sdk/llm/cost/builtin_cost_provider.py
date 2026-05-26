@@ -106,6 +106,9 @@ class BuiltinCostProvider(CostProvider):
         elif name.startswith("gemini-2.5-pro"):
             # Gemini 2.5 Pro: $1.25 input, $10.00 output per 1M tokens
             return TokenUsage(input_tokens=125, output_tokens=1000, reasoning_tokens=0, cache_creation_tokens=156, cache_read_tokens=12)
+        elif name.startswith("gemini-3.5-flash"):
+            # Gemini 3.5 Flash: $1.50 input, $9.00 output per 1M tokens
+            return TokenUsage(input_tokens=150, output_tokens=900, reasoning_tokens=0, cache_creation_tokens=188, cache_read_tokens=15)
         elif name.startswith("gemini-3.1-pro"):
             # Gemini 3.1 Pro: $2.00 input, $12.00 output per 1M tokens for prompts <= 200k tokens
             return TokenUsage(input_tokens=200, output_tokens=1200, reasoning_tokens=0, cache_creation_tokens=250, cache_read_tokens=20)

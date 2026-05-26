@@ -14,7 +14,9 @@ class TestBuiltinCostProvider:
             (ModelRegistry.GPT_5_5, 500, 3000, 50),
             (ModelRegistry.GPT_5_5_PRO, 3000, 18000, 0),
             (ModelRegistry.GEMINI_3_FLASH, 50, 300, 5),
+            (ModelRegistry.GEMINI_3_5_FLASH, 150, 900, 15),
             (ModelRegistry.GEMINI_3_1_PRO, 200, 1200, 20),
+            (ModelRegistry.GEMINI_3_1_FLASH_LITE, 25, 150, 2),
         ],
     )
     def test_latest_model_pricing(self, model, expected_input: int, expected_output: int, expected_cache_read: int):

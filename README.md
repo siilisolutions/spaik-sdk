@@ -264,6 +264,7 @@ ModelRegistry.GPT_5_5
 # Google
 ModelRegistry.GEMINI_2_5_FLASH
 ModelRegistry.GEMINI_2_5_PRO
+ModelRegistry.GEMINI_3_5_FLASH
 ModelRegistry.GEMINI_3_1_PRO
 
 # Azure AI Foundry and other provider families
