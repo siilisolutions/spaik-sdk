@@ -66,10 +66,14 @@ class BaseProvider(ABC):
             from spaik_sdk.models.providers.anthropic_provider import AnthropicProvider
 
             return AnthropicProvider()
-        elif provider_type == ProviderType.AZURE_AI_FOUNDRY:
+        elif provider_type == ProviderType.AZURE_OPENAI:
             from spaik_sdk.models.providers.azure_provider import AzureProvider
 
             return AzureProvider()
+        elif provider_type == ProviderType.AZURE_AI_FOUNDRY:
+            from spaik_sdk.models.providers.azure_foundry_provider import AzureFoundryProvider
+
+            return AzureFoundryProvider()
         elif provider_type == ProviderType.OPENAI_DIRECT:
             from spaik_sdk.models.providers.openai_provider import OpenAIProvider
 

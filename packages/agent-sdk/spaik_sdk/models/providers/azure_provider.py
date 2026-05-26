@@ -1,6 +1,5 @@
-import os
 from collections.abc import Callable
-from typing import Any, Collection, Dict, Optional, Set
+from typing import Any, Collection, Dict, Optional
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_openai import AzureChatOpenAI
@@ -8,75 +7,8 @@ from langchain_openai import AzureChatOpenAI
 from spaik_sdk.config.env import env_config
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.llm_model import LLMModel
-from spaik_sdk.models.model_registry import ModelRegistry
+from spaik_sdk.models.providers.azure_deployments import get_azure_supported_models, get_deployment_name, get_required_env
 from spaik_sdk.models.providers.base_provider import BaseProvider
-
-# Model name -> Environment variable for Azure deployment name
-AZURE_DEPLOYMENT_ENV_VARS: Dict[str, str] = {
-    # Anthropic models (Azure AI Foundry)
-    "claude-opus-4-7": "AZURE_CLAUDE_OPUS_4_7_DEPLOYMENT",
-    "claude-opus-4-6": "AZURE_CLAUDE_OPUS_4_6_DEPLOYMENT",
-    "claude-sonnet-4-6": "AZURE_CLAUDE_SONNET_4_6_DEPLOYMENT",
-    # OpenAI models
-    "gpt-4.1": "AZURE_GPT_4_1_DEPLOYMENT",
-    "gpt-4.1-mini": "AZURE_GPT_4_1_MINI_DEPLOYMENT",
-    "gpt-4.1-nano": "AZURE_GPT_4_1_NANO_DEPLOYMENT",
-    "gpt-4o": "AZURE_GPT_4O_DEPLOYMENT",
-    "gpt-4o-mini": "AZURE_GPT_4O_MINI_DEPLOYMENT",
-    "o1": "AZURE_O1_DEPLOYMENT",
-    "o1-mini": "AZURE_O1_MINI_DEPLOYMENT",
-    "o1-pro": "AZURE_O1_PRO_DEPLOYMENT",
-    "o3": "AZURE_O3_DEPLOYMENT",
-    "o3-mini": "AZURE_O3_MINI_DEPLOYMENT",
-    "o3-pro": "AZURE_O3_PRO_DEPLOYMENT",
-    "o4-mini": "AZURE_O4_MINI_DEPLOYMENT",
-    "o4-mini-2025-04-16": "AZURE_O4_MINI_2025_04_16_DEPLOYMENT",
-    "gpt-5": "AZURE_GPT_5_DEPLOYMENT",
-    "gpt-5-mini": "AZURE_GPT_5_MINI_DEPLOYMENT",
-    "gpt-5-nano": "AZURE_GPT_5_NANO_DEPLOYMENT",
-    "gpt-5-chat-latest": "AZURE_GPT_5_CHAT_DEPLOYMENT",
-    "gpt-5-codex": "AZURE_GPT_5_CODEX_DEPLOYMENT",
-    "gpt-5-pro": "AZURE_GPT_5_PRO_DEPLOYMENT",
-    "gpt-5.1": "AZURE_GPT_5_1_DEPLOYMENT",
-    "gpt-5.1-chat-latest": "AZURE_GPT_5_1_CHAT_DEPLOYMENT",
-    "gpt-5.1-codex": "AZURE_GPT_5_1_CODEX_DEPLOYMENT",
-    "gpt-5.1-codex-mini": "AZURE_GPT_5_1_CODEX_MINI_DEPLOYMENT",
-    "gpt-5.1-codex-max": "AZURE_GPT_5_1_CODEX_MAX_DEPLOYMENT",
-    "gpt-5.2": "AZURE_GPT_5_2_DEPLOYMENT",
-    "gpt-5.2-chat-latest": "AZURE_GPT_5_2_CHAT_DEPLOYMENT",
-    "gpt-5.2-codex": "AZURE_GPT_5_2_CODEX_DEPLOYMENT",
-    "gpt-5.2-pro": "AZURE_GPT_5_2_PRO_DEPLOYMENT",
-    "gpt-5.3-codex": "AZURE_GPT_5_3_CODEX_DEPLOYMENT",
-    "gpt-5.3-chat-latest": "AZURE_GPT_5_3_CHAT_DEPLOYMENT",
-    "gpt-5.4": "AZURE_GPT_5_4_DEPLOYMENT",
-    "gpt-5.4-pro": "AZURE_GPT_5_4_PRO_DEPLOYMENT",
-    "gpt-5.4-mini": "AZURE_GPT_5_4_MINI_DEPLOYMENT",
-    "gpt-5.4-nano": "AZURE_GPT_5_4_NANO_DEPLOYMENT",
-    "gpt-5.5": "AZURE_GPT_5_5_DEPLOYMENT",
-    # DeepSeek models (Azure AI Foundry)
-    "DeepSeek-V3-0324": "AZURE_DEEPSEEK_V3_DEPLOYMENT",
-    "DeepSeek-V3.1": "AZURE_DEEPSEEK_V3_1_DEPLOYMENT",
-    "DeepSeek-V3.2": "AZURE_DEEPSEEK_V3_2_DEPLOYMENT",
-    "DeepSeek-V3.2-Speciale": "AZURE_DEEPSEEK_V3_2_SPECIALE_DEPLOYMENT",
-    "DeepSeek-R1": "AZURE_DEEPSEEK_R1_DEPLOYMENT",
-    "DeepSeek-R1-0528": "AZURE_DEEPSEEK_R1_0528_DEPLOYMENT",
-    # Mistral models (Azure AI Foundry)
-    "Mistral-Large-3": "AZURE_MISTRAL_LARGE_3_DEPLOYMENT",
-    # Meta Llama models (Azure AI Foundry)
-    "Llama-4-Maverick-17B-128E-Instruct-FP8": "AZURE_LLAMA_4_MAVERICK_DEPLOYMENT",
-    "Llama-3.3-70B-Instruct": "AZURE_LLAMA_3_3_70B_DEPLOYMENT",
-    # Cohere models (Azure AI Foundry)
-    "Cohere-command-a": "AZURE_COHERE_COMMAND_A_DEPLOYMENT",
-    # xAI Grok models (Azure AI Foundry)
-    "grok-3": "AZURE_GROK_3_DEPLOYMENT",
-    "grok-3-mini": "AZURE_GROK_3_MINI_DEPLOYMENT",
-    "grok-4": "AZURE_GROK_4_DEPLOYMENT",
-    "grok-4-fast-reasoning": "AZURE_GROK_4_FAST_REASONING_DEPLOYMENT",
-    "grok-4-fast-non-reasoning": "AZURE_GROK_4_FAST_NON_REASONING_DEPLOYMENT",
-    "grok-code-fast-1": "AZURE_GROK_CODE_FAST_1_DEPLOYMENT",
-    # Moonshot AI models (Azure AI Foundry)
-    "Kimi-K2-Thinking": "AZURE_KIMI_K2_THINKING_DEPLOYMENT",
-}
 
 
 class AzureProvider(BaseProvider):
@@ -95,41 +27,22 @@ class AzureProvider(BaseProvider):
         self.api_version = api_version
 
     def get_supported_models(self) -> Collection[LLMModel]:
-        supported: Set[LLMModel] = set()
-        for model_name in AZURE_DEPLOYMENT_ENV_VARS.keys():
-            try:
-                model = ModelRegistry.from_name(model_name)
-                supported.add(model)
-            except ValueError:
-                pass
-        return supported
+        return get_azure_supported_models()
 
     def get_model_config(self, config: LLMConfig) -> Dict[str, Any]:
         if env_config.is_proxy_mode():
             return self._get_proxy_config("api_key", "azure_endpoint", "default_headers")
 
         result: Dict[str, Any] = {
-            "api_version": self.api_version or self._get_required_env("AZURE_API_VERSION"),
-            "azure_endpoint": self.azure_endpoint or self._get_required_env("AZURE_ENDPOINT"),
+            "api_version": self.api_version or get_required_env("AZURE_API_VERSION"),
+            "azure_endpoint": self.azure_endpoint or get_required_env("AZURE_ENDPOINT"),
         }
         if self.azure_ad_token_provider:
             result["azure_ad_token_provider"] = self.azure_ad_token_provider
             return result
-        result["api_key"] = self.api_key or self._get_required_env("AZURE_API_KEY")
+        result["api_key"] = self.api_key or get_required_env("AZURE_API_KEY")
         return result
 
     def create_langchain_model(self, config: LLMConfig, full_config: Dict[str, Any]) -> BaseChatModel:
-        full_config["azure_deployment"] = self._get_deployment_name(config.model.name)
+        full_config["azure_deployment"] = get_deployment_name(config.model.name)
         return AzureChatOpenAI(**full_config)
-
-    def _get_deployment_name(self, model_name: str) -> str:
-        env_var = AZURE_DEPLOYMENT_ENV_VARS.get(model_name)
-        if not env_var:
-            raise ValueError(f"Model '{model_name}' not supported on Azure. Add it to AZURE_DEPLOYMENT_ENV_VARS.")
-        return os.environ.get(env_var, model_name)
-
-    def _get_required_env(self, key: str) -> str:
-        value = os.environ.get(key)
-        if not value:
-            raise ValueError(f"Environment variable {key} is required but not set")
-        return value
