@@ -32,8 +32,7 @@ class GoogleModelFactory(BaseModelFactory):
                 model_config["thinking_level"] = "minimal"
         else:
             model_config["thinking_budget"] = config.reasoning_budget_tokens if config.reasoning else 0
-
-        model_config["include_thoughts"] = config.reasoning
+            model_config["include_thoughts"] = config.reasoning
 
         # Handle streaming - Google models use disable_streaming instead of streaming
         if not config.streaming:

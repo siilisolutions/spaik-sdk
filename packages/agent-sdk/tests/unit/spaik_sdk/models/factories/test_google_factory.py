@@ -119,7 +119,7 @@ class TestGoogleModelFactoryReasoning:
 
         assert model_config["thinking_level"] == thinking_level
         assert "thinking_budget" not in model_config
-        assert model_config["include_thoughts"] is reasoning
+        assert "include_thoughts" not in model_config
 
     @pytest.mark.parametrize(
         "model",
@@ -133,7 +133,7 @@ class TestGoogleModelFactoryReasoning:
 
         assert model_config["thinking_level"] == "low"
         assert "thinking_budget" not in model_config
-        assert model_config["include_thoughts"] is False
+        assert "include_thoughts" not in model_config
 
     def test_config_includes_model_name(self, factory, gemini_model):
         """Model config always includes the model name."""
