@@ -1,3 +1,5 @@
+from datetime import date
+
 from spaik_sdk.llm.consumption.token_usage import TokenUsage
 from spaik_sdk.llm.cost.cost_provider import CostProvider
 from spaik_sdk.models.llm_model import LLMModel
@@ -19,8 +21,9 @@ class BuiltinCostProvider(CostProvider):
                 cache_read_tokens=30,  # 10% of input cost for cache reads
             )
         elif name.startswith("claude-sonnet-5"):
-            # Claude Sonnet 5 introductory pricing through August 31, 2026: $2.00 input, $10.00 output per 1M tokens
-            return TokenUsage(input_tokens=200, output_tokens=1000, reasoning_tokens=0, cache_creation_tokens=250, cache_read_tokens=20)
+            if date.today() <= date(2026, 8, 31):
+                return TokenUsage(input_tokens=200, output_tokens=1000, reasoning_tokens=0, cache_creation_tokens=250, cache_read_tokens=20)
+            return TokenUsage(input_tokens=300, output_tokens=1500, reasoning_tokens=0, cache_creation_tokens=375, cache_read_tokens=30)
         elif name.startswith("claude-sonnet-4") or name.startswith("claude-4-sonnet"):
             # Claude 4 Sonnet (all versions): $3.00 input, $15.00 output per 1M tokens
             return TokenUsage(input_tokens=300, output_tokens=1500, reasoning_tokens=0, cache_creation_tokens=375, cache_read_tokens=30)
@@ -62,11 +65,11 @@ class BuiltinCostProvider(CostProvider):
 
         # OpenAI models — current
         elif name.startswith("gpt-5.6-luna"):
-            # GPT-5.6 Luna: $0.20 input, $1.20 output per 1M tokens
-            return TokenUsage(input_tokens=20, output_tokens=120, reasoning_tokens=120, cache_creation_tokens=25, cache_read_tokens=2)
+            # GPT-5.6 Luna: $1.00 input, $6.00 output per 1M tokens
+            return TokenUsage(input_tokens=100, output_tokens=600, reasoning_tokens=600, cache_creation_tokens=125, cache_read_tokens=10)
         elif name.startswith("gpt-5.6-terra"):
-            # GPT-5.6 Terra: $2.00 input, $12.00 output per 1M tokens
-            return TokenUsage(input_tokens=200, output_tokens=1200, reasoning_tokens=1200, cache_creation_tokens=250, cache_read_tokens=20)
+            # GPT-5.6 Terra: $2.50 input, $15.00 output per 1M tokens
+            return TokenUsage(input_tokens=250, output_tokens=1500, reasoning_tokens=1500, cache_creation_tokens=312, cache_read_tokens=25)
         elif name.startswith("gpt-5.6"):
             # GPT-5.6 Sol: $5.00 input, $30.00 output per 1M tokens
             return TokenUsage(input_tokens=500, output_tokens=3000, reasoning_tokens=3000, cache_creation_tokens=625, cache_read_tokens=50)
