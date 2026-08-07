@@ -114,16 +114,20 @@ from spaik_sdk.models.model_registry import ModelRegistry
 ModelRegistry.CLAUDE_4_SONNET
 ModelRegistry.CLAUDE_4_6_SONNET
 ModelRegistry.CLAUDE_4_7_OPUS
+ModelRegistry.CLAUDE_OPUS_5
+ModelRegistry.CLAUDE_SONNET_5
 ModelRegistry.GPT_4_1
 ModelRegistry.GPT_5_5
+ModelRegistry.GPT_5_6_SOL
 ModelRegistry.GEMINI_2_5_FLASH
+ModelRegistry.GEMINI_3_6_FLASH
 ModelRegistry.DEEPSEEK_V3_2
 ModelRegistry.GROK_4
 
 # By alias
-ModelRegistry.from_name("sonnet")      # CLAUDE_4_6_SONNET
+ModelRegistry.from_name("sonnet")      # CLAUDE_SONNET_5
 ModelRegistry.from_name("gpt 4.1")     # GPT_4_1
-ModelRegistry.from_name("opus")        # CLAUDE_4_7_OPUS
+ModelRegistry.from_name("opus")        # CLAUDE_OPUS_5
 ```
 
 ## React Hooks (packages/agent-sdk-hooks/)

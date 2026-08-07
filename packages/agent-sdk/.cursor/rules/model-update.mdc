@@ -198,7 +198,7 @@ If adding a model from a brand new provider:
 
 ---
 
-## 6. MODELS IN REGISTRY (last updated 2026-05-26)
+## 6. MODELS IN REGISTRY (last updated 2026-08-07)
 
 This section is a snapshot — update it whenever you run a model update pass.
 
@@ -217,6 +217,10 @@ This section is a snapshot — update it whenever you run a model update pass.
 | `CLAUDE_4_6_OPUS` | `claude-opus-4-6` | Yes | $5/$25/MTok. 128K max output. |
 | `CLAUDE_4_6_SONNET` | `claude-sonnet-4-6` | Yes | $3/$15/MTok. 64K max output. |
 | `CLAUDE_4_7_OPUS` | `claude-opus-4-7` | No extended thinking | $5/$25/MTok. Requires `top_p=0.99`; no `thinking` or `temperature`. |
+| `CLAUDE_4_8_OPUS` | `claude-opus-4-8` | Adaptive thinking | $5/$25/MTok. Uses `thinking.type: "adaptive"`. |
+| `CLAUDE_FABLE_5` | `claude-fable-5` | Adaptive thinking (always on) | $10/$50/MTok. Cannot disable thinking. |
+| `CLAUDE_OPUS_5` | `claude-opus-5` | Adaptive thinking | $5/$25/MTok. Default alias for `opus`. |
+| `CLAUDE_SONNET_5` | `claude-sonnet-5` | Adaptive thinking | $2/$10/MTok intro pricing through Aug 31, 2026. Default alias for `sonnet`. |
 
 **Naming note**: 4.6+ Opus/Sonnet models dropped the date suffix — e.g. `claude-opus-4-7` is both the API ID and the alias.
 
@@ -260,6 +264,9 @@ This section is a snapshot — update it whenever you run a model update pass.
 | `GPT_5_4_NANO` | `gpt-5.4-nano` | Yes |
 | `GPT_5_5` | `gpt-5.5` | Yes |
 | `GPT_5_5_PRO` | `gpt-5.5-pro` | Yes |
+| `GPT_5_6_SOL` | `gpt-5.6-sol` | Yes (`gpt-5.6` alias) |
+| `GPT_5_6_TERRA` | `gpt-5.6-terra` | Yes |
+| `GPT_5_6_LUNA` | `gpt-5.6-luna` | Yes |
 
 ### Google Gemini
 
@@ -270,6 +277,8 @@ This section is a snapshot — update it whenever you run a model update pass.
 | `GEMINI_2_5_PRO` | `gemini-2.5-pro` | |
 | `GEMINI_3_FLASH` | `gemini-3-flash-preview` | Preview; GA successor is Gemini 3.5 Flash |
 | `GEMINI_3_5_FLASH` | `gemini-3.5-flash` | GA May 2026; $1.50/$9.00/MTok |
+| `GEMINI_3_5_FLASH_LITE` | `gemini-3.5-flash-lite` | GA July 2026; $0.30/$2.50/MTok |
+| `GEMINI_3_6_FLASH` | `gemini-3.6-flash` | GA July 2026; $1.50/$7.50/MTok. Default alias for `gemini flash`. |
 | `GEMINI_3_PRO` | `gemini-3-pro-preview` | Deprecated on Google API March 9, 2026 |
 | `GEMINI_3_1_PRO` | `gemini-3.1-pro-preview` | 1M context |
 | `GEMINI_3_1_FLASH_LITE` | `gemini-3.1-flash-lite` | GA May 2026; $0.25/$1.50/MTok |
