@@ -65,9 +65,10 @@ class LLMConfig:
 ### How reasoning is applied per provider
 
 **Anthropic:**
-- When `reasoning=True` and not `structured_response`: sets `thinking={"type":"enabled","budget_tokens":N}`
-- When reasoning is off: sets `temperature` instead
-- No `reasoning_effort` — use `reasoning_budget_tokens`
+- `CLAUDE_4_8_OPUS`, `CLAUDE_OPUS_5`, and `CLAUDE_SONNET_5` use adaptive thinking: when `reasoning=True` and not `structured_response`, set `thinking={"type":"adaptive"}` and `output_config={"effort": config.reasoning_effort}`.
+- `CLAUDE_FABLE_5` always uses adaptive thinking and rejects `reasoning=False`.
+- `CLAUDE_4_7_OPUS` sends no thinking configuration; it requires `top_p=0.99`.
+- Other reasoning models set `thinking={"type":"enabled","budget_tokens":N}`. When reasoning is off, they set `temperature` instead.
 
 **OpenAI:**
 - Reasoning models use `use_responses_api=True`

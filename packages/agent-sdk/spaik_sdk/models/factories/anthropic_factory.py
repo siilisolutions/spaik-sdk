@@ -6,7 +6,7 @@ from spaik_sdk.models.llm_families import LLMFamilies
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.model_registry import ModelRegistry
 
-ADAPTIVE_THINKING_MODELS = frozenset(
+ADAPTIVE_THINKING_MODELS: frozenset[str] = frozenset(
     {
         "claude-opus-4-8",
         "claude-fable-5",
@@ -15,7 +15,7 @@ ADAPTIVE_THINKING_MODELS = frozenset(
     }
 )
 
-THINKING_CANNOT_DISABLE_MODELS = frozenset({"claude-fable-5"})
+THINKING_CANNOT_DISABLE_MODELS: frozenset[str] = frozenset({"claude-fable-5"})
 
 
 class AnthropicModelFactory(BaseModelFactory):
@@ -40,9 +40,14 @@ class AnthropicModelFactory(BaseModelFactory):
             if not config.reasoning:
                 if config.model.name in THINKING_CANNOT_DISABLE_MODELS:
                     raise ValueError(f"Model {config.model.name} does not support disabling thinking")
+                if config.model == ModelRegistry.CLAUDE_OPUS_5 and config.reasoning_effort in {"xhigh", "max"}:
+                    raise ValueError(
+                        f"Model {config.model.name} does not support disabling thinking with effort {config.reasoning_effort}"
+                    )
                 model_config["thinking"] = {"type": "disabled"}
             else:
                 model_config["thinking"] = {"type": "adaptive"}
+                model_config["output_config"] = {"effort": config.reasoning_effort}
             return model_config
 
         allow_reasoning = config.reasoning and config.model.reasoning and not config.structured_response
