@@ -15,8 +15,6 @@ ADAPTIVE_THINKING_MODELS: frozenset[str] = frozenset(
     }
 )
 
-THINKING_CANNOT_DISABLE_MODELS: frozenset[str] = frozenset({"claude-fable-5"})
-
 
 class AnthropicModelFactory(BaseModelFactory):
     MODELS = ModelRegistry.get_by_family(LLMFamilies.ANTHROPIC)
@@ -38,12 +36,6 @@ class AnthropicModelFactory(BaseModelFactory):
             if config.structured_response:
                 return model_config
             if not config.reasoning:
-                if config.model.name in THINKING_CANNOT_DISABLE_MODELS:
-                    raise ValueError(f"Model {config.model.name} does not support disabling thinking")
-                if config.model == ModelRegistry.CLAUDE_OPUS_5 and config.reasoning_effort in {"xhigh", "max"}:
-                    raise ValueError(
-                        f"Model {config.model.name} does not support disabling thinking with effort {config.reasoning_effort}"
-                    )
                 model_config["thinking"] = {"type": "disabled"}
             else:
                 model_config["thinking"] = {"type": "adaptive"}

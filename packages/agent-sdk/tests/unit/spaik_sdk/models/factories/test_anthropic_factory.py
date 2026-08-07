@@ -41,15 +41,11 @@ class TestAnthropicModelFactory:
         assert model_config["thinking"] == {"type": "disabled"}
         assert "temperature" not in model_config
 
-    def test_fable_5_rejects_disabled_reasoning(self):
-        config = LLMConfig(model=ModelRegistry.CLAUDE_FABLE_5, reasoning=False)
-
-        with pytest.raises(ValueError, match="does not support disabling thinking"):
-            AnthropicModelFactory().get_model_specific_config(config)
-
     @pytest.mark.parametrize("reasoning_effort", ["xhigh", "max"])
-    def test_claude_opus_5_rejects_disabling_thinking_at_highest_efforts(self, reasoning_effort: str):
+    def test_claude_opus_5_omits_effort_when_thinking_disabled(self, reasoning_effort: str):
         config = LLMConfig(model=ModelRegistry.CLAUDE_OPUS_5, reasoning=False, reasoning_effort=reasoning_effort)
 
-        with pytest.raises(ValueError, match="does not support disabling thinking"):
-            AnthropicModelFactory().get_model_specific_config(config)
+        model_config = AnthropicModelFactory().get_model_specific_config(config)
+
+        assert model_config["thinking"] == {"type": "disabled"}
+        assert "output_config" not in model_config
