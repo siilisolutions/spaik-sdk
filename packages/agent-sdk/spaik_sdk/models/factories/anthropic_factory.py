@@ -6,6 +6,15 @@ from spaik_sdk.models.llm_families import LLMFamilies
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.model_registry import ModelRegistry
 
+ADAPTIVE_THINKING_MODELS: frozenset[str] = frozenset(
+    {
+        "claude-opus-4-8",
+        "claude-fable-5",
+        "claude-opus-5",
+        "claude-sonnet-5",
+    }
+)
+
 
 class AnthropicModelFactory(BaseModelFactory):
     MODELS = ModelRegistry.get_by_family(LLMFamilies.ANTHROPIC)
@@ -17,14 +26,23 @@ class AnthropicModelFactory(BaseModelFactory):
         return {"type": "ephemeral"}
 
     def get_model_specific_config(self, config: LLMConfig) -> Dict[str, Any]:
-        allow_reasoning = config.reasoning and config.model.reasoning and not config.structured_response
         model_config: Dict[str, Any] = {
             "model_name": config.model.name,
             "streaming": config.streaming,
             "max_tokens": config.max_output_tokens if config.max_output_tokens is not None else 8192,
         }
 
-        # Handle thinking mode via model_kwargs for LangChain compatibility
+        if config.model.name in ADAPTIVE_THINKING_MODELS:
+            if config.structured_response:
+                return model_config
+            if not config.reasoning:
+                model_config["thinking"] = {"type": "disabled"}
+            else:
+                model_config["thinking"] = {"type": "adaptive"}
+                model_config["output_config"] = {"effort": config.reasoning_effort}
+            return model_config
+
+        allow_reasoning = config.reasoning and config.model.reasoning and not config.structured_response
         if allow_reasoning:
             model_config["thinking"] = {"type": "enabled", "budget_tokens": config.reasoning_budget_tokens}
         elif config.model == ModelRegistry.CLAUDE_4_7_OPUS:

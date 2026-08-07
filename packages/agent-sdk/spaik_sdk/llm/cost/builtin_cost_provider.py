@@ -1,3 +1,5 @@
+from datetime import date
+
 from spaik_sdk.llm.consumption.token_usage import TokenUsage
 from spaik_sdk.llm.cost.cost_provider import CostProvider
 from spaik_sdk.models.llm_model import LLMModel
@@ -18,10 +20,23 @@ class BuiltinCostProvider(CostProvider):
                 cache_creation_tokens=375,  # 25% markup on input for cache creation
                 cache_read_tokens=30,  # 10% of input cost for cache reads
             )
+        elif name.startswith("claude-sonnet-5"):
+            if date.today() <= date(2026, 8, 31):
+                return TokenUsage(input_tokens=200, output_tokens=1000, reasoning_tokens=0, cache_creation_tokens=250, cache_read_tokens=20)
+            return TokenUsage(input_tokens=300, output_tokens=1500, reasoning_tokens=0, cache_creation_tokens=375, cache_read_tokens=30)
         elif name.startswith("claude-sonnet-4") or name.startswith("claude-4-sonnet"):
             # Claude 4 Sonnet (all versions): $3.00 input, $15.00 output per 1M tokens
             return TokenUsage(input_tokens=300, output_tokens=1500, reasoning_tokens=0, cache_creation_tokens=375, cache_read_tokens=30)
-        elif name.startswith("claude-opus-4-5") or name.startswith("claude-opus-4-6") or name.startswith("claude-opus-4-7"):
+        elif name.startswith("claude-fable-5"):
+            # Claude Fable 5: $10.00 input, $50.00 output per 1M tokens
+            return TokenUsage(input_tokens=1000, output_tokens=5000, reasoning_tokens=0, cache_creation_tokens=1250, cache_read_tokens=100)
+        elif (
+            name.startswith("claude-opus-4-5")
+            or name.startswith("claude-opus-4-6")
+            or name.startswith("claude-opus-4-7")
+            or name.startswith("claude-opus-4-8")
+            or name.startswith("claude-opus-5")
+        ):
             # Claude Opus 4.5 / 4.6 / 4.7: $5.00 input, $25.00 output per 1M tokens
             return TokenUsage(input_tokens=500, output_tokens=2500, reasoning_tokens=0, cache_creation_tokens=625, cache_read_tokens=50)
         elif name.startswith("claude-opus-4") or name.startswith("claude-4-opus"):
@@ -49,6 +64,15 @@ class BuiltinCostProvider(CostProvider):
             )
 
         # OpenAI models — current
+        elif name.startswith("gpt-5.6-luna"):
+            # GPT-5.6 Luna: $1.00 input, $6.00 output per 1M tokens
+            return TokenUsage(input_tokens=100, output_tokens=600, reasoning_tokens=600, cache_creation_tokens=125, cache_read_tokens=10)
+        elif name.startswith("gpt-5.6-terra"):
+            # GPT-5.6 Terra: $2.50 input, $15.00 output per 1M tokens
+            return TokenUsage(input_tokens=250, output_tokens=1500, reasoning_tokens=1500, cache_creation_tokens=312, cache_read_tokens=25)
+        elif name.startswith("gpt-5.6"):
+            # GPT-5.6 Sol: $5.00 input, $30.00 output per 1M tokens
+            return TokenUsage(input_tokens=500, output_tokens=3000, reasoning_tokens=3000, cache_creation_tokens=625, cache_read_tokens=50)
         elif name.startswith("gpt-5.5-pro"):
             # GPT-5.5 Pro: $30.00 input, $180.00 output per 1M tokens
             return TokenUsage(input_tokens=3000, output_tokens=18000, reasoning_tokens=18000, cache_creation_tokens=0, cache_read_tokens=0)
@@ -106,6 +130,12 @@ class BuiltinCostProvider(CostProvider):
         elif name.startswith("gemini-2.5-pro"):
             # Gemini 2.5 Pro: $1.25 input, $10.00 output per 1M tokens
             return TokenUsage(input_tokens=125, output_tokens=1000, reasoning_tokens=0, cache_creation_tokens=156, cache_read_tokens=12)
+        elif name.startswith("gemini-3.6-flash"):
+            # Gemini 3.6 Flash: $1.50 input, $7.50 output per 1M tokens
+            return TokenUsage(input_tokens=150, output_tokens=750, reasoning_tokens=0, cache_creation_tokens=188, cache_read_tokens=15)
+        elif name.startswith("gemini-3.5-flash-lite"):
+            # Gemini 3.5 Flash-Lite: $0.30 input, $2.50 output per 1M tokens
+            return TokenUsage(input_tokens=30, output_tokens=250, reasoning_tokens=0, cache_creation_tokens=38, cache_read_tokens=3)
         elif name.startswith("gemini-3.5-flash"):
             # Gemini 3.5 Flash: $1.50 input, $9.00 output per 1M tokens
             return TokenUsage(input_tokens=150, output_tokens=900, reasoning_tokens=0, cache_creation_tokens=188, cache_read_tokens=15)

@@ -69,16 +69,10 @@ class TestGoogleModelFactoryReasoning:
         [
             ModelRegistry.GEMINI_2_5_FLASH,
             ModelRegistry.GEMINI_2_5_PRO,
-            ModelRegistry.GEMINI_3_FLASH,
-            ModelRegistry.GEMINI_3_5_FLASH,
-            ModelRegistry.GEMINI_3_PRO,
-            ModelRegistry.GEMINI_3_1_PRO,
-            ModelRegistry.GEMINI_3_1_FLASH_LITE,
-            ModelRegistry.GEMINI_3_1_FLASH_LITE_PREVIEW,
         ],
     )
-    def test_reasoning_false_works_for_all_gemini_models(self, factory, model):
-        """When reasoning is False, all Gemini models get thinking_budget=0."""
+    def test_reasoning_false_disables_thinking_for_gemini_2_5_models(self, factory, model):
+        """When reasoning is False, Gemini 2.5 models get thinking_budget=0."""
         config = LLMConfig(
             model=model,
             reasoning=False,
@@ -94,16 +88,10 @@ class TestGoogleModelFactoryReasoning:
         [
             ModelRegistry.GEMINI_2_5_FLASH,
             ModelRegistry.GEMINI_2_5_PRO,
-            ModelRegistry.GEMINI_3_FLASH,
-            ModelRegistry.GEMINI_3_5_FLASH,
-            ModelRegistry.GEMINI_3_PRO,
-            ModelRegistry.GEMINI_3_1_PRO,
-            ModelRegistry.GEMINI_3_1_FLASH_LITE,
-            ModelRegistry.GEMINI_3_1_FLASH_LITE_PREVIEW,
         ],
     )
-    def test_reasoning_true_works_for_all_gemini_models(self, factory, model):
-        """When reasoning is True, all Gemini models get the configured budget."""
+    def test_reasoning_true_sets_budget_for_gemini_2_5_models(self, factory, model):
+        """When reasoning is True, Gemini 2.5 models get the configured budget."""
         budget = 4096
         config = LLMConfig(
             model=model,
@@ -115,6 +103,37 @@ class TestGoogleModelFactoryReasoning:
 
         assert model_config["thinking_budget"] == budget
         assert model_config["include_thoughts"] is True
+
+    @pytest.mark.parametrize(
+        "model",
+        [
+            ModelRegistry.GEMINI_3_5_FLASH_LITE,
+            ModelRegistry.GEMINI_3_6_FLASH,
+        ],
+    )
+    @pytest.mark.parametrize("reasoning, thinking_level", [(True, "high"), (False, "minimal")])
+    def test_gemini_3_models_use_thinking_level(self, factory, model, reasoning, thinking_level):
+        config = LLMConfig(model=model, reasoning=reasoning)
+
+        model_config = factory.get_model_specific_config(config)
+
+        assert model_config["thinking_level"] == thinking_level
+        assert "thinking_budget" not in model_config
+        assert "include_thoughts" not in model_config
+
+    @pytest.mark.parametrize(
+        "model",
+        [
+            ModelRegistry.GEMINI_3_PRO,
+            ModelRegistry.GEMINI_3_1_PRO,
+        ],
+    )
+    def test_gemini_3_models_without_minimal_thinking_use_low_level(self, factory, model):
+        model_config = factory.get_model_specific_config(LLMConfig(model=model, reasoning=False))
+
+        assert model_config["thinking_level"] == "low"
+        assert "thinking_budget" not in model_config
+        assert "include_thoughts" not in model_config
 
     def test_config_includes_model_name(self, factory, gemini_model):
         """Model config always includes the model name."""

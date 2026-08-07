@@ -12,9 +12,17 @@ class TestModelRegistry:
             ("opus 4.5", "claude-opus-4-5-20251101"),
             ("claude opus 4.5", "claude-opus-4-5-20251101"),
             ("claude 4.5 opus", "claude-opus-4-5-20251101"),
-            ("opus", "claude-opus-4-7"),
+            ("opus", "claude-opus-5"),
             ("opus 4.7", "claude-opus-4-7"),
+            ("opus 4.8", "claude-opus-4-8"),
+            ("opus 5", "claude-opus-5"),
+            ("sonnet", "claude-sonnet-5"),
+            ("sonnet 5", "claude-sonnet-5"),
             ("claude opus 4.7", "claude-opus-4-7"),
+            ("claude opus 4.8", "claude-opus-4-8"),
+            ("claude opus 5", "claude-opus-5"),
+            ("claude sonnet 5", "claude-sonnet-5"),
+            ("fable 5", "claude-fable-5"),
             ("gpt 5.1", "gpt-5.1"),
             ("gpt 5.1 codex", "gpt-5.1-codex"),
             ("gpt 5.1 codex mini", "gpt-5.1-codex-mini"),
@@ -28,12 +36,19 @@ class TestModelRegistry:
             ("gpt 5.4 nano", "gpt-5.4-nano"),
             ("gpt 5.5", "gpt-5.5"),
             ("gpt 5.5 pro", "gpt-5.5-pro"),
+            ("gpt 5.6", "gpt-5.6-sol"),
+            ("gpt 5.6 sol", "gpt-5.6-sol"),
+            ("gpt 5.6 terra", "gpt-5.6-terra"),
+            ("gpt 5.6 luna", "gpt-5.6-luna"),
             ("gemini 3 flash", "gemini-3-flash-preview"),
             ("gemini 3.0 flash", "gemini-3-flash-preview"),
             ("gemini 3 pro", "gemini-3-pro-preview"),
             ("gemini 3.0 pro", "gemini-3-pro-preview"),
             ("gemini 3.1 pro", "gemini-3.1-pro-preview"),
             ("gemini 3.5 flash", "gemini-3.5-flash"),
+            ("gemini 3.5 flash lite", "gemini-3.5-flash-lite"),
+            ("gemini 3.6 flash", "gemini-3.6-flash"),
+            ("gemini flash", "gemini-3.6-flash"),
             ("gemini 3.1 flash lite", "gemini-3.1-flash-lite"),
             ("gemini 3.1 flash lite preview", "gemini-3.1-flash-lite-preview"),
         ],
@@ -47,6 +62,10 @@ class TestModelRegistry:
         [
             "claude-opus-4-5-20251101",
             "claude-opus-4-7",
+            "claude-opus-4-8",
+            "claude-opus-5",
+            "claude-sonnet-5",
+            "claude-fable-5",
             "gpt-5.1",
             "gpt-5.1-codex",
             "gpt-5.1-codex-mini",
@@ -60,9 +79,14 @@ class TestModelRegistry:
             "gpt-5.4-nano",
             "gpt-5.5",
             "gpt-5.5-pro",
+            "gpt-5.6-sol",
+            "gpt-5.6-terra",
+            "gpt-5.6-luna",
             "gemini-3-flash-preview",
             "gemini-3-pro-preview",
             "gemini-3.5-flash",
+            "gemini-3.5-flash-lite",
+            "gemini-3.6-flash",
             "gemini-3.1-pro-preview",
             "gemini-3.1-flash-lite",
             "gemini-3.1-flash-lite-preview",
@@ -113,6 +137,10 @@ class TestModelRegistry:
         model_names = {m.name for m in all_models}
         assert "claude-opus-4-5-20251101" in model_names
         assert "claude-opus-4-7" in model_names
+        assert "claude-opus-4-8" in model_names
+        assert "claude-opus-5" in model_names
+        assert "claude-sonnet-5" in model_names
+        assert "claude-fable-5" in model_names
         assert "gpt-5.1" in model_names
         assert "gpt-5.2" in model_names
         assert "gpt-5.4" in model_names
@@ -120,9 +148,14 @@ class TestModelRegistry:
         assert "gpt-5.4-nano" in model_names
         assert "gpt-5.5" in model_names
         assert "gpt-5.5-pro" in model_names
+        assert "gpt-5.6-sol" in model_names
+        assert "gpt-5.6-terra" in model_names
+        assert "gpt-5.6-luna" in model_names
         assert "gemini-3-flash-preview" in model_names
         assert "gemini-3-pro-preview" in model_names
         assert "gemini-3.5-flash" in model_names
+        assert "gemini-3.5-flash-lite" in model_names
+        assert "gemini-3.6-flash" in model_names
         assert "gemini-3.1-pro-preview" in model_names
         assert "gemini-3.1-flash-lite" in model_names
         assert "gemini-3.1-flash-lite-preview" in model_names

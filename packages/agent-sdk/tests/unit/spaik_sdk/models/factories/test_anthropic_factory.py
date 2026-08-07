@@ -23,3 +23,29 @@ class TestAnthropicModelFactory:
         assert model_config["top_p"] == 0.99
         assert "thinking" not in model_config
         assert "temperature" not in model_config
+
+    def test_adaptive_thinking_model_forwards_reasoning_effort(self):
+        config = LLMConfig(model=ModelRegistry.CLAUDE_OPUS_5, reasoning=True, reasoning_effort="high")
+
+        model_config = AnthropicModelFactory().get_model_specific_config(config)
+
+        assert model_config["thinking"] == {"type": "adaptive"}
+        assert model_config["output_config"] == {"effort": "high"}
+        assert "temperature" not in model_config
+
+    def test_adaptive_thinking_model_uses_disabled_when_reasoning_disabled(self):
+        config = LLMConfig(model=ModelRegistry.CLAUDE_SONNET_5, reasoning=False)
+
+        model_config = AnthropicModelFactory().get_model_specific_config(config)
+
+        assert model_config["thinking"] == {"type": "disabled"}
+        assert "temperature" not in model_config
+
+    @pytest.mark.parametrize("reasoning_effort", ["xhigh", "max"])
+    def test_claude_opus_5_omits_effort_when_thinking_disabled(self, reasoning_effort: str):
+        config = LLMConfig(model=ModelRegistry.CLAUDE_OPUS_5, reasoning=False, reasoning_effort=reasoning_effort)
+
+        model_config = AnthropicModelFactory().get_model_specific_config(config)
+
+        assert model_config["thinking"] == {"type": "disabled"}
+        assert "output_config" not in model_config
