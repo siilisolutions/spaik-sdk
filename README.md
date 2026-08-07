@@ -280,8 +280,10 @@ ModelRegistry.GROK_4
 ModelRegistry.KIMI_K2_THINKING
 
 # Aliases
-ModelRegistry.from_name("sonnet")  # -> CLAUDE_SONNET_5
-ModelRegistry.from_name("opus")    # -> CLAUDE_OPUS_5
+ModelRegistry.from_name("sonnet")        # CLAUDE_SONNET_5
+ModelRegistry.from_name("gpt 4.1")       # GPT_4_1
+ModelRegistry.from_name("opus")          # CLAUDE_OPUS_5
+ModelRegistry.from_name("gemini flash")  # GEMINI_3_6_FLASH
 ```
 
 ## Documentation

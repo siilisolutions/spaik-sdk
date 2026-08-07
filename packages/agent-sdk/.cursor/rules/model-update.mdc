@@ -184,6 +184,8 @@ When model defaults, recommended aliases, or visible registry examples change, u
 
 Do this as part of the same change as the model registry update, not as a later cleanup.
 
+**Public example synchronization criterion**: the `ModelRegistry` example blocks in all three documents must use the same canonical provider lists and alias examples. Verify that each named registry constant exists in `model_registry.py` and include the default aliases for `"sonnet"`, `"gpt 4.1"`, `"opus"`, and `"gemini flash"` with their current targets.
+
 ### 5.6 (If new provider) Add new factory + provider
 
 If adding a model from a brand new provider:
