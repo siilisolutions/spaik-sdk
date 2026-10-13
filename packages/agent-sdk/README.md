@@ -1,3 +1,5 @@
+> **1.0 migration in progress:** this branch uses AG-UI messages/events and provider-reported costs. Legacy block examples below are being migrated; see the repository's `docs/MIGRATING_TO_1_0.md` for the current contract. Stable publication is gated by `docs/SPAIk_1_0_PLAN.md`.
+
 # Spaik SDK
 
 Python SDK for building AI agents with multi-LLM support, streaming, and production infrastructure.

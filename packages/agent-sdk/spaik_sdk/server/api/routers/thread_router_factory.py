@@ -1,285 +1,197 @@
-import json
-import time
-import uuid
+import asyncio
+import copy
 from collections.abc import Callable
-from typing import Awaitable, List, Optional
+from dataclasses import asdict
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from ag_ui.core import MessagesSnapshotEvent, RunAgentInput, RunFinishedEvent, UserMessage
+from ag_ui.encoder import EventEncoder
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
-from spaik_sdk.server.api.streaming.streaming_negotiator import StreamingNegotiator
-from spaik_sdk.server.authorization.base_authorizer import BaseAuthorizer
-from spaik_sdk.server.authorization.base_user import BaseUser
+from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk.attachments.file_storage_provider import get_file_storage
 from spaik_sdk.server.authorization.dummy_authorizer import DummyAuthorizer
-from spaik_sdk.server.job_processor.thread_job_processor import ThreadJobProcessor
-from spaik_sdk.server.pubsub.cancellation_publisher import CancellationPublisher
-from spaik_sdk.server.pubsub.cancellation_subscriber import CancellationSubscriber
-from spaik_sdk.server.queue.agent_job_queue import AgentJob, AgentJobQueue, JobType
-from spaik_sdk.server.services.thread_converters import ThreadConverters
-from spaik_sdk.server.services.thread_models import (
-    CreateMessageRequest,
-    CreateThreadRequest,
-    ListThreadsResponse,
-    MessageResponse,
-    ThreadResponse,
-)
+from spaik_sdk.server.services.thread_models import CreateThreadRequest
 from spaik_sdk.server.services.thread_service import ThreadService
 from spaik_sdk.server.storage.thread_filter import ThreadFilter
-from spaik_sdk.thread.models import ErrorEvent, MessageAddedEvent, MessageBlock, MessageBlockType, ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
-from spaik_sdk.utils.init_logger import init_logger
-
-logger = init_logger(__name__)
+from spaik_sdk.tracing.agent_trace import AgentTrace
 
 
 class ThreadRouterFactory:
+    """Single-process run coordination. Deploy one worker per repository.
+
+    Distributed coordination belongs to an application integration, not this local runner.
+    """
+
     def __init__(
         self,
         service: ThreadService,
-        authorizer: Optional[BaseAuthorizer[BaseUser]] = None,
-        streaming_negotiator: Optional[StreamingNegotiator] = None,
-        job_queue: Optional[AgentJobQueue] = None,
-        thread_job_processor: Optional[ThreadJobProcessor] = None,
-        cancellation_subscriber_provider: Optional[Callable[[str], Awaitable[CancellationSubscriber]]] = None,
-        cancellation_publisher: Optional[CancellationPublisher] = None,
+        agent: BaseAgent | None = None,
+        authorizer=None,
+        agent_factory: Callable[[ThreadContainer], BaseAgent] | None = None,
     ):
-        self.authorizer = authorizer or DummyAuthorizer()
         self.service = service
-        self.streaming_negotiator = streaming_negotiator
-        self.job_queue = job_queue
-        self.thread_job_processor = thread_job_processor
-        self.cancellation_subscriber_provider = cancellation_subscriber_provider
-        self.cancellation_publisher = cancellation_publisher
+        self.agent = agent
+        self.agent_factory = agent_factory
+        self.authorizer = authorizer or DummyAuthorizer()
+        self.active: dict[str, asyncio.Task | None] = {}
 
     def create_router(self, prefix: str = "/threads") -> APIRouter:
         router = APIRouter(prefix=prefix, tags=["threads"])
 
-        async def get_current_user(request: Request) -> BaseUser:
-            user = await self.authorizer.get_user(request)
-            if not user:
-                raise HTTPException(status_code=401, detail="Unauthorized")
-            return user
+        async def user(request: Request):
+            current = await self.authorizer.get_user(request)
+            if current is None:
+                raise HTTPException(401, "Unauthorized")
+            return current
 
-        @router.post("", response_model=ThreadResponse)
-        async def create_thread(request: CreateThreadRequest, user: BaseUser = Depends(get_current_user)):
-            """Create a new thread"""
-            if not await self.authorizer.can_create_thread(user):
-                raise HTTPException(status_code=403, detail="Access denied")
-            thread_container = ThreadContainer()  # TODO giving no args (eg system prompt) might cause issues
-            created_thread = await self.service.create_thread(thread_container)
-            return ThreadConverters.thread_model_to_response(created_thread)
-
-        @router.get("/{thread_id}", response_model=ThreadResponse)
-        async def get_thread(thread_id: str, user: BaseUser = Depends(get_current_user)):
-            """Get thread by ID"""
-
+        async def owned(thread_id: str, current, permission: str):
             thread = await self.service.get_thread(thread_id)
-            if not thread:
-                raise HTTPException(status_code=404, detail="Thread not found")
-            if not await self.authorizer.can_read_thread(user, thread):
-                raise HTTPException(status_code=403, detail="Access denied")
+            if thread is None:
+                raise HTTPException(404, "Thread not found")
+            if not await getattr(self.authorizer, permission)(current, thread):
+                raise HTTPException(403, "Access denied")
+            return thread
 
-            return ThreadConverters.thread_model_to_response(thread)
+        @router.post("")
+        async def create(request: CreateThreadRequest, current=Depends(user)):
+            if not await self.authorizer.can_create_thread(current):
+                raise HTTPException(403, "Access denied")
+            thread = ThreadContainer(owner_id=current.get_id())
+            thread.envelope.metadata = request.metadata
+            await self.service.create_thread(thread)
+            return thread.public_dict()
+
+        @router.get("")
+        async def list_threads(
+            current=Depends(user),
+            thread_type: str | None = None,
+            title_contains: str | None = None,
+            min_messages: int | None = None,
+            max_messages: int | None = None,
+            hours_ago: int | None = None,
+        ):
+            import time
+
+            builder = ThreadFilter.builder().with_author_id(current.get_id())
+            if thread_type:
+                builder.with_type(thread_type)
+            if title_contains:
+                builder.with_title_containing(title_contains)
+            if min_messages is not None:
+                builder.with_min_messages(min_messages)
+            if max_messages is not None:
+                builder.with_max_messages(max_messages)
+            if hours_ago is not None:
+                builder.with_activity_after(int((time.time() - hours_ago * 3600) * 1000))
+            summaries = await self.service.list_threads(builder.build())
+            return {"threads": [asdict(m) for m in summaries], "total_count": len(summaries)}
+
+        @router.get("/{thread_id}")
+        async def get_thread(thread_id: str, current=Depends(user)):
+            return (await owned(thread_id, current, "can_read_thread")).public_dict()
 
         @router.delete("/{thread_id}")
-        async def delete_thread(thread_id: str, user: BaseUser = Depends(get_current_user)):
-            """Delete thread"""
-            thread = await self.service.get_thread(thread_id)
-            if not thread:
-                raise HTTPException(status_code=404, detail="Thread not found")
-            if not await self.authorizer.can_delete_thread(user, thread):
-                raise HTTPException(status_code=403, detail="Access denied")
-
+        async def delete_thread(thread_id: str, current=Depends(user)):
+            await owned(thread_id, current, "can_delete_thread")
+            if thread_id in self.active:
+                raise HTTPException(409, "Cancel the active run before deleting the thread")
             await self.service.delete_thread(thread_id)
-            return {"message": "Thread deleted successfully"}
-
-        @router.get("", response_model=ListThreadsResponse)
-        async def list_threads(
-            thread_type: Optional[str] = Query(None),
-            title_contains: Optional[str] = Query(None),
-            min_messages: Optional[int] = Query(None),
-            max_messages: Optional[int] = Query(None),
-            hours_ago: Optional[int] = Query(None),
-            user: BaseUser = Depends(get_current_user),
-        ):
-            """List threads with filtering"""
-            filter_builder = ThreadFilter.builder()
-
-            filter_builder.with_author_id(user.get_id())
-            if thread_type:
-                filter_builder.with_type(thread_type)
-            if title_contains:
-                filter_builder.with_title_containing(title_contains)
-            if min_messages:
-                filter_builder.with_min_messages(min_messages)
-            if max_messages:
-                filter_builder.with_max_messages(max_messages)
-            if hours_ago:
-                cutoff = int((time.time() - hours_ago * 3600) * 1000)
-                filter_builder.with_activity_after(cutoff)
-
-            filter = filter_builder.build()
-            threads = await self.service.list_threads(filter)
-
-            return ListThreadsResponse(threads=ThreadConverters.metadata_list_to_response(threads), total_count=len(threads))
-
-        @router.get("/{thread_id}/messages", response_model=List[MessageResponse])
-        async def get_thread_messages(thread_id: str, user: BaseUser = Depends(get_current_user)):
-            """Get all messages for a thread"""
-            thread = await self.service.get_thread(thread_id)
-            if not thread:
-                raise HTTPException(status_code=404, detail="Thread not found")
-            if not await self.authorizer.can_read_thread(user, thread):
-                raise HTTPException(status_code=403, detail="Access denied")
-
-            messages = await self.service.get_thread_messages(thread_id)
-            return ThreadConverters.messages_model_to_response(messages)
-
-        @router.get("/{thread_id}/messages/{message_id}", response_model=MessageResponse)
-        async def get_message(thread_id: str, message_id: str, user: BaseUser = Depends(get_current_user)):
-            """Get specific message by ID"""
-            thread = await self.service.get_thread(thread_id)
-            if not thread:
-                raise HTTPException(status_code=404, detail="Thread not found")
-            if not await self.authorizer.can_read_thread(user, thread):
-                raise HTTPException(status_code=403, detail="Access denied")
-
-            message = await self.service.get_message(thread_id, message_id)
-            if not message:
-                raise HTTPException(status_code=404, detail="Message not found")
-            return ThreadConverters.message_model_to_response(message)
-
-        @router.delete("/{thread_id}/messages/{message_id}")
-        async def delete_message(thread_id: str, message_id: str, user: BaseUser = Depends(get_current_user)):
-            """Delete message from thread"""
-            thread = await self.service.get_thread(thread_id)
-            if not thread:
-                raise HTTPException(status_code=404, detail="Thread not found")
-            if not await self.authorizer.can_post_message(user, thread):
-                raise HTTPException(status_code=403, detail="Access denied")
-
-            success = await self.service.delete_message(thread_id, message_id)
-            if not success:
-                raise HTTPException(status_code=404, detail="Message not found")
-            return {"message": "Message deleted successfully"}
-
-        @router.get("/{thread_id}/negotiate-streaming", response_model=ThreadResponse)
-        async def negotiate_streaming(thread_id: str, user: BaseUser = Depends(get_current_user)):
-            """Negotiate streaming"""
-            if not self.streaming_negotiator:
-                raise HTTPException(status_code=501, detail="Streaming negotiation not supported")
-
-            thread = await self.service.get_thread(thread_id)
-            if not thread:
-                raise HTTPException(status_code=404, detail="Thread not found")
-            if not await self.authorizer.can_read_thread(user, thread):
-                raise HTTPException(status_code=403, detail="Access denied")
-
-            return self.streaming_negotiator.negotiate_thread_streaming(thread_id, user)
-
-        async def _create_message(thread_id: str, request: CreateMessageRequest, user: BaseUser) -> ThreadMessage:
-            """Create a new message"""
-
-            thread = await self.service.get_thread(thread_id)
-            if not thread:
-                raise HTTPException(status_code=404, detail="Thread not found")
-
-            if not await self.authorizer.can_post_message(user, thread):
-                raise HTTPException(status_code=403, detail="Access denied")
-
-            attachments = None
-            if request.attachments:
-                attachments = [ThreadConverters.attachment_request_to_model(att) for att in request.attachments]
-
-            message = ThreadMessage(
-                id=str(uuid.uuid4()),
-                author_id=user.get_id(),
-                author_name=user.get_name(),
-                timestamp=int(time.time() * 1000),
-                ai=False,
-                blocks=[MessageBlock(content=request.content, type=MessageBlockType.PLAIN, id=str(uuid.uuid4()), streaming=False)],
-                attachments=attachments,
-            )
-            thread.add_message(message)
-            await self.service.update_thread(thread)
-            return message
-
-        @router.post("/{thread_id}/messages/stream")
-        async def create_message_stream(thread_id: str, request: CreateMessageRequest, user: BaseUser = Depends(get_current_user)):
-            """Create a new message and stream the response immediately"""
-
-            if not self.thread_job_processor:
-                raise HTTPException(status_code=501, detail="Thread job processor not supported")
-            thread_job_processor = self.thread_job_processor
-            message = await _create_message(thread_id, request, user)
-
-            job = AgentJob(job_type=JobType.THREAD_MESSAGE, id=thread_id)
-            cancellation_subscriber = (
-                await self.cancellation_subscriber_provider(thread_id) if self.cancellation_subscriber_provider else None
-            )
-            cancellation_handle = cancellation_subscriber.get_cancellation_handle() if cancellation_subscriber else None
-
-            def on_complete():
-                if cancellation_subscriber:
-                    cancellation_subscriber.stop()
-
-            logger.debug(f"Starting processing for thread {thread_id}")
-
-            async def generate_stream():
-                try:
-                    logger.debug(f"Starting streaming stream for thread {thread_id}")
-                    yield MessageAddedEvent(message=message).dump_json(thread_id) + "\n\n"
-
-                    async for event_response in thread_job_processor.process_job(
-                        job=job, cancellation_handle=cancellation_handle, on_complete=on_complete
-                    ):
-                        logger.debug(f"Received event response: {event_response}")
-                        yield json.dumps(event_response) + "\n\n"
-
-                except Exception as e:
-                    logger.error(f"Error in SSE stream: {e}")
-                    yield ErrorEvent(error_message=str(e), error_type="stream_error").dump_json(thread_id) + "\n\n"
-
-            logger.info(f"StreamingResponse for job {thread_id}")
-            return StreamingResponse(
-                generate_stream(),
-                media_type="text/plain; charset=utf-8",  # devtools are not happy with the proper mime type
-                headers={
-                    "Cache-Control": "no-cache",
-                    # "Connection": "keep-alive",
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Headers": "Cache-Control",
-                    "X-Accel-Buffering": "no",  # Disable nginx buffering
-                },
-            )
-
-        @router.post("/{thread_id}/messages", response_model=MessageResponse)
-        async def create_message(thread_id: str, request: CreateMessageRequest, user: BaseUser = Depends(get_current_user)):
-            """Create a new message"""
-            if not self.job_queue:
-                raise HTTPException(status_code=501, detail="Job queue not supported")
-
-            message = await _create_message(thread_id, request, user)
-
-            job = AgentJob(job_type=JobType.THREAD_MESSAGE, id=thread_id)
-            await self.job_queue.push(job)
-            return ThreadConverters.message_model_to_response(message)
+            return {"message": "Thread deleted"}
 
         @router.post("/{thread_id}/cancel")
-        async def cancel_generation(thread_id: str, user: BaseUser = Depends(get_current_user)):
-            """Cancel the current generation for a thread"""
-            thread = await self.service.get_thread(thread_id)
-            if not thread:
-                raise HTTPException(status_code=404, detail="Thread not found")
+        async def cancel(thread_id: str, current=Depends(user)):
+            await owned(thread_id, current, "can_post_message")
+            task = self.active.get(thread_id)
+            if task:
+                task.cancel()
+            return {"success": True, "message": "Cancellation requested"}
 
-            if not await self.authorizer.can_post_message(user, thread):
-                raise HTTPException(status_code=403, detail="Access denied")
+        @router.post("/{thread_id}/runs")
+        async def run(thread_id: str, input: RunAgentInput, request: Request, current=Depends(user)):
+            if input.thread_id != thread_id:
+                raise HTTPException(400, "threadId does not match the route")
+            # Reserve before awaiting the repository: no two requests can both pass this check.
+            if thread_id in self.active:
+                raise HTTPException(409, "Thread already has an active run")
+            self.active[thread_id] = None
+            try:
+                thread = await owned(thread_id, current, "can_post_message")
+                if input.tools or input.resume:
+                    raise HTTPException(422, "Client tool execution and interrupt resume are not supported by this runner")
+                if input.run_id in thread.envelope.metadata.get("run_ids", []):
+                    raise HTTPException(409, "runId has already been used")
+                existing = {m.id: m for m in thread.messages}
+                submitted = {}
+                new = []
+                for message in input.messages:
+                    normalized = message.model_dump(mode="json", by_alias=True, exclude_none=True)
+                    if message.id in submitted:
+                        if submitted[message.id] != normalized:
+                            raise HTTPException(409, "Conflicting duplicate message ID")
+                        continue
+                    submitted[message.id] = normalized
+                    if message.id in existing:
+                        if existing[message.id].model_dump(mode="json", by_alias=True, exclude_none=True) != normalized:
+                            raise HTTPException(409, "Stored messages cannot be overwritten")
+                    elif not isinstance(message, UserMessage):
+                        raise HTTPException(422, "Only new user messages may be submitted")
+                    else:
+                        new.append(message)
+                if not new:
+                    raise HTTPException(400, "Submit a new user message")
+                # Attachments use a small Spaik forwardedProps extension; validate ownership before inference.
+                props = input.forwarded_props or {}
+                attachment_map = props.get("attachments", {}) if isinstance(props, dict) else {}
+                storage = get_file_storage()
+                for message in new:
+                    attachments = attachment_map.get(message.id, [])
+                    for attachment in attachments:
+                        if storage is None:
+                            raise HTTPException(422, "File storage is not configured")
+                        try:
+                            _, metadata = await storage.retrieve(attachment["file_id"])
+                        except (FileNotFoundError, KeyError):
+                            raise HTTPException(404, "Attachment not found")
+                        if not await self.authorizer.can_read_file(current, metadata):
+                            raise HTTPException(403, "Attachment access denied")
+                        if attachment.get("mime_type") != metadata.mime_type:
+                            raise HTTPException(422, "Attachment MIME type does not match storage")
+                if self.agent_factory:
+                    agent = self.agent_factory(thread)
+                elif self.agent:
+                    agent = copy.copy(self.agent)
+                    agent.trace = AgentTrace(agent.system_prompt, trace_sink=self.agent.trace._trace_sink)
+                else:
+                    raise HTTPException(501, "Agent is not configured")
+                agent.set_thread_container(thread)
+                for message in new:
+                    thread.add_message(message, {"author_id": current.get_id(), "attachments": attachment_map.get(message.id, [])})
+                thread.envelope.metadata.setdefault("run_ids", []).append(input.run_id)
+                await self.service.update_thread(thread)
+            except BaseException:
+                self.active.pop(thread_id, None)
+                raise
 
-            if self.cancellation_publisher:
-                self.cancellation_publisher.publish_cancellation(thread_id)
-                logger.info(f"Cancellation published for thread {thread_id}")
-                return {"success": True, "message": "Cancellation signal sent"}
-            else:
-                raise HTTPException(status_code=501, detail="Cancellation not supported")
+            async def events():
+                self.active[thread_id] = asyncio.current_task()
+                encoder = EventEncoder(accept=request.headers.get("accept", "text/event-stream"))
+                try:
+                    async for event in agent.get_event_stream(run_id=input.run_id):
+                        yield encoder.encode(event)
+                except asyncio.CancelledError:
+                    if not await request.is_disconnected():
+                        yield encoder.encode(MessagesSnapshotEvent(messages=thread.messages))
+                        yield encoder.encode(RunFinishedEvent(thread_id=thread_id, run_id=input.run_id, outcome={"type": "cancelled"}))
+                finally:
+                    try:
+                        await asyncio.shield(self.service.update_thread(thread))
+                    finally:
+                        self.active.pop(thread_id, None)
+
+            return StreamingResponse(
+                events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+            )
 
         return router

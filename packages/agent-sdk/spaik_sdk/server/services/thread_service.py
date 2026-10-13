@@ -1,9 +1,10 @@
 from typing import List, Optional
 
+from ag_ui.core import Message
+
 from spaik_sdk.server.storage.base_thread_repository import BaseThreadRepository
 from spaik_sdk.server.storage.thread_filter import ThreadFilter
 from spaik_sdk.server.storage.thread_metadata import ThreadMetadata
-from spaik_sdk.thread.models import ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
 
 
@@ -44,11 +45,11 @@ class ThreadService:
         return await self.repository.list_threads(filter)
 
     # Message operations
-    async def get_message(self, thread_id: str, message_id: str) -> Optional[ThreadMessage]:
+    async def get_message(self, thread_id: str, message_id: str) -> Optional[Message]:
         """Get message by thread ID and message ID"""
         return await self.repository.get_message(thread_id, message_id)
 
-    async def add_message(self, thread_id: str, message: ThreadMessage) -> Optional[ThreadMessage]:
+    async def add_message(self, thread_id: str, message: Message) -> Optional[Message]:
         """Add message to thread"""
         if not await self.repository.thread_exists(thread_id):
             return None
@@ -56,7 +57,7 @@ class ThreadService:
         await self.repository.upsert_message(thread_id, message)
         return message
 
-    async def update_message(self, thread_id: str, message: ThreadMessage) -> Optional[ThreadMessage]:
+    async def update_message(self, thread_id: str, message: Message) -> Optional[Message]:
         """Update existing message in thread"""
         if not await self.repository.thread_exists(thread_id):
             return None
@@ -82,7 +83,7 @@ class ThreadService:
         await self.repository.delete_message(thread_id, message_id)
         return True
 
-    async def get_thread_messages(self, thread_id: str) -> List[ThreadMessage]:
+    async def get_thread_messages(self, thread_id: str) -> List[Message]:
         """Get all messages for a thread"""
         thread = await self.repository.load_thread(thread_id)
         if not thread:

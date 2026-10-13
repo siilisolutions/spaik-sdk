@@ -5,7 +5,6 @@ from typing import Optional, Type
 
 from pydantic import BaseModel
 
-from spaik_sdk.thread.models import MessageBlock, MessageBlockType
 from spaik_sdk.tracing.get_trace_sink import get_trace_sink
 from spaik_sdk.tracing.trace_sink import TraceSink
 
@@ -49,23 +48,6 @@ class AgentTrace:
         if input is None:
             return
         self.add_step(f"👤: {input}")
-
-    def add_block(self, block: MessageBlock) -> None:
-        if block.type == MessageBlockType.PLAIN:
-            self.add_step(f"🤖: {block.content}")
-        elif block.type == MessageBlockType.REASONING:
-            self.add_step(f"🧠: {block.content}")
-        elif block.type == MessageBlockType.TOOL_USE:
-            tool_step = f"🔧: {block.tool_name} {json.dumps(block.tool_call_args, indent=2)}"
-            if block.tool_call_response is not None:
-                tool_step += f"\n\n🔧 response: {_format_trace_payload(block.tool_call_response)}"
-            if block.tool_call_error is not None:
-                tool_step += f"\n\n🚨 tool error: {_format_trace_payload(block.tool_call_error)}"
-            self.add_step(tool_step)
-        elif block.type == MessageBlockType.ERROR:
-            self.add_step(f"🚨: {block.content}")
-        else:
-            self.add_step(f"❓: {block.content}")
 
     def to_string(self, include_system_prompt: bool = True) -> str:
         lines: list[str] = []

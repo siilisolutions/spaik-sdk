@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Collection, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from langchain_core.language_models.chat_models import BaseChatModel
 
@@ -7,19 +7,10 @@ if TYPE_CHECKING:
     from spaik_sdk.models.llm_config import LLMConfig
 
 from spaik_sdk.config.env import env_config
-from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.providers.provider_type import ProviderType
 
 
 class BaseProvider(ABC):
-    @abstractmethod
-    def get_supported_models(self) -> Collection[LLMModel]:
-        """Get list of models supported by this provider."""
-        pass
-
-    def supports_model(self, model: LLMModel) -> bool:
-        return model in self.get_supported_models()
-
     @abstractmethod
     def get_model_config(self, config: "LLMConfig") -> Dict[str, Any]:
         """Get model configuration based on model and provider type."""

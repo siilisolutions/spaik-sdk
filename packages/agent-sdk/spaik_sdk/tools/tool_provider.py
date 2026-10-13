@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from langchain_core.tools import BaseTool, StructuredTool, tool
 from pydantic import BaseModel, Field, create_model
 
-from spaik_sdk.thread.models import MessageBlock
+from spaik_sdk.thread.models import ToolCallHistory
 
 
 class ToolProvider(ABC):
@@ -29,18 +29,18 @@ class ToolProvider(ABC):
     def get_provider_id(self) -> str:
         return f"{self.__class__.__module__}.{self.__class__.__qualname__}"
 
-    def render_tool_block_for_history(self, block: MessageBlock) -> str:
+    def render_tool_block_for_history(self, block: ToolCallHistory) -> str:
         if not getattr(self, "persist_tool_block_history", True):
             return self.render_tool_call_marker(block)
         return self.render_tool_call_details(block)
 
     @staticmethod
-    def render_tool_call_marker(block: MessageBlock) -> str:
+    def render_tool_call_marker(block: ToolCallHistory) -> str:
         tool_name = block.tool_name or "unknown"
         return f'<tool_call tool="{tool_name}"/>'
 
     @staticmethod
-    def render_tool_call_details(block: MessageBlock) -> str:
+    def render_tool_call_details(block: ToolCallHistory) -> str:
         payload: Dict[str, Any] = {"tool": block.tool_name or "unknown"}
 
         if block.tool_call_id is not None:

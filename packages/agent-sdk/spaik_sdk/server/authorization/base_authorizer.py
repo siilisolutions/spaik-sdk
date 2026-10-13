@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Generic, Optional, TypeVar
 
+from ag_ui.core import Message
 from fastapi import Request
 
 from spaik_sdk.server.authorization.base_user import BaseUser
-from spaik_sdk.thread.models import ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
 
 if TYPE_CHECKING:
@@ -36,9 +36,9 @@ class BaseAuthorizer(ABC, Generic[TUser]):
         """Check if user has permission to post a message to the thread"""
         return self.is_thread_owner(user, thread_container)
 
-    async def can_edit_message(self, user: TUser, thread_container: ThreadContainer, message: ThreadMessage) -> bool:
+    async def can_edit_message(self, user: TUser, thread_container: ThreadContainer, message: Message) -> bool:
         """Check if user has permission to edit a message in the thread"""
-        return message.author_id == user.get_id()
+        return thread_container.owner_id == user.get_id()
 
     async def can_delete_thread(self, user: TUser, thread_container: ThreadContainer) -> bool:
         """Check if user has permission to delete the thread"""
@@ -46,7 +46,7 @@ class BaseAuthorizer(ABC, Generic[TUser]):
 
     def is_thread_owner(self, user: TUser, thread_container: ThreadContainer) -> bool:
         """Check if user is the owner of the thread"""
-        return thread_container.messages[0].author_id == user.get_id()
+        return thread_container.owner_id == user.get_id()
 
     async def can_upload_file(self, user: TUser) -> bool:
         """Check if user has permission to upload files"""

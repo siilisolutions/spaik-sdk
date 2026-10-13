@@ -39,9 +39,11 @@ Commit each validated implementation chunk with its docs. Do not merge or publis
 - [x] Clean baseline confirmed; implementation branch created.
 - [ ] Current catalog verification and legacy release validation.
 - [ ] Coding-agent final legacy patch prepared/published/tagged.
-- [ ] Unrestricted models and reported costs.
-- [ ] Canonical AG-UI backend and JSON migration.
+- [x] Unrestricted model construction and reported cost resolver implemented; initial deterministic tests pass.
+- [ ] Canonical AG-UI backend and JSON migration (backend vertical slice implemented; migration utilities and expanded validation pending).
 - [ ] Independent AG-UI React/Material integration.
 - [ ] Peripheral cleanup and complete documentation.
 - [ ] Contract/browser/install/live checks and release candidates.
 - [ ] Stable 1.0 publication.
+
+Baseline tracked production: Python SDK 10,171 lines; hooks 1,732; Material 3,005; 33 mandatory Python dependencies. Initial backend migration removes approximately 4,000 net lines and reduces mandatory dependencies to 7. Frontend and release validation remain in progress.

@@ -20,48 +20,29 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "azure-storage-blob",
-    "dotenv>=0.9.9",
-    "fastapi>=0.115.12",
-    "python-multipart>=0.0.18",
-    "PyJWT>=2.8.0",
-    "requests>=2.31.0",
-    "cryptography>=41.0.0", # Required for JWT RSA operations
+    "ag-ui-protocol==1.0.0",
     "langchain>=1.2.0",
-    "langchain-anthropic>=1.3.0",
-    "langchain-azure-ai>=1.2.0",
-    "langchain-cohere>=0.5.0",
     "langchain-core>=1.2.0",
-    "langchain-deepseek>=1.0.0",
-    "langchain-google-genai>=4.0.0",
-    "langchain-mistralai>=0.2.0",
-    "langchain-openai>=1.1.0",
-    "langchain-ollama>=0.3.0",
-    "langchain-xai>=0.2.0",
     "langgraph>=1.0.0",
-    "pandas>=2.0.3",
-    "pandas-stubs",
-    "uvicorn>=0.33.0",
-    # Test dependencies
-    "pytest>=7.4.0",
-    "pytest-asyncio>=0.21.1",
-    "pytest-cov>=4.1.0",
+    "pydantic>=2.0",
     "httpx>=0.25.0",
-    "pytest-mock>=3.11.1",
-    "restrictedpython>=8.0",
-    "rich>=14.0.0",
-    "aioconsole>=0.8.1",
-    "langchain-tavily>=0.2.15",
-    "mcp>=1.9.2",
-    "langchain-mcp-adapters>=0.2.1",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
-dev = [
-    "ruff",
-    "mypy",
-    "black"
-]
+server = ["fastapi>=0.115.12", "python-multipart>=0.0.18", "uvicorn>=0.33.0"]
+openai = ["langchain-openai>=1.1.0"]
+anthropic = ["langchain-anthropic>=1.3.0"]
+google = ["langchain-google-genai>=4.0.0"]
+azure = ["langchain-openai>=1.1.0", "langchain-azure-ai>=1.2.0"]
+ollama = ["langchain-ollama>=0.3.0"]
+deepseek = ["langchain-deepseek>=1.0.0"]
+mistral = ["langchain-mistralai>=0.2.0"]
+cohere = ["langchain-cohere>=0.5.0"]
+xai = ["langchain-xai>=0.2.0"]
+audio = ["openai>=1.0", "google-genai>=1.0"]
+mcp = ["mcp>=1.9.2", "langchain-mcp-adapters>=0.2.1"]
+dev = ["ruff", "pytest>=7.4.0", "pytest-asyncio>=0.21.1", "pytest-cov>=4.1.0", "pytest-mock>=3.11.1", "pytest-timeout>=2.4.0", "ty==0.0.13"]
 
 [project.urls]
 Homepage = "https://github.com/siilisolutions/spaik-sdk"
