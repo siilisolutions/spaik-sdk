@@ -32,8 +32,8 @@ class ModelRegistry:
     CLAUDE_OPUS_5_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-5-5", prompt_caching=True)
     CLAUDE_SONNET_5_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-sonnet-5-5", prompt_caching=True)
     CLAUDE_HAIKU_5_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-haiku-5-5", prompt_caching=True)
-    GPT_6_ASTRA = LLMModel(family=LLMFamilies.OPENAI, name="gpt-6-astra", prompt_caching=True)
-    GPT_6_1_SOL = LLMModel(family=LLMFamilies.OPENAI, name="gpt-6.1-sol", prompt_caching=True)
+    GPT_6_ASTRA = LLMModel(family=LLMFamilies.OPENAI, name="gpt-6-astra", reasoning_min_effort="low", prompt_caching=True)
+    GPT_6_1_SOL = LLMModel(family=LLMFamilies.OPENAI, name="gpt-6.1-sol", reasoning_min_effort="low", prompt_caching=True)
     GPT_6_LUNA = LLMModel(family=LLMFamilies.OPENAI, name="gpt-6-luna", prompt_caching=True)
     GEMINI_3_8_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.8-flash", prompt_caching=True)
 
