@@ -1,3 +1,5 @@
+> Spaik 1.0 compatibility: YAML execution remains an optional convenience. The deprecated `agents/general` plugin and mandatory coding-agent dependency have been removed; use `agents/general` or `agents/structured`. Install `[audio]` only for audio plugins. Legacy coding workflows require the legacy package line in a separate environment.
+
 # Agent Workflows
 
 YAML-driven workflow engine for AI agents.
@@ -75,7 +77,7 @@ jobs:
   generate:
     needs: setup
     steps:
-      - uses: agents/claude_code
+      - uses: agents/general
         with:
           prompt: "Create a README for ${{ vars.project_name }}"
           cwd: "."
@@ -151,7 +153,7 @@ spaik-agent-workflows apply-template --template agent --path ./my-agent
 
 ```yaml
 # Claude Code agent (requires ANTHROPIC_API_KEY)
-- uses: agents/claude_code
+- uses: agents/general
   with:
     prompt: "Implement feature X"
     cwd: "."                 # working directory

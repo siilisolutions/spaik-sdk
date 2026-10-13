@@ -1,28 +1,7 @@
-# Siili Agent SDK
+# Spaik's value
 
-## Build AI products faster, without technical debt
+Spaik supplies convenient persisted threads, streaming agent/tool conversations, and a reusable themed React UI. AG-UI makes the UI usable with other agent backends while Spaik's thread repository remains an optional convenience.
 
-The SDK provides production-ready building blocks—threading, streaming, tools, storage, and provider integrations—so teams focus on product value, not plumbing.
+Teams bring their preferred models and tools. Presets help onboarding without restricting model IDs. Charges come from provider reports where available; the project maintains no price database. Optional integrations keep installation small.
 
----
-
-## Key benefits
-- Focus on business logic; skip boilerplate
-- Fast path from prototype to production
-- Swap LLM providers without rewrites
-- Lower maintenance with shared components
-- Cloud-friendly, compliance-friendly defaults
-
----
-
-## Capabilities
-- Backend: FastAPI thread router, REST, SSE streaming (auto-reconnect)
-- Frontend: React hooks + Zustand, streaming UI components
-- Tools: typed interfaces, parallel execution, error handling
-- Providers: OpenAI, Anthropic, Google, Azure AI Foundry
-- Reliability: recording/playback, retries, consistent error handling
-- Security: pluggable authentication/authorization
-- Observability: tracing and audit logging
-- Storage: local to cloud backends; versioned thread persistence
-- DX: Python + TypeScript, examples, MIT license
-
+Version 1.0 consolidates existing capabilities and removes duplicated protocol/rendering infrastructure. New features belong in 1.1. See [architecture](SYSTEM_ARCHITECTURE.md), [migration](../MIGRATING_TO_1_0.md), and [release gates](../SPAIK_1_0_PLAN.md).

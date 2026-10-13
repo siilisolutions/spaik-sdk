@@ -15,6 +15,7 @@ on:
 
 jobs:
   release:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -35,7 +36,7 @@ jobs:
         run: uv python install 3.10
 
       - name: Install dependencies
-        run: uv sync --all-extras
+        run: uv sync --no-sources --all-extras
 
       - name: Get current version
         id: current_version

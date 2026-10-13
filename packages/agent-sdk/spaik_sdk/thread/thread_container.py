@@ -113,29 +113,35 @@ class ThreadContainer:
                         tool_calls=[
                             {"id": t.id, "name": t.function.name, "args": json.loads(t.function.arguments or "{}")}
                             for t in message.tool_calls or []
+                            if t.id in tool_results
                         ],
                     )
                 )
+                if not isinstance(ai, AIMessage):
+                    raise ValueError("Assistant replay data must contain an AIMessage")
                 ai = ai.model_copy(deep=True)
                 provider_ids = self.envelope.replay.get(message.id, {}).get("tool_providers", {})
                 summaries = []
                 kept_calls = []
                 for call in ai.tool_calls:
-                    provider = self._tool_providers.get(provider_ids.get(call["id"], ""))
+                    call_id = call["id"]
+                    if call_id is None:
+                        continue
+                    provider = self._tool_providers.get(provider_ids.get(call_id, ""))
                     custom = provider is not None and (
                         not getattr(provider, "persist_tool_block_history", True)
                         or type(provider).render_tool_block_for_history is not self._default_history_renderer()
                     )
-                    if not custom:
+                    if not custom and call_id in tool_results:
                         kept_calls.append(call)
                         continue
-                    hidden_tools.add(call["id"])
-                    tool_result = tool_results.get(call["id"])
+                    hidden_tools.add(call_id)
+                    tool_result = tool_results.get(call_id)
                     summaries.append(
-                        provider.render_tool_block_for_history(
+                        (provider.render_tool_block_for_history if provider else self._incomplete_tool_marker)(
                             ToolCallHistory(
                                 tool_name=call["name"],
-                                tool_call_id=call["id"],
+                                tool_call_id=call_id,
                                 tool_call_args=call["args"],
                                 tool_call_response=message_text(tool_result) if tool_result else None,
                                 tool_call_error=tool_result.error if tool_result else None,
@@ -165,6 +171,10 @@ class ThreadContainer:
             elif message.role in {"system", "developer"}:
                 result.append(SystemMessage(content=message_text(message), id=message.id))
         return result
+
+    @staticmethod
+    def _incomplete_tool_marker(history: ToolCallHistory) -> str:
+        return f"<incomplete_tool_call tool={json.dumps(history.tool_name)}/>"
 
     @staticmethod
     def _default_history_renderer():

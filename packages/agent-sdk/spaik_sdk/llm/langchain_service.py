@@ -1,13 +1,13 @@
 """LangChain execution translated directly into canonical AG-UI messages/events."""
 
-import asyncio
 import json
 import uuid
 from typing import Any
 
 from ag_ui import core as ui
-from langchain_core.messages import AIMessage, AIMessageChunk, message_to_dict
-from langgraph.prebuilt import ToolNode, create_react_agent
+from langchain.agents import create_agent
+from langchain.agents.middleware import AgentMiddleware
+from langchain_core.messages import AIMessage, AIMessageChunk, ToolMessage, message_to_dict
 
 from spaik_sdk.attachments.file_storage_provider import get_file_storage
 from spaik_sdk.llm.cost.cost_provider import CostContext, CostProvider
@@ -21,6 +21,26 @@ def reasoning_text(block: dict[str, Any]) -> str:
     if isinstance(value, str):
         return value
     return "".join(item.get("text", "") for item in block.get("summary", []) if isinstance(item, dict))
+
+
+class ToolErrors(AgentMiddleware):
+    """Keep recoverable tool exceptions inside the conversation."""
+
+    def wrap_tool_call(self, request, handler):
+        try:
+            return handler(request)
+        except Exception as error:
+            return ToolMessage(content=f"Tool failed: {error}", tool_call_id=request.tool_call["id"], status="error")
+
+    async def awrap_tool_call(self, request, handler):
+        try:
+            return await handler(request)
+        except Exception as error:
+            return ToolMessage(content=f"Tool failed: {error}", tool_call_id=request.tool_call["id"], status="error")
+
+
+class RunCancelled(Exception):
+    """Cooperative cancellation, distinct from a disconnected consumer."""
 
 
 class LangChainService:
@@ -43,7 +63,7 @@ class LangChainService:
         self.cancellation_handle = cancellation_handle
 
     def create_executor(self):
-        return create_react_agent(self.config.get_model_wrapper().get_langchain_model(), ToolNode(self.tools, handle_tool_errors=True))
+        return create_agent(self.config.get_model_wrapper().get_langchain_model(), self.tools, middleware=[ToolErrors()])
 
     async def stream(self):
         storage = get_file_storage()
@@ -52,18 +72,20 @@ class LangChainService:
             if storage
             else self.thread.get_langchain_messages()
         )
-        executor = None if self.playback is not None else self.create_executor()
         source = (
             self.playback
             if self.playback is not None
-            else executor.astream_events({"messages": messages}, version="v2", config={"recursion_limit": self.config.max_agent_steps})
+            else self.create_executor().astream_events(
+                {"messages": messages}, version="v2", config={"recursion_limit": self.config.max_agent_steps}
+            )
         )
         models: dict[str, dict[str, Any]] = {}
         tool_ids: set[str] = set()
+        result_ids: set[str] = set()
         try:
             async for event in source:
                 if self.cancellation_handle and await self.cancellation_handle.is_cancelled():
-                    raise asyncio.CancelledError
+                    raise RunCancelled
                 if self.recorder is not None:
                     self.recorder.record_token(event)
                 kind = event.get("event")
@@ -206,39 +228,54 @@ class LangChainService:
                         if call["id"] not in tool_ids:
                             yield ui.ToolCallStartEvent(tool_call_id=call["id"], tool_call_name=call["name"], parent_message_id=state["id"])
                             yield ui.ToolCallArgsEvent(tool_call_id=call["id"], delta=json.dumps(call["args"]))
+                        tool_ids.add(call["id"])
                         yield ui.ToolCallEndEvent(tool_call_id=call["id"])
                     if state["reasoning_started"]:
                         yield ui.ReasoningMessageEndEvent(message_id=state["reasoning_id"])
                         yield ui.ReasoningEndEvent(message_id=state["reasoning_id"])
                     metadata = dict(final.response_metadata or {})
-                    cost = await self.cost_provider.resolve(
+                    invocation = Invocation(
+                        id=invocation_id,
+                        message_id=state["id"],
+                        provider=self.config.provider_name,
+                        model=self.config.model_name,
+                        usage=final.usage_metadata,
+                    )
+                    self.thread.add_invocation(invocation)
+                    invocation.cost = await self.cost_provider.resolve(
                         CostContext(provider=self.config.provider_name, response_id=metadata.get("id") or final.id, metadata=metadata)
                     )
+                    yield ui.TextMessageEndEvent(message_id=state["id"])
+                elif kind in {"on_tool_end", "on_chain_end"}:
+                    output = data.get("output")
+                    outputs = output.get("messages", []) if isinstance(output, dict) else [output]
+                    for result in outputs:
+                        tool_call_id = getattr(result, "tool_call_id", None)
+                        if not tool_call_id or tool_call_id not in tool_ids or tool_call_id in result_ids:
+                            continue
+                        result_ids.add(tool_call_id)
+                        content = result.content if isinstance(result.content, str) else json.dumps(result.content)
+                        tool_message = ui.ToolMessage(
+                            id=str(uuid.uuid4()),
+                            tool_call_id=tool_call_id,
+                            content=content,
+                            error=content if getattr(result, "status", None) == "error" else None,
+                        )
+                        self.thread.add_message(tool_message)
+                        yield ui.ToolCallResultEvent(message_id=tool_message.id, tool_call_id=tool_call_id, content=content, role="tool")
+        finally:
+            for invocation_id, state in models.items():
+                if not state["ended"] and state["started"]:
+                    chunk = state["chunk"]
                     self.thread.add_invocation(
                         Invocation(
                             id=invocation_id,
                             message_id=state["id"],
                             provider=self.config.provider_name,
                             model=self.config.model_name,
-                            usage=final.usage_metadata,
-                            cost=cost,
+                            usage=chunk.usage_metadata if chunk is not None else None,
                         )
                     )
-                    yield ui.TextMessageEndEvent(message_id=state["id"])
-                elif kind == "on_tool_end":
-                    output = data.get("output")
-                    tool_call_id = getattr(output, "tool_call_id", None)
-                    if tool_call_id:
-                        content = output.content if isinstance(output.content, str) else json.dumps(output.content)
-                        tool_message = ui.ToolMessage(
-                            id=str(uuid.uuid4()),
-                            tool_call_id=tool_call_id,
-                            content=content,
-                            error=content if getattr(output, "status", None) == "error" else None,
-                        )
-                        self.thread.add_message(tool_message)
-                        yield ui.ToolCallResultEvent(message_id=tool_message.id, tool_call_id=tool_call_id, content=content, role="tool")
-        finally:
             self.thread.touch()
             if hasattr(source, "aclose"):
                 await source.aclose()

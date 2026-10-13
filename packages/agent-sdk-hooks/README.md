@@ -1,6 +1,6 @@
 # spaik-sdk-react
 
-React hooks for AG-UI conversations and optional persisted thread management. The official AG-UI client owns messages, state and run lifecycle. This branch is preparing 1.0; see [release gates](../../docs/SPAIk_1_0_PLAN.md).
+React hooks for AG-UI conversations and optional persisted thread management. The official AG-UI client owns messages, state and run lifecycle. This branch is preparing 1.0; see [release gates](../../docs/SPAIK_1_0_PLAN.md).
 
 ```tsx
 import { HttpAgent, AgentSdkClient, AgentSdkClientProvider, useThread, useThreadSelection, useThreadActions } from 'spaik-sdk-react';

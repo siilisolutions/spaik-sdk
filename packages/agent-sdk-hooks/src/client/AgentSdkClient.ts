@@ -71,6 +71,8 @@ export class AgentSdkClient {
         const agent = this.getAgent(id);
         if (agent.isRunning) throw new Error('This thread is already running');
         const messageId = crypto.randomUUID();
+        const thread = this.threads.get(id);
+        if (thread) thread.message_metadata[messageId] = { timestamp: Date.now(), attachments: request.attachments ?? [] };
         agent.addMessage({ id: messageId, role: 'user', content: request.content });
         let failure: Error | undefined;
         await agent.runAgent({ forwardedProps: { attachments: { [messageId]: request.attachments ?? [] } } }, {
@@ -83,6 +85,10 @@ export class AgentSdkClient {
         // Aborting HTTP also cancels the backend on disconnect. A repository may offer explicit cancellation.
         this.getAgent(id).abortRun();
         await this.threadRepository?.cancelGeneration?.(id);
+        if (this.threadRepository) {
+            this.threads.delete(id);
+            await this.getThread(id);
+        }
     }
     private requireRepository(): ThreadRepository {
         if (!this.threadRepository) throw new Error('Thread persistence requires a threadRepository');

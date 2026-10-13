@@ -45,3 +45,16 @@ test('errors leave the official client usable', async () => {
     await expect(client.sendMessage('thread', { content: 'hello' })).rejects.toThrow('failed');
     expect(agent.isRunning).toBe(false);
 });
+
+test('Python-produced SSE round-trips reasoning, tools and final snapshots', async () => {
+    const fixture = await Bun.file(new URL('../../../tests/fixtures/python-ag-ui.sse', import.meta.url)).text();
+    const first = JSON.parse(fixture.split('\n').find(line => line.startsWith('data: '))!.slice(6));
+    const events = fixture.split('\n').filter(line => line.startsWith('data: ')).map(line => JSON.parse(line.slice(6)));
+    const agent = new HttpAgent({ url: 'http://python/agent', threadId: first.threadId, fetch: async () => eventStream(events) });
+    await agent.runAgent({ runId: first.runId });
+    expect(agent.messages.some(m => m.role === 'reasoning' && m.content === 'A public summary')).toBe(true);
+    expect(agent.messages.some(m => m.role === 'tool' && m.content === 'Helsinki: sunny')).toBe(true);
+    expect(agent.messages.at(-1)?.content).toBe('Hyvää päivää!');
+    expect(agent.isRunning).toBe(false);
+    expect(fixture.includes('private-signature')).toBe(false);
+});

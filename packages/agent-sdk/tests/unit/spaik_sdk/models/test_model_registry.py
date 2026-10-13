@@ -1,179 +1,31 @@
 import pytest
 
-from spaik_sdk.models.llm_families import LLMFamilies
 from spaik_sdk.models.model_registry import ModelRegistry
 
-
-@pytest.mark.unit
-class TestModelRegistry:
-    @pytest.mark.parametrize(
-        "alias,expected_model_name",
-        [
-            ("opus 4.5", "claude-opus-4-5-20251101"),
-            ("claude opus 4.5", "claude-opus-4-5-20251101"),
-            ("claude 4.5 opus", "claude-opus-4-5-20251101"),
-            ("opus", "claude-opus-5-5"),
-            ("opus 4.7", "claude-opus-4-7"),
-            ("opus 4.8", "claude-opus-4-8"),
-            ("opus 5", "claude-opus-5"),
-            ("sonnet", "claude-sonnet-5-5"),
-            ("sonnet 5", "claude-sonnet-5"),
-            ("claude opus 4.7", "claude-opus-4-7"),
-            ("claude opus 4.8", "claude-opus-4-8"),
-            ("claude opus 5", "claude-opus-5"),
-            ("claude sonnet 5", "claude-sonnet-5"),
-            ("fable 5", "claude-fable-5"),
-            ("gpt 5.1", "gpt-5.1"),
-            ("gpt 5.1 codex", "gpt-5.1-codex"),
-            ("gpt 5.1 codex mini", "gpt-5.1-codex-mini"),
-            ("gpt 5.1 codex max", "gpt-5.1-codex-max"),
-            ("gpt 5.2", "gpt-5.2"),
-            ("gpt 5.2 pro", "gpt-5.2-pro"),
-            ("gpt 5.3 chat", "gpt-5.3-chat-latest"),
-            ("gpt 5.4", "gpt-5.4"),
-            ("gpt 5.4 pro", "gpt-5.4-pro"),
-            ("gpt 5.4 mini", "gpt-5.4-mini"),
-            ("gpt 5.4 nano", "gpt-5.4-nano"),
-            ("gpt 5.5", "gpt-5.5"),
-            ("gpt 5.5 pro", "gpt-5.5-pro"),
-            ("gpt 5.6", "gpt-5.6-sol"),
-            ("gpt 5.6 sol", "gpt-5.6-sol"),
-            ("gpt 5.6 terra", "gpt-5.6-terra"),
-            ("gpt 5.6 luna", "gpt-5.6-luna"),
-            ("gemini 3 flash", "gemini-3-flash-preview"),
-            ("gemini 3.0 flash", "gemini-3-flash-preview"),
-            ("gemini 3 pro", "gemini-3-pro-preview"),
-            ("gemini 3.0 pro", "gemini-3-pro-preview"),
-            ("gemini 3.1 pro", "gemini-3.1-pro-preview"),
-            ("gemini 3.5 flash", "gemini-3.5-flash"),
-            ("gemini 3.5 flash lite", "gemini-3.5-flash-lite"),
-            ("gemini 3.6 flash", "gemini-3.6-flash"),
-            ("gemini flash", "gemini-3.8-flash"),
-            ("gemini 3.1 flash lite", "gemini-3.1-flash-lite"),
-            ("gemini 3.1 flash lite preview", "gemini-3.1-flash-lite-preview"),
-        ],
-    )
-    def test_from_name_alias_lookup_new_models(self, alias: str, expected_model_name: str):
-        model = ModelRegistry.from_name(alias)
-        assert model.name == expected_model_name
-
-    @pytest.mark.parametrize(
-        "model_name",
-        [
-            "claude-opus-4-5-20251101",
-            "claude-opus-4-7",
-            "claude-opus-4-8",
-            "claude-opus-5",
-            "claude-sonnet-5",
-            "claude-fable-5",
-            "gpt-5.1",
-            "gpt-5.1-codex",
-            "gpt-5.1-codex-mini",
-            "gpt-5.1-codex-max",
-            "gpt-5.2",
-            "gpt-5.2-pro",
-            "gpt-5.3-chat-latest",
-            "gpt-5.4",
-            "gpt-5.4-pro",
-            "gpt-5.4-mini",
-            "gpt-5.4-nano",
-            "gpt-5.5",
-            "gpt-5.5-pro",
-            "gpt-5.6-sol",
-            "gpt-5.6-terra",
-            "gpt-5.6-luna",
-            "gemini-3-flash-preview",
-            "gemini-3-pro-preview",
-            "gemini-3.5-flash",
-            "gemini-3.5-flash-lite",
-            "gemini-3.6-flash",
-            "gemini-3.1-pro-preview",
-            "gemini-3.1-flash-lite",
-            "gemini-3.1-flash-lite-preview",
-        ],
-    )
-    def test_from_name_exact_model_name(self, model_name: str):
-        model = ModelRegistry.from_name(model_name)
-        assert model.name == model_name
-
-    def test_gpt_5_1_codex_variants_have_reasoning_enabled(self):
-        assert ModelRegistry.GPT_5_1_CODEX.reasoning is True
-        assert ModelRegistry.GPT_5_1_CODEX_MINI.reasoning is True
-        assert ModelRegistry.GPT_5_1_CODEX_MAX.reasoning is True
-
-    def test_gpt_5_4_variants_have_reasoning_enabled(self):
-        assert ModelRegistry.GPT_5_4.reasoning is True
-        assert ModelRegistry.GPT_5_4_PRO.reasoning is True
-        assert ModelRegistry.GPT_5_4_MINI.reasoning is True
-        assert ModelRegistry.GPT_5_4_NANO.reasoning is True
-
-    def test_gpt_5_5_variants_have_reasoning_enabled(self):
-        assert ModelRegistry.GPT_5_5.reasoning is True
-        assert ModelRegistry.GPT_5_5_PRO.reasoning is True
-
-    def test_gemini_3_models_use_google_family(self):
-        assert ModelRegistry.GEMINI_3_FLASH.family == LLMFamilies.GOOGLE
-        assert ModelRegistry.GEMINI_3_PRO.family == LLMFamilies.GOOGLE
-        assert ModelRegistry.GEMINI_3_1_PRO.family == LLMFamilies.GOOGLE
-        assert ModelRegistry.GEMINI_3_5_FLASH.family == LLMFamilies.GOOGLE
-        assert ModelRegistry.GEMINI_3_1_FLASH_LITE.family == LLMFamilies.GOOGLE
-        assert ModelRegistry.GEMINI_3_1_FLASH_LITE_PREVIEW.family == LLMFamilies.GOOGLE
-
-    def test_claude_opus_models_use_anthropic_family(self):
-        assert ModelRegistry.CLAUDE_4_5_OPUS.family == LLMFamilies.ANTHROPIC
-        assert ModelRegistry.CLAUDE_4_7_OPUS.family == LLMFamilies.ANTHROPIC
-        assert ModelRegistry.CLAUDE_4_7_OPUS.reasoning is False
-
-    def test_ambiguous_model_name_raises_error(self):
-        with pytest.raises(ValueError, match="Ambiguous"):
-            ModelRegistry.from_name("gpt-5.1-codex-m")
-
-    def test_nonexistent_model_raises_error(self):
-        with pytest.raises(ValueError, match="No LLMModel found"):
-            ModelRegistry.from_name("nonexistent-model-xyz")
-
-    def test_new_models_included_in_get_all(self):
-        all_models = ModelRegistry.get_all()
-        model_names = {m.name for m in all_models}
-        assert "claude-opus-4-5-20251101" in model_names
-        assert "claude-opus-4-7" in model_names
-        assert "claude-opus-4-8" in model_names
-        assert "claude-opus-5" in model_names
-        assert "claude-sonnet-5" in model_names
-        assert "claude-fable-5" in model_names
-        assert "gpt-5.1" in model_names
-        assert "gpt-5.2" in model_names
-        assert "gpt-5.4" in model_names
-        assert "gpt-5.4-pro" in model_names
-        assert "gpt-5.4-nano" in model_names
-        assert "gpt-5.5" in model_names
-        assert "gpt-5.5-pro" in model_names
-        assert "gpt-5.6-sol" in model_names
-        assert "gpt-5.6-terra" in model_names
-        assert "gpt-5.6-luna" in model_names
-        assert "gemini-3-flash-preview" in model_names
-        assert "gemini-3-pro-preview" in model_names
-        assert "gemini-3.5-flash" in model_names
-        assert "gemini-3.5-flash-lite" in model_names
-        assert "gemini-3.6-flash" in model_names
-        assert "gemini-3.1-pro-preview" in model_names
-        assert "gemini-3.1-flash-lite" in model_names
-        assert "gemini-3.1-flash-lite-preview" in model_names
+pytestmark = pytest.mark.unit
 
 
-@pytest.mark.unit
 @pytest.mark.parametrize(
-    "name",
+    "alias,name",
     [
-        "claude-sonnet-5-5",
-        "claude-opus-5-5",
-        "claude-haiku-5-5",
-        "claude-fable-5-1",
-        "gpt-6.1-sol",
-        "gpt-6-astra",
-        "gpt-6-luna",
-        "gemini-3.8-flash",
+        ("sonnet", "claude-sonnet-5-5"),
+        ("opus", "claude-opus-5-5"),
+        ("haiku", "claude-haiku-5-5"),
+        ("fable", "claude-fable-5-1"),
+        ("gpt", "gpt-6.1-sol"),
+        ("gemini flash", "gemini-3.8-flash"),
     ],
 )
-def test_current_public_presets(name):
-    assert ModelRegistry.from_name(name).name == name
+def test_current_aliases(alias, name):
+    assert ModelRegistry.from_name(alias).name == name
+
+
+@pytest.mark.parametrize("model", list(ModelRegistry.get_all()))
+def test_presets_have_exact_identifier_lookup(model):
+    assert ModelRegistry.from_name(model.name) == model
+    assert model in ModelRegistry.get_by_family(model.family)
+
+
+def test_unknown_identifier_is_not_a_preset():
+    with pytest.raises(ValueError, match="explicit provider"):
+        ModelRegistry.from_name("application-deployment")

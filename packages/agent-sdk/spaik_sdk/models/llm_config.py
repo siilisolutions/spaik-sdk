@@ -36,7 +36,10 @@ class LLMConfig:
 
     @property
     def model_name(self) -> str:
-        return self.model.name if isinstance(self.model, LLMModel) else self.model
+        name = self.model.name if isinstance(self.model, LLMModel) else self.model
+        if not name and self.chat_model is not None:
+            name = getattr(self.chat_model, "model_name", None) or getattr(self.chat_model, "model", "")
+        return str(name)
 
     @property
     def provider_name(self) -> str:
@@ -44,7 +47,14 @@ class LLMConfig:
             return self.provider_type.value
         if self.provider_type:
             return self.provider_type
-        return self.model.family if isinstance(self.model, LLMModel) else "injected"
+        if isinstance(self.model, LLMModel):
+            return self.model.family
+        if self.chat_model is not None:
+            for base in type(self.chat_model).__mro__:
+                module = base.__module__.split(".")[0]
+                if module.startswith("langchain_") and module != "langchain_core":
+                    return module.removeprefix("langchain_")
+        return "injected"
 
     def get_model_wrapper(self) -> LLMWrapper:
         if self._model_wrapper is None:
@@ -71,8 +81,9 @@ class LLMConfig:
         if provider is not None:
             kwargs.update(provider.get_model_config(self))
         kwargs.update(self.provider_kwargs)
-        if provider is not None and self.provider_name in {"azure_openai", "azure_ai_foundry"}:
+        if self.provider is not None or (provider is not None and self.provider_name in {"azure_openai", "azure_ai_foundry"}):
             kwargs["model"] = self.model_name
+            assert provider is not None
             model = provider.create_langchain_model(self, kwargs)
         else:
             name = {"google": "google_genai", "mistral": "mistralai"}.get(self.provider_name, self.provider_name)
@@ -83,16 +94,19 @@ class LLMConfig:
         return LLMWrapper(model, cache, identity)
 
     def _preset_kwargs(self) -> dict[str, Any]:
-        if not isinstance(self.model, LLMModel):
+        from spaik_sdk.models.model_registry import ModelRegistry
+
+        if not isinstance(self.model, LLMModel) or self.model not in ModelRegistry.get_all():
             return {}
         if self.model.family == "anthropic":
             kwargs: dict[str, Any] = {"max_tokens": self.max_output_tokens or 8192}
             if self.model.name.startswith(("claude-opus-5", "claude-fable-5", "claude-sonnet-5", "claude-haiku-5")):
                 if not self.reasoning and self.model.name in {"claude-opus-5-5", "claude-fable-5-1"}:
                     raise ValueError(f"{self.model.name} requires adaptive thinking")
-                kwargs["thinking"] = {"type": "adaptive" if self.reasoning else "disabled"}
+                minimum = "between_tools" if self.model.name == "claude-sonnet-5-5" else "disabled"
+                kwargs["thinking"] = {"type": "adaptive" if self.reasoning else minimum}
                 if self.reasoning:
-                    kwargs["output_config"] = {"effort": self.reasoning_effort}
+                    kwargs["model_kwargs"] = {"output_config": {"effort": self.reasoning_effort}}
             elif self.reasoning and self.model.reasoning:
                 kwargs["thinking"] = {"type": "enabled", "budget_tokens": self.reasoning_budget_tokens}
             return kwargs

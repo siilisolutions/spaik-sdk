@@ -17,7 +17,7 @@ from spaik_sdk.config.env import env_config
 from spaik_sdk.llm.cancellation_handle import CancellationHandle
 from spaik_sdk.llm.cost.cost_estimate import CostSummary
 from spaik_sdk.llm.cost.cost_provider import CostContext, CostProvider
-from spaik_sdk.llm.langchain_service import LangChainService
+from spaik_sdk.llm.langchain_service import LangChainService, RunCancelled
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.prompt.get_prompt_loader import get_prompt_loader
@@ -94,10 +94,14 @@ class BaseAgent(ABC):
         self.playback = recorder.get_playback() if recorder is not None else None
         self.cancellation_handle = cancellation_handle
         kwargs = self.llm_config.provider_kwargs
+        injected = self.llm_config.chat_model
+        key = kwargs.get("api_key", env_config.get_proxy_api_key()) or getattr(injected, "openai_api_key", None)
+        if hasattr(key, "get_secret_value"):
+            key = key.get_secret_value()
         self.cost_provider = cost_provider or CostProvider(
             self.llm_config.provider_name,
-            base_url=str(kwargs.get("base_url", env_config.get_proxy_base_url())),
-            api_key=kwargs.get("api_key", env_config.get_proxy_api_key()) or None,
+            base_url=str(kwargs.get("base_url") or getattr(injected, "openai_api_base", None) or env_config.get_proxy_base_url()),
+            api_key=key or None,
         )
         self._running = False
 
@@ -116,10 +120,18 @@ class BaseAgent(ABC):
                 )
             yield ui.RunStartedEvent(thread_id=self.thread_container.thread_id, run_id=run_id)
             yield ui.MessagesSnapshotEvent(messages=self.thread_container.messages)
+            yield ui.StateSnapshotEvent(snapshot=self.thread_container.envelope.metadata.get("state", {}))
             async for event in self._create_langchain_service().stream():
+                if isinstance(event, ui.ToolCallResultEvent):
+                    self.trace.add_step(f"Tool {event.tool_call_id}: {event.content}")
                 yield event
             yield ui.MessagesSnapshotEvent(messages=self.thread_container.messages)
             yield ui.RunFinishedEvent(thread_id=self.thread_container.thread_id, run_id=run_id)
+        except RunCancelled:
+            yield ui.MessagesSnapshotEvent(messages=self.thread_container.messages)
+            yield ui.RunFinishedEvent(
+                thread_id=self.thread_container.thread_id, run_id=run_id, outcome=ui.RunFinishedCancelledOutcome(type="cancelled")
+            )
         except asyncio.CancelledError:
             raise
         except Exception as exc:
@@ -195,6 +207,8 @@ class BaseAgent(ABC):
         else:
             model = self.llm_config.as_structured_response_config().get_model_wrapper().get_langchain_model()
             response = await model.with_structured_output(output_schema, include_raw=True).ainvoke(prompt)
+            if not isinstance(response, dict):
+                raise TypeError("Structured output with include_raw must return a dictionary")
             if response.get("parsing_error"):
                 raise response["parsing_error"]
             result = output_schema.model_validate(response["parsed"])
@@ -219,7 +233,6 @@ class BaseAgent(ABC):
             )
         if self.recorder is not None:
             self.recorder.record_structured(result.model_dump())
-            self.recorder.request_completed()
         self.trace.add_structured_response_output(result)
         return result
 

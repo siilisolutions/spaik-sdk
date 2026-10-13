@@ -10,9 +10,8 @@ Run:
 """
 
 from dotenv import load_dotenv
-
+from spaik_sdk import message_text
 from spaik_sdk.agent.base_agent import BaseAgent
-from spaik_sdk.thread.models import MessageBlockType
 from spaik_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
 
 
@@ -38,7 +37,7 @@ class SpawnTools(ToolProvider):
             """Delegate a task to a subagent that echoes the message."""
             sub = SubAgent(system_prompt="Use the echo tool to echo the message exactly.")
             msg = sub.spawn(task)
-            return msg.get_text_content()
+            return message_text(msg)
 
         return [spawn_sub]
 
@@ -50,19 +49,19 @@ class MainAgent(BaseAgent):
 
 def main() -> None:
     agent = MainAgent(system_prompt="Use spawn_sub to delegate tasks.")
-    response = agent.get_response("Spawn a subagent that echoes: hello world")
+    agent.get_response("Spawn a subagent that echoes: hello world")
 
     parent_tool_names = [
-        b.tool_name
-        for b in response.blocks
-        if b.type == MessageBlockType.TOOL_USE and b.tool_name is not None
+        call.function.name
+        for message in agent.thread_container.messages
+        if message.role == "assistant"
+        for call in message.tool_calls or []
     ]
     print(f"Parent thread tool calls: {parent_tool_names}")
     print("  -> should only contain ['spawn_sub'], not 'echo'")
 
     assert parent_tool_names == ["spawn_sub"], (
-        f"Expected only ['spawn_sub'] but got {parent_tool_names}. "
-        "The subagent's tool calls leaked into the parent thread."
+        f"Expected only ['spawn_sub'] but got {parent_tool_names}. The subagent's tool calls leaked into the parent thread."
     )
     print("\nAll good — subagent context isolated correctly.")
 

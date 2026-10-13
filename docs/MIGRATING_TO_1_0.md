@@ -1,6 +1,6 @@
 # Migrating to Spaik 1.0
 
-This branch is an unreleased migration. The release gates in [the implementation plan](SPAIk_1_0_PLAN.md) must pass before publishing stable packages.
+This branch is an unreleased migration. The release gates in [the implementation plan](SPAIK_1_0_PLAN.md) must pass before publishing stable packages.
 
 ## Models
 
@@ -31,3 +31,19 @@ Coding-agent wrappers are deprecated and require their pinned legacy SDK. See [t
 ## React and Material
 
 The conversation model is AG-UI `Message`. Use `AgentChat agent={new HttpAgent(...)}` for another AG-UI backend or `AgentChat baseUrl="..."` for Spaik's managed threads. A custom `ThreadRepository` plus `createAgent(threadId)` integrates other persistence backends. Sidebar requires a repository. The official AG-UI client owns message and run state; hooks subscribe to it. Use `renderMessage` and `renderState` for custom presentation.
+
+### Legacy export/import commands
+
+In a separate environment containing `spaik-sdk==0.11.1`, run:
+
+```sh
+python scripts/export_legacy_threads.py old-data export.json
+```
+
+Only export your own trusted legacy pickle store. Under 1.0, import to a new directory:
+
+```sh
+python -m spaik_sdk.thread.migration export.json new-data
+```
+
+Supply `--empty-owner USER_ID` if a legacy thread has no user message. Existing destination IDs are rejected. Original IDs, ordering, authors, timestamps, attachments and tool-provider references are preserved; legacy block IDs are retained as metadata. Reasoning/tool results become canonical AG-UI messages. Signatures absent from legacy persistence cannot be reconstructed. Historical token counts are retained; historical price-table estimates are not imported as reported charges.

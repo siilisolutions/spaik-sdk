@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -9,6 +10,8 @@ from langchain_core.language_models.fake_chat_models import FakeListChatModel
 from langchain_core.messages import AIMessage, message_to_dict
 
 from spaik_sdk import BaseAgent, LLMConfig, ThreadContainer
+from spaik_sdk.llm.cancellation_handle import CancellationHandle
+from spaik_sdk.llm.cost.cost_estimate import CostEstimate
 from spaik_sdk.llm.cost.cost_provider import CostContext, CostProvider
 from spaik_sdk.server.api.routers.api_builder import ApiBuilder
 from spaik_sdk.server.authorization.base_authorizer import BaseAuthorizer
@@ -45,6 +48,7 @@ def test_arbitrary_model_does_not_use_presets():
 async def test_cost_zero_and_missing(caplog):
     provider = CostProvider()
     zero = await provider.resolve(CostContext(provider="custom", metadata={"cost": 0, "currency": "EUR"}))
+    assert zero is not None
     assert zero.cost == 0
     assert zero.currency == "EUR"
     for _ in range(3):
@@ -57,6 +61,7 @@ async def test_openrouter_metadata_avoids_lookup():
     provider = CostProvider(base_url="https://openrouter.ai/api/v1", api_key="test")
     with patch("httpx.AsyncClient.get") as lookup:
         cost = await provider.resolve(CostContext(provider="openai", response_id="gen", metadata={"usage": {"cost": 0.1}}))
+        assert cost is not None
         assert cost.cost == 0.1
         await provider.resolve(CostContext(provider="openai", response_id="gen"))
         lookup.assert_not_called()
@@ -75,8 +80,13 @@ async def test_lookup_failure_is_cached():
 def test_cost_aggregation_is_not_a_false_total():
     thread = ThreadContainer()
     for index, cost in enumerate([{"cost": 1, "currency": "USD"}, None, {"cost": 2, "currency": "EUR"}]):
-        thread.add_invocation(Invocation(id=str(index), message_id="m", provider="p", model="m", cost=cost))
+        thread.add_invocation(
+            Invocation(
+                id=str(index), message_id="m", provider="p", model="m", cost=CostEstimate.model_validate(cost) if cost is not None else None
+            )
+        )
     summary = thread.get_cost_summary()
+    assert summary is not None
     assert summary.totals == {"USD": 1, "EUR": 2}
     assert not summary.complete
     assert summary.unavailable_invocations == 1
@@ -91,6 +101,7 @@ async def test_json_round_trip_private_reasoning(tmp_path):
     repository = LocalFileThreadRepository(str(tmp_path))
     await repository.save_thread(thread)
     loaded = await repository.load_thread(thread.thread_id)
+    assert loaded is not None
     assert loaded.owner_id == "alice"
     assert loaded.get_langchain_messages()[-1].content[0]["signature"] == "signed"
     assert "replay" not in loaded.public_dict()
@@ -117,7 +128,7 @@ def test_authoritative_history_and_sse():
     thread_id = c.post("/threads", json={}).json()["id"]
     assert c.get(f"/threads/{thread_id}", headers={"x-user": "bob"}).status_code == 403
     assert len(c.get("/threads").json()["threads"]) == 1
-    body = {"threadId": thread_id, "runId": "run", "messages": [{"id": "u", "role": "user", "content": "hi"}]}
+    body: dict[str, Any] = {"threadId": thread_id, "runId": "run", "messages": [{"id": "u", "role": "user", "content": "hi"}]}
     response = c.post(f"/threads/{thread_id}/runs", json=body)
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/event-stream")
@@ -131,3 +142,207 @@ def test_authoritative_history_and_sse():
     body["threadId"] = "wrong"
     assert c.post(f"/threads/{thread_id}/runs", json=body).status_code == 400
     assert c.delete(f"/threads/{thread_id}").status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_tool_error_and_replay_controls():
+    from langchain_core.language_models.fake_chat_models import FakeMessagesListChatModel
+    from langchain_core.tools import tool
+
+    from spaik_sdk.tools.tool_provider import ToolProvider
+
+    class Model(FakeMessagesListChatModel):
+        def bind_tools(self, tools, **kwargs):
+            return self
+
+    class Tools(ToolProvider):
+        def get_tools(self):
+            @tool
+            def fail() -> str:
+                """Fail deliberately."""
+                raise ValueError("expected failure")
+
+            return [fail]
+
+    provider = Tools(persist_tool_block_history=False)
+    agent = BaseAgent(
+        system_prompt="test",
+        tool_providers=[provider],
+        chat_model=Model(
+            responses=[AIMessage(content="", tool_calls=[{"id": "call", "name": "fail", "args": {}}]), AIMessage(content="recovered")]
+        ),
+    )
+    events = [e async for e in agent.get_event_stream("test")]
+    assert isinstance(events[-1], ui.RunFinishedEvent)
+    assert any(isinstance(e, ui.ToolCallResultEvent) and "expected failure" in e.content for e in events)
+    history = agent.thread_container.get_langchain_messages()
+    assert not any(getattr(m, "tool_call_id", None) == "call" for m in history)
+    assert any('<tool_call tool="fail"/>' in str(m.content) for m in history)
+    assert "expected failure" in agent.trace.to_string()
+
+
+@pytest.mark.asyncio
+async def test_cancelled_partial_transcript():
+    class Cancellation(CancellationHandle):
+        def __init__(self):
+            self.calls = 0
+
+        async def is_cancelled(self):
+            self.calls += 1
+            return self.calls > 3
+
+    agent = BaseAgent(system_prompt="test", chat_model=FakeListChatModel(responses=["long answer"]), cancellation_handle=Cancellation())
+    events = [e async for e in agent.get_event_stream("test")]
+    assert isinstance(events[-1], ui.RunFinishedEvent)
+    assert isinstance(events[-1].outcome, ui.RunFinishedCancelledOutcome)
+    assert agent.thread_container.messages[-1].content
+    assert not agent._running
+
+
+@pytest.mark.asyncio
+async def test_legacy_import_preserves_metadata_and_refuses_overwrite(tmp_path):
+    from spaik_sdk.thread.migration import import_threads
+
+    archive = {
+        "format": "spaik-legacy-export-v1",
+        "threads": [
+            {
+                "id": "thread",
+                "last_activity_time": 42,
+                "system_prompt": "private",
+                "messages": [
+                    {
+                        "id": "user",
+                        "ai": False,
+                        "author_id": "alice",
+                        "author_name": "Alice",
+                        "timestamp": 10,
+                        "attachments": [{"file_id": "f", "mime_type": "image/png"}],
+                        "blocks": [{"id": "b", "type": "plain", "content": "hello"}],
+                    },
+                    {
+                        "id": "assistant",
+                        "ai": True,
+                        "author_id": "agent",
+                        "timestamp": 20,
+                        "blocks": [
+                            {"id": "r", "type": "reasoning", "content": "summary"},
+                            {
+                                "id": "t",
+                                "type": "tool_use",
+                                "tool_call_id": "call",
+                                "tool_name": "test",
+                                "tool_call_args": {},
+                                "tool_call_response": "result",
+                                "tool_provider_id": "provider",
+                            },
+                        ],
+                    },
+                ],
+            }
+        ],
+    }
+    source = tmp_path / "export.json"
+    source.write_text(json.dumps(archive))
+    destination = tmp_path / "new"
+    assert await import_threads(source, destination) == 1
+    repository = LocalFileThreadRepository(str(destination))
+    thread = await repository.load_thread("thread")
+    assert thread is not None
+    assert thread.owner_id == "alice"
+    assert [m.id for m in thread.messages] == ["user", "r", "assistant", "t:result"]
+    assert thread.envelope.message_metadata["user"]["attachments"][0]["file_id"] == "f"
+    assert thread.envelope.replay["assistant"]["tool_providers"]["call"] == "provider"
+    assert thread.envelope.created_at == 10
+    assert thread.envelope.last_activity_time == 42
+    with pytest.raises(ValueError, match="already exists"):
+        await import_threads(source, destination)
+    assert json.loads(source.read_text()) == archive
+
+
+@pytest.mark.asyncio
+async def test_disconnect_saves_partial_output_and_releases_run(tmp_path):
+    import asyncio
+
+    import anyio
+
+    from spaik_sdk.server.storage.impl.local_file_thread_repository import LocalFileThreadRepository
+
+    repository = LocalFileThreadRepository(str(tmp_path))
+    thread = ThreadContainer(owner_id="user")
+    await repository.save_thread(thread)
+    agent = BaseAgent(system_prompt="test", chat_model=FakeListChatModel(responses=["long response"], sleep=0.02))
+    builder = ApiBuilder(repository=repository, agent=agent)
+    app = FastAPI()
+    app.include_router(builder.build_thread_router())
+    disconnect = asyncio.Event()
+    received = False
+    chunks = []
+    body = json.dumps(
+        {"threadId": thread.thread_id, "runId": "disconnect", "messages": [{"id": "u", "role": "user", "content": "test"}]}
+    ).encode()
+
+    async def receive():
+        nonlocal received
+        if not received:
+            received = True
+            return {"type": "http.request", "body": body, "more_body": False}
+        await disconnect.wait()
+        return {"type": "http.disconnect"}
+
+    async def send(message):
+        chunks.append(message)
+        if b"TEXT_MESSAGE_CONTENT" in message.get("body", b""):
+            disconnect.set()
+
+    scope = {
+        "type": "http",
+        "asgi": {"version": "3.0", "spec_version": "2.0"},
+        "method": "POST",
+        "path": f"/threads/{thread.thread_id}/runs",
+        "raw_path": f"/threads/{thread.thread_id}/runs".encode(),
+        "query_string": b"",
+        "headers": [(b"content-type", b"application/json")],
+        "client": ("127.0.0.1", 1),
+        "server": ("test", 80),
+        "scheme": "http",
+        "http_version": "1.1",
+        "root_path": "",
+    }
+    with anyio.fail_after(5):
+        await app(scope, receive, send)
+    loaded = await repository.load_thread(thread.thread_id)
+    assert loaded is not None
+    assert loaded.messages[-1].content
+    assert loaded.messages[-1].content != "long response"
+    assert not builder._thread_router.active
+
+
+@pytest.mark.asyncio
+async def test_overlapping_runs_are_rejected_and_cancellation_releases_reservation():
+    import asyncio
+
+    import httpx
+
+    app = FastAPI()
+    builder = ApiBuilder.local(
+        BaseAgent(system_prompt="test", chat_model=FakeListChatModel(responses=["long answer"], sleep=0.05)), in_memory=True
+    )
+    app.include_router(builder.build_thread_router())
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c:
+        thread_id = (await c.post("/threads", json={})).json()["id"]
+        body = {"threadId": thread_id, "runId": "first", "messages": [{"id": "u", "role": "user", "content": "test"}]}
+        running = asyncio.create_task(c.post(f"/threads/{thread_id}/runs", json=body))
+        for _ in range(100):
+            active = builder._thread_router.active.get(thread_id)
+            if active and active.task:
+                break
+            await asyncio.sleep(0.001)
+        assert active and active.task
+        conflict = await c.post(f"/threads/{thread_id}/runs", json={**body, "runId": "overlap"})
+        assert conflict.status_code == 409
+        assert (await c.post(f"/threads/{thread_id}/cancel")).status_code == 200
+        response = await running
+        assert response.status_code == 200
+        assert "cancelled" in response.text
+        assert not builder._thread_router.active

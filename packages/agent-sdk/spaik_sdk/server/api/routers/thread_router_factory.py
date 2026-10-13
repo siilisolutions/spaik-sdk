@@ -1,9 +1,19 @@
 import asyncio
 import copy
 from collections.abc import Callable
-from dataclasses import asdict
+from dataclasses import asdict, dataclass, field
 
-from ag_ui.core import MessagesSnapshotEvent, RunAgentInput, RunFinishedEvent, UserMessage
+import anyio
+from ag_ui.core import (
+    MessagesSnapshotEvent,
+    RunAgentInput,
+    RunFinishedCancelledOutcome,
+    RunFinishedEvent,
+    RunStartedEvent,
+    TextMessageEndEvent,
+    ToolCallResultEvent,
+    UserMessage,
+)
 from ag_ui.encoder import EventEncoder
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
@@ -16,6 +26,13 @@ from spaik_sdk.server.services.thread_service import ThreadService
 from spaik_sdk.server.storage.thread_filter import ThreadFilter
 from spaik_sdk.thread.thread_container import ThreadContainer
 from spaik_sdk.tracing.agent_trace import AgentTrace
+
+
+@dataclass
+class ActiveRun:
+    task: asyncio.Task | None = None
+    cancelled: bool = False
+    done: asyncio.Event = field(default_factory=asyncio.Event)
 
 
 class ThreadRouterFactory:
@@ -35,7 +52,7 @@ class ThreadRouterFactory:
         self.agent = agent
         self.agent_factory = agent_factory
         self.authorizer = authorizer or DummyAuthorizer()
-        self.active: dict[str, asyncio.Task | None] = {}
+        self.active: dict[str, ActiveRun] = {}
 
     def create_router(self, prefix: str = "/threads") -> APIRouter:
         router = APIRouter(prefix=prefix, tags=["threads"])
@@ -103,9 +120,12 @@ class ThreadRouterFactory:
         @router.post("/{thread_id}/cancel")
         async def cancel(thread_id: str, current=Depends(user)):
             await owned(thread_id, current, "can_post_message")
-            task = self.active.get(thread_id)
-            if task:
-                task.cancel()
+            active = self.active.get(thread_id)
+            if active:
+                active.cancelled = True
+                if active.task:
+                    active.task.cancel()
+                await active.done.wait()
             return {"success": True, "message": "Cancellation requested"}
 
         @router.post("/{thread_id}/runs")
@@ -115,7 +135,8 @@ class ThreadRouterFactory:
             # Reserve before awaiting the repository: no two requests can both pass this check.
             if thread_id in self.active:
                 raise HTTPException(409, "Thread already has an active run")
-            self.active[thread_id] = None
+            active = ActiveRun()
+            self.active[thread_id] = active
             try:
                 thread = await owned(thread_id, current, "can_post_message")
                 if input.tools or input.resume:
@@ -172,23 +193,40 @@ class ThreadRouterFactory:
                 await self.service.update_thread(thread)
             except BaseException:
                 self.active.pop(thread_id, None)
+                active.done.set()
                 raise
 
             async def events():
-                self.active[thread_id] = asyncio.current_task()
+                active.task = asyncio.current_task()
                 encoder = EventEncoder(accept=request.headers.get("accept", "text/event-stream"))
                 try:
+                    if active.cancelled:
+                        yield encoder.encode(RunStartedEvent(thread_id=thread_id, run_id=input.run_id))
+                        yield encoder.encode(
+                            RunFinishedEvent(
+                                thread_id=thread_id, run_id=input.run_id, outcome=RunFinishedCancelledOutcome(type="cancelled")
+                            )
+                        )
+                        return
                     async for event in agent.get_event_stream(run_id=input.run_id):
+                        if isinstance(event, (TextMessageEndEvent, ToolCallResultEvent)):
+                            await self.service.update_thread(thread)
                         yield encoder.encode(event)
                 except asyncio.CancelledError:
                     if not await request.is_disconnected():
                         yield encoder.encode(MessagesSnapshotEvent(messages=thread.messages))
-                        yield encoder.encode(RunFinishedEvent(thread_id=thread_id, run_id=input.run_id, outcome={"type": "cancelled"}))
+                        yield encoder.encode(
+                            RunFinishedEvent(
+                                thread_id=thread_id, run_id=input.run_id, outcome=RunFinishedCancelledOutcome(type="cancelled")
+                            )
+                        )
                 finally:
                     try:
-                        await asyncio.shield(self.service.update_thread(thread))
+                        with anyio.CancelScope(shield=True):
+                            await self.service.update_thread(thread)
                     finally:
                         self.active.pop(thread_id, None)
+                        active.done.set()
 
             return StreamingResponse(
                 events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}

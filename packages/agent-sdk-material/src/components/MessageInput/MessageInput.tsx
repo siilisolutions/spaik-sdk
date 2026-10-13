@@ -165,6 +165,7 @@ export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGen
                     {isGenerating ? (
                         <IconButton
                             onClick={onCancelGeneration}
+                            aria-label="Stop generation"
                             sx={{
                                 width: 40,
                                 height: 40,

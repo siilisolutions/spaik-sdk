@@ -41,14 +41,14 @@ class CostProvider:
         task = asyncio.create_task(self._resolve(context))
         if key:
             self._pending[key] = task
-        try:
-            result = await asyncio.shield(task)
-            if key:
-                self._cache[key] = result
-            return result
-        finally:
-            if key:
+
+            def complete(done: asyncio.Task[CostEstimate | None]) -> None:
                 self._pending.pop(key, None)
+                if not done.cancelled():
+                    self._cache[key] = done.result()
+
+            task.add_done_callback(complete)
+        return await asyncio.shield(task)
 
     async def _resolve(self, context: CostContext) -> CostEstimate | None:
         metadata = context.metadata

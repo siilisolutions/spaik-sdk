@@ -37,13 +37,23 @@ Commit each validated implementation chunk with its docs. Do not merge or publis
 ## Progress
 
 - [x] Clean baseline confirmed; implementation branch created.
-- [ ] Current catalog verification and legacy release validation.
-- [ ] Coding-agent final legacy patch prepared/published/tagged.
+- [x] Current catalog verified against official provider documentation; legacy coding-agent wheel imports against released SDK 0.11.1.
+- [ ] Final legacy patch 0.2.3 prepared and wheel-tested; publication/tagging blocked by absent credentials. Source removal waits for that gate.
 - [x] Unrestricted model construction and reported cost resolver implemented; initial deterministic tests pass.
-- [ ] Canonical AG-UI backend and JSON migration (backend vertical slice implemented; migration utilities and expanded validation pending).
-- [ ] Independent AG-UI React/Material integration.
-- [ ] Peripheral cleanup and complete documentation.
+- [x] Canonical AG-UI backend, JSON migration, owner/history/replay/checkpoint/cancellation validation.
+- [x] Independent AG-UI React/Material integration, Python-to-TypeScript contract and browser coverage.
+- [x] Peripheral cleanup, optional dependencies and current READMEs/examples/templates/agent guidance.
 - [ ] Contract/browser/install/live checks and release candidates.
 - [ ] Stable 1.0 publication.
 
-Baseline tracked production: Python SDK 10,171 lines; hooks 1,732; Material 3,005; 33 mandatory Python dependencies. Initial backend migration removes approximately 4,000 net lines and reduces mandatory dependencies to 7. Frontend and release validation remain in progress.
+Baseline tracked production: Python SDK 10,171 lines; hooks 1,732; Material 3,005; 33 mandatory Python dependencies. Initial backend migration removes approximately 4,000 net lines and reduces mandatory dependencies to 8 (including explicit AnyIO for cancellation-safe persistence). Frontend and release validation remain in progress.
+
+## Remaining release work
+
+- Merge and publish the independently validated preparatory branch from main; keep coding-agent 0.2.3 pinned to 0.11.1. Then remove legacy coding source and its release workflow from the 1.0 line.
+- GitHub CLI, local PyPI and npm authentication were absent when checked. No package or remote tag has been published from this session.
+- Local candidate metadata is SDK `1.0.0rc1`, React/Material `1.0.0-rc.1`, workflow convenience `0.4.0rc1`. These are not stable releases.
+- OpenAI GPT-6 Luna and Anthropic Sonnet 5.5 minimal live checks passed. Google/Azure live checks require appropriate configured credentials. Sonnet 5.5 minimum thinking is `between_tools`; GPT-6.1 Sol/Astra minimum effort is `low`.
+- Finish installed-artifact validation and record final results in `1_0_VALIDATION.md`; run the unified main-only release workflow for RC publication.
+- Validate published RC installations in staging before committing stable versions. PyPI/npm version metadata requires rebuilding stable artifacts from the same validated source; RC binaries cannot be relabeled as stable.
+- After stable 1.0, fixes go to 1.0.x. The 1.1 feature has not been chosen and requires its own proposal.

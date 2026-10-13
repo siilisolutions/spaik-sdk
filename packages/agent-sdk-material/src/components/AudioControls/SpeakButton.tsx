@@ -15,12 +15,12 @@ interface SpeakButtonProps {
  * Button to play text-to-speech for a message.
  * Shows a speaker icon that plays the text when clicked.
  */
-export function SpeakButton({ 
-    text, 
-    baseUrl, 
+export function SpeakButton({
+    text,
+    baseUrl,
     model = 'tts-1',  // Fast model by default
     voice = 'alloy',
-    size = 'small' 
+    size = 'small'
 }: SpeakButtonProps) {
     const { speak, stop, isPlaying, isLoading } = useTextToSpeech({
         baseUrl,
@@ -44,8 +44,9 @@ export function SpeakButton({
 
     return (
         <Tooltip title={getTooltip()}>
-            <IconButton 
-                onClick={handleClick} 
+            <IconButton
+                onClick={handleClick}
+                aria-label={getTooltip()}
                 size={size}
                 sx={{
                     color: (isPlaying || isLoading) ? 'primary.main' : 'action.active',

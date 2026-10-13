@@ -1,6 +1,6 @@
 {
     "name": "spaik-sdk-material",
-    "version": "0.1.2",
+    "version": "1.0.0-rc.1",
     "description": "Material UI components for Spaik SDK - themeable chat UI for AI agents",
     "type": "module",
     "main": "dist/index.js",
@@ -26,12 +26,13 @@
         "dev": "bun run tsc --watch",
         "lint": "bun run eslint src --ext .ts,.tsx",
         "lint:fix": "bun run eslint src --ext .ts,.tsx --fix",
-        "type-check": "bun run tsc --noEmit"
+        "type-check": "bun run tsc --noEmit",
+        "test": "bunx playwright test --config ../../playwright.config.ts"
     },
     "peerDependencies": {
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
-        "spaik-sdk-react": "^0.1.0"
+        "spaik-sdk-react": "^1.0.0-rc.1"
     },
     "dependencies": {
         "@emotion/react": "^11.11.3",

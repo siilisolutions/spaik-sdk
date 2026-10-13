@@ -146,7 +146,7 @@ def show_getting_started() -> None:
     click.echo("        - uses: terminal/run")
     click.echo("          with:")
     click.echo('            command: echo "Hello!"')
-    click.echo("        - uses: agents/claude_code")
+    click.echo("        - uses: agents/general")
     click.echo("          with:")
     click.echo('            prompt: "Do something"')
     click.echo()
@@ -158,7 +158,7 @@ def show_getting_started() -> None:
     click.echo("  terminal/script    - Run script files")
     click.echo("  git/download       - Clone/download repos")
     click.echo("  git/push           - Push changes")
-    click.echo("  agents/claude_code - Claude Code CLI")
+    click.echo("  agents/general - Spaik agent")
     click.echo("  agents/general     - General LLM agent")
     click.echo("  agents/structured  - Structured JSON responses")
     click.echo("  audio/stt          - Speech-to-text")
@@ -352,7 +352,7 @@ def cli(
           - uses: terminal/run
             with:
               command: echo "${{ default_value }}"
-          - uses: agents/claude_code
+          - uses: agents/general
             with:
               prompt: "Do something"
               cwd: "."
@@ -372,7 +372,7 @@ def cli(
     terminal/script    - Run script files
     git/download       - Clone/download from repos
     git/push           - Push changes
-    agents/claude_code - Claude Code CLI agent
+    agents/general - Spaik agent
     agents/general     - General LLM agent
     agents/structured  - Structured JSON responses
     audio/stt          - Speech-to-text (record & transcribe)

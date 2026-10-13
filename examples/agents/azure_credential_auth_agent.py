@@ -28,7 +28,7 @@ def main() -> None:
     agent = AzureCredentialAuthAgent(
         system_prompt="You are a concise assistant.",
         llm_config=LLMConfig(
-            model=ModelRegistry.GPT_4_1_MINI,
+            model=ModelRegistry.GPT_6_1_SOL,
             provider=AzureProvider(azure_ad_token_provider=create_token_provider()),
             reasoning=False,
             tool_usage=False,

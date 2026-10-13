@@ -11,11 +11,7 @@ from spaik_sdk.models.providers.base_provider import BaseProvider
 class AnthropicProvider(BaseProvider):
     def get_model_config(self, config: LLMConfig) -> Dict[str, Any]:
         """Get Anthropic provider configuration (provider-specific only)."""
-        result: Dict[str, Any] = {
-            "model_kwargs": {
-                "extra_headers": {"anthropic-beta": "prompt-caching-2024-07-31"}  # TODO add output length header
-            },
-        }
+        result: Dict[str, Any] = {}
 
         if env_config.is_proxy_mode():
             result.update(self._get_proxy_config("anthropic_api_key", "base_url", "default_headers"))

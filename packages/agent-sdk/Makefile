@@ -64,7 +64,7 @@ test-pattern:
 
 # Run linting checks
 lint:
-	uv run ruff check .
+	uv run ruff check --no-fix .
 
 # Run linting with auto-fix
 lint-fix:

@@ -23,6 +23,6 @@ class TestOllamaProvider:
             "base_url": "http://localhost:11434",
         }
 
-        with patch("spaik_sdk.models.providers.ollama_provider.ChatOllama") as mock_chat_ollama:
+        with patch("langchain_ollama.ChatOllama") as mock_chat_ollama:
             provider.create_langchain_model(config, full_config)
             mock_chat_ollama.assert_called_once_with(**full_config)

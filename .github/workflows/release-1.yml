@@ -1,0 +1,74 @@
+name: Release Spaik 1.x
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Already committed SDK version, e.g. 1.0.0rc1 or 1.0.0'
+        required: true
+        type: string
+
+concurrency: spaik-release
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    environment: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Validate committed package versions
+        id: versions
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: python scripts/check_release_versions.py
+      - name: Install validated dependencies
+        run: |
+          uv sync --project packages/agent-sdk --all-extras --dev --locked
+          bun install --frozen-lockfile
+      - name: Validate release source
+        run: |
+          uv run --project packages/agent-sdk --no-sync ruff check --no-fix packages/agent-sdk
+          uv run --project packages/agent-sdk --no-sync ty check packages/agent-sdk/spaik_sdk packages/agent-sdk/tests
+          uv run --project packages/agent-sdk --no-sync python -m pytest packages/agent-sdk/tests --no-cov
+          bun run build:packages
+          packages/agent-sdk/.venv/bin/python scripts/generate_ag_ui_fixture.py
+          bun test packages/agent-sdk-hooks/tests
+          bunx playwright install --with-deps chromium
+          bunx playwright test
+      - name: Build and validate installed SDK wheel
+        run: |
+          uv build --project packages/agent-sdk --out-dir release-dist
+          uv venv /tmp/spaik-release-check
+          uv pip install --python /tmp/spaik-release-check/bin/python release-dist/*.whl
+          /tmp/spaik-release-check/bin/python -c 'from spaik_sdk import BaseAgent; from langchain_core.language_models.fake_chat_models import FakeListChatModel; assert BaseAgent(system_prompt="test", chat_model=FakeListChatModel(responses=["OK"])).get_response_text("test") == "OK"'
+      - name: Save validated artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: spaik-release
+          path: release-dist/*
+      - name: Publish Python
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: uv publish release-dist/*
+      - name: Publish npm packages in dependency order
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TAG: ${{ steps.versions.outputs.npm_tag }}
+        run: |
+          npm publish ./packages/agent-sdk-hooks --tag "$NPM_TAG" --provenance --access public
+          npm publish ./packages/agent-sdk-material --tag "$NPM_TAG" --provenance --access public
+      - name: Tag validated release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          git tag "spaik-sdk-v$RELEASE_VERSION"
+          git push origin "spaik-sdk-v$RELEASE_VERSION"

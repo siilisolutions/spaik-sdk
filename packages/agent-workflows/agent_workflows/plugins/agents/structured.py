@@ -117,8 +117,7 @@ async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
         try:
             model = ModelRegistry.from_name(model_name)
         except ValueError:
-            logger(f"⚠️  Unknown model '{model_name}', using default")
-            model = None
+            model = model_name
     else:
         model = None
 
@@ -127,6 +126,8 @@ async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
     agent = StructuredAgent(
         system_prompt=system_prompt,
         llm_model=model,
+        provider=step_with.get("provider"),
+        provider_kwargs=step_with.get("provider_kwargs", {}),
     )
 
     # Convert schema to Pydantic model

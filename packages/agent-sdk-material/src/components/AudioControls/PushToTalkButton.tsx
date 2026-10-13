@@ -55,6 +55,7 @@ export function PushToTalkButton({
             <Box sx={{ position: 'relative', display: 'inline-flex' }}>
                 <IconButton
                     onClick={handleClick}
+                    aria-label={isRecording ? "Stop recording" : "Start recording"}
                     disabled={disabled || isTranscribing}
                     sx={{
                         width: 40,

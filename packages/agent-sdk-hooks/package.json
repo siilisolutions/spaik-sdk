@@ -1,6 +1,6 @@
 {
     "name": "spaik-sdk-react",
-    "version": "0.2.0",
+    "version": "1.0.0-rc.1",
     "description": "React library for Spaik SDK - state management and streaming for AI agent frontends",
     "type": "module",
     "main": "dist/index.js",
@@ -35,7 +35,8 @@
         "dev": "bun run tsc --watch",
         "lint": "bun run eslint src --ext .ts,.tsx",
         "lint:fix": "bun run eslint src --ext .ts,.tsx --fix",
-        "type-check": "bun run tsc --noEmit"
+        "type-check": "bun run tsc --noEmit",
+        "test": "bun test tests"
     },
     "peerDependencies": {
         "react": "^18.0.0",
