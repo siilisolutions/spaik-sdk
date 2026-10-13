@@ -27,6 +27,16 @@ class ModelRegistry:
     CLAUDE_OPUS_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-5", prompt_caching=True)
     CLAUDE_SONNET_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-sonnet-5", prompt_caching=True)
 
+    # Current general-purpose presets, verified 2026-10-13.
+    CLAUDE_FABLE_5_1 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-fable-5-1", prompt_caching=True)
+    CLAUDE_OPUS_5_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-5-5", prompt_caching=True)
+    CLAUDE_SONNET_5_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-sonnet-5-5", prompt_caching=True)
+    CLAUDE_HAIKU_5_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-haiku-5-5", prompt_caching=True)
+    GPT_6_ASTRA = LLMModel(family=LLMFamilies.OPENAI, name="gpt-6-astra", prompt_caching=True)
+    GPT_6_1_SOL = LLMModel(family=LLMFamilies.OPENAI, name="gpt-6.1-sol", prompt_caching=True)
+    GPT_6_LUNA = LLMModel(family=LLMFamilies.OPENAI, name="gpt-6-luna", prompt_caching=True)
+    GEMINI_3_8_FLASH = LLMModel(family=LLMFamilies.GOOGLE, name="gemini-3.8-flash", prompt_caching=True)
+
     # OpenAI models — legacy (deprecated on OpenAI direct API, still available on Azure and other providers)
     GPT_4_1 = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1", reasoning=False, prompt_caching=True)
     GPT_4_1_MINI = LLMModel(family=LLMFamilies.OPENAI, name="gpt-4.1-mini", reasoning=False, prompt_caching=True)
@@ -156,14 +166,14 @@ class ModelRegistry:
         """Get aliases mapping."""
         return {
             # Claude aliases
-            "sonnet": cls.CLAUDE_SONNET_5,
+            "sonnet": cls.CLAUDE_SONNET_5_5,
             "sonnet 3.7": cls.CLAUDE_3_7_SONNET,
             "sonnet 4.5": cls.CLAUDE_4_5_SONNET,
             "sonnet 4.6": cls.CLAUDE_4_6_SONNET,
             "sonnet 5": cls.CLAUDE_SONNET_5,
-            "haiku": cls.CLAUDE_4_5_HAIKU,
+            "haiku": cls.CLAUDE_HAIKU_5_5,
             "haiku 4.5": cls.CLAUDE_4_5_HAIKU,
-            "opus": cls.CLAUDE_OPUS_5,
+            "opus": cls.CLAUDE_OPUS_5_5,
             "opus 4.1": cls.CLAUDE_4_1_OPUS,
             "opus 4.5": cls.CLAUDE_4_5_OPUS,
             "opus 4.6": cls.CLAUDE_4_6_OPUS,
@@ -184,12 +194,12 @@ class ModelRegistry:
             "claude opus 5": cls.CLAUDE_OPUS_5,
             "claude 5 sonnet": cls.CLAUDE_SONNET_5,
             "claude sonnet 5": cls.CLAUDE_SONNET_5,
-            "fable": cls.CLAUDE_FABLE_5,
+            "fable": cls.CLAUDE_FABLE_5_1,
             "fable 5": cls.CLAUDE_FABLE_5,
             "claude fable 5": cls.CLAUDE_FABLE_5,
             "claude 4.6 sonnet": cls.CLAUDE_4_6_SONNET,
             "claude sonnet 4.6": cls.CLAUDE_4_6_SONNET,
-            "claude": cls.CLAUDE_SONNET_5,
+            "claude": cls.CLAUDE_SONNET_5_5,
             "claude 3.7 sonnet": cls.CLAUDE_3_7_SONNET,
             "claude 4 sonnet": cls.CLAUDE_4_SONNET,
             "claude 4.5 sonnet": cls.CLAUDE_4_5_SONNET,
@@ -245,7 +255,7 @@ class ModelRegistry:
             "gemini 3.5 flash": cls.GEMINI_3_5_FLASH,
             "gemini 3.5 flash lite": cls.GEMINI_3_5_FLASH_LITE,
             "gemini 3.6 flash": cls.GEMINI_3_6_FLASH,
-            "gemini flash": cls.GEMINI_3_6_FLASH,
+            "gemini flash": cls.GEMINI_3_8_FLASH,
             "gemini 3 pro": cls.GEMINI_3_PRO,
             "gemini 3.0 pro": cls.GEMINI_3_PRO,
             "gemini 3.1 pro": cls.GEMINI_3_1_PRO,

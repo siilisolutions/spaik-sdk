@@ -12,11 +12,11 @@ class TestModelRegistry:
             ("opus 4.5", "claude-opus-4-5-20251101"),
             ("claude opus 4.5", "claude-opus-4-5-20251101"),
             ("claude 4.5 opus", "claude-opus-4-5-20251101"),
-            ("opus", "claude-opus-5"),
+            ("opus", "claude-opus-5-5"),
             ("opus 4.7", "claude-opus-4-7"),
             ("opus 4.8", "claude-opus-4-8"),
             ("opus 5", "claude-opus-5"),
-            ("sonnet", "claude-sonnet-5"),
+            ("sonnet", "claude-sonnet-5-5"),
             ("sonnet 5", "claude-sonnet-5"),
             ("claude opus 4.7", "claude-opus-4-7"),
             ("claude opus 4.8", "claude-opus-4-8"),
@@ -48,7 +48,7 @@ class TestModelRegistry:
             ("gemini 3.5 flash", "gemini-3.5-flash"),
             ("gemini 3.5 flash lite", "gemini-3.5-flash-lite"),
             ("gemini 3.6 flash", "gemini-3.6-flash"),
-            ("gemini flash", "gemini-3.6-flash"),
+            ("gemini flash", "gemini-3.8-flash"),
             ("gemini 3.1 flash lite", "gemini-3.1-flash-lite"),
             ("gemini 3.1 flash lite preview", "gemini-3.1-flash-lite-preview"),
         ],
@@ -159,3 +159,21 @@ class TestModelRegistry:
         assert "gemini-3.1-pro-preview" in model_names
         assert "gemini-3.1-flash-lite" in model_names
         assert "gemini-3.1-flash-lite-preview" in model_names
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "name",
+    [
+        "claude-sonnet-5-5",
+        "claude-opus-5-5",
+        "claude-haiku-5-5",
+        "claude-fable-5-1",
+        "gpt-6.1-sol",
+        "gpt-6-astra",
+        "gpt-6-luna",
+        "gemini-3.8-flash",
+    ],
+)
+def test_current_public_presets(name):
+    assert ModelRegistry.from_name(name).name == name
