@@ -1,28 +1,14 @@
-import { ThreadList } from './components/ThreadList/ThreadList';
-import { ThreadView } from './components/ThreadView/ThreadView';
-import { useThreadSelection } from 'spaik-sdk-react';
-import { NoThreadSelected } from './components/ThreadView/EmptyStates';
-
+import { AgentThemeProvider, AgentChat } from 'spaik-sdk-material';
 
 export function App() {
-    const { selectedThreadId } = useThreadSelection();
     return (
-        <div style={{
-            display: 'flex',
-            height: '100vh',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-        }}>
-            <ThreadList />
-
-            {selectedThreadId ? (
-                <ThreadView
-                    threadId={selectedThreadId}
-                />
-            ) : (
-                <NoThreadSelected />
-            )}
-
-
-        </div>
+        <AgentThemeProvider>
+            <AgentChat 
+                baseUrl="http://localhost:8000" 
+                enableTTS={true}
+                enableSTT={true}
+                enableCopy={true}
+            />
+        </AgentThemeProvider>
     );
 }

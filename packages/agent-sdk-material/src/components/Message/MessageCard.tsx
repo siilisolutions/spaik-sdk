@@ -1,5 +1,5 @@
 import { Paper, Box, useTheme, Avatar, Typography, alpha } from '@mui/material';
-import { Message } from 'spaik-sdk-react';
+import { Attachment, Message, messageText } from 'spaik-sdk-react';
 import { MessageContent } from './MessageContent';
 import { AttachmentGallery } from './AttachmentGallery';
 import { SmartToyIcon, PersonIcon } from '../../utils/icons';
@@ -9,38 +9,18 @@ import { CopyButton } from '../AudioControls/CopyButton';
 
 interface Props {
     message: Message;
+    messages?: Message[];
+    metadata?: { timestamp?: number; attachments?: Attachment[] };
     filesBaseUrl?: string;
     enableTTS?: boolean;
     enableCopy?: boolean;
 }
 
-/**
- * Extract text from message blocks for copying (includes reasoning).
- */
-function getTextForCopy(message: Message): string {
-    return message.blocks
-        .filter(block => block.type === 'plain' || block.type === 'reasoning')
-        .map(block => block.content || '')
-        .join('\n\n')
-        .trim();
-}
-
-/**
- * Extract text from message blocks for TTS (excludes reasoning - just the actual response).
- */
-function getTextForTTS(message: Message): string {
-    return message.blocks
-        .filter(block => block.type === 'plain')
-        .map(block => block.content || '')
-        .join('\n\n')
-        .trim();
-}
-
-export function MessageCard({ message, filesBaseUrl, enableTTS = false, enableCopy = true }: Props) {
+export function MessageCard({ message, messages, metadata, filesBaseUrl, enableTTS = false, enableCopy = true }: Props) {
     const theme = useTheme();
-    const isAi = message.ai;
-    const copyText = getTextForCopy(message);
-    const ttsText = getTextForTTS(message);
+    const isAi = message.role !== 'user';
+    const copyText = messageText(message);
+    const ttsText = message.role === 'assistant' ? messageText(message) : '';
     const showActions = isAi && (copyText.length > 0 || ttsText.length > 0);
 
     return (
@@ -94,10 +74,10 @@ export function MessageCard({ message, filesBaseUrl, enableTTS = false, enableCo
                     }}
                 >
                     <Typography variant="caption" fontWeight={600} color="text.primary">
-                        {message.author_name}
+                        {'name' in message ? message.name ?? message.role : message.role}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                        {formatTimestamp(message.timestamp)}
+                        {metadata?.timestamp ? formatTimestamp(metadata.timestamp) : null}
                     </Typography>
                 </Box>
 
@@ -122,12 +102,12 @@ export function MessageCard({ message, filesBaseUrl, enableTTS = false, enableCo
                         }
                     }}
                 >
-                    <MessageContent blocks={message.blocks} />
+                    <MessageContent message={message} messages={messages} />
                     
-                    {message.attachments && message.attachments.length > 0 && (
+                    {metadata?.attachments && metadata?.attachments.length > 0 && (
                         <Box sx={{ mt: 1.5 }}>
                             <AttachmentGallery
-                                attachments={message.attachments}
+                                attachments={metadata?.attachments}
                                 filesBaseUrl={filesBaseUrl}
                             />
                         </Box>

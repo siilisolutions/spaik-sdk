@@ -1,5 +1,5 @@
 // Thread management hooks
-export { useThread, useThreadActions, getStreamingHandlers } from './stores/threadStore';
+export { useThread, useThreadActions, useAgent } from './stores/threadStore';
 export { useThreadList, useThreadSelection, useThreadListActions } from './stores/threadListStore';
 export { useFileUploadStore } from './stores/fileUploadStore';
 export type { PendingUpload, UploadStatus } from './stores/fileUploadStore';
@@ -47,11 +47,11 @@ export type {
     Id,
     Thread,
     Message,
-    MessageBlock,
-    BlockType,
     Attachment,
 } from './stores/messageTypes';
 
-// Event types for advanced usage
-export type { BaseEvent, ErrorEvent } from './event/eventTypes';
-export { EventProcessor } from './event/EventProcessor';
+export { AbstractAgent, HttpAgent } from '@ag-ui/client';
+export type { AgentSubscriber, RunAgentParameters } from '@ag-ui/client';
+export type { ThreadRepository } from './api/ThreadsApiClient';
+export type { AgentSdkClientConfig } from './client/AgentSdkClient';
+export { messageText } from './stores/messageTypes';

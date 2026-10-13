@@ -1,195 +1,27 @@
-# Spaik SDK Material
+# spaik-sdk-material
 
-Material UI components for building AI chat interfaces.
-
-Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
-
-## Installation
-
-```bash
-npm install spaik-sdk-material
-```
-
-Requires peer dependencies:
-
-```bash
-npm install spaik-sdk-react react react-dom
-```
-
-## Quick Start
+Themeable Material UI chat components backed by AG-UI. This branch is preparing 1.0; see [release gates](../../docs/SPAIk_1_0_PLAN.md).
 
 ```tsx
-import { AgentSdkClientProvider, AgentSdkClient } from 'spaik-sdk-react';
+import { HttpAgent } from 'spaik-sdk-react';
 import { AgentChat, AgentThemeProvider } from 'spaik-sdk-material';
 
-const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
+const agent = new HttpAgent({ url: 'https://your-agent.example/run', threadId: 'conversation' });
 
-function App() {
-  return (
-    <AgentSdkClientProvider apiClient={client}>
-      <AgentThemeProvider>
-        <AgentChat />
-      </AgentThemeProvider>
-    </AgentSdkClientProvider>
-  );
+export function App() {
+  return <AgentThemeProvider><AgentChat agent={agent} /></AgentThemeProvider>;
 }
 ```
 
-## Components
+For Spaik thread management, use `<AgentChat baseUrl="http://localhost:8000" />`. The sidebar appears when a thread repository is available. Alternatively supply `threadRepository` and `createAgent(threadId)` for application-owned persistence. `headers` configures authentication for Spaik thread/run requests.
 
-### AgentChat
+`AgentChat` supports text, reasoning, tool calls/results, activity messages, state, attachments, errors and cancellation. Use `renderMessage(message, messages)` and `renderState(state)` for custom presentation; use `customComponents` for custom markdown components. `enableTTS`, `enableSTT`, `enableCopy`, and `sttLanguage` retain audio/copy controls. Audio and stored attachments require a configured `baseUrl` and corresponding backend routes.
 
-Full chat interface with sidebar and message area.
+Standalone components include `ChatPanel`, `MessageCard`, `MessageList`, `ThreadSidebar`, `MessageInput`, reasoning/tool/text displays, attachment gallery, audio controls and markdown renderers. Message components accept official AG-UI messages, not legacy blocks. Preserve component instances across stream updates.
 
-```tsx
-import { AgentChat } from 'spaik-sdk-material';
+See [migration guide](../../docs/MIGRATING_TO_1_0.md) and [React hooks](../agent-sdk-hooks/README.md).
 
-<AgentChat />
-```
-
-### ChatPanel
-
-Message list with input, without sidebar.
-
-```tsx
-import { ChatPanel } from 'spaik-sdk-material';
-
-<ChatPanel threadId={selectedThreadId} />
-```
-
-### ThreadSidebar
-
-Thread list for navigation.
-
-```tsx
-import { ThreadSidebar } from 'spaik-sdk-material';
-
-<ThreadSidebar
-  onThreadSelect={setSelectedThreadId}
-  selectedThreadId={selectedThreadId}
-/>
-```
-
-### MessageCard
-
-Individual message display.
-
-```tsx
-import { MessageCard } from 'spaik-sdk-material';
-
-<MessageCard message={message} />
-```
-
-### MessageInput
-
-Chat input with attachments.
-
-```tsx
-import { MessageInput } from 'spaik-sdk-material';
-
-<MessageInput
-  onSend={(content, attachments) => sendMessage(threadId, { content, attachments })}
-  disabled={isStreaming}
-/>
-```
-
-### Audio Controls
-
-```tsx
-import { SpeakButton, PushToTalkButton } from 'spaik-sdk-material';
-
-// Text-to-speech for a message
-<SpeakButton text={message.blocks.map(b => b.content).join('')} />
-
-// Voice input
-<PushToTalkButton onTranscription={handleVoiceInput} />
-```
-
-## Theming
-
-### Default Theme
-
-```tsx
-import { AgentThemeProvider } from 'spaik-sdk-material';
-
-<AgentThemeProvider>
-  <App />
-</AgentThemeProvider>
-```
-
-### Custom Theme
-
-```tsx
-import { AgentThemeProvider, createAgentTheme } from 'spaik-sdk-material';
-
-const theme = createAgentTheme({
-  palette: {
-    primary: { main: '#1976d2' },
-    background: { default: '#f5f5f5' },
-  },
-  messageColors: {
-    user: '#e3f2fd',
-    assistant: '#fff',
-  },
-});
-
-<AgentThemeProvider theme={theme}>
-  <App />
-</AgentThemeProvider>
-```
-
-### useAgentTheme
-
-Access theme in components:
-
-```tsx
-import { useAgentTheme } from 'spaik-sdk-material';
-
-function MyComponent() {
-  const theme = useAgentTheme();
-  return <div style={{ color: theme.palette.primary.main }}>...</div>;
-}
-```
-
-## Message Blocks
-
-Components for different block types:
-
-```tsx
-import {
-  TextBlock,
-  ReasoningBlock,
-  ToolCallBlock,
-  ErrorBlock,
-} from 'spaik-sdk-material';
-
-// Automatically rendered by MessageCard, or use directly:
-<TextBlock content={block.content} streaming={block.streaming} />
-<ReasoningBlock content={block.content} />
-<ToolCallBlock block={block} />
-<ErrorBlock content={block.content} />
-```
-
-## Markdown
-
-Built-in markdown rendering with GFM support:
-
-```tsx
-import { MarkdownRenderer } from 'spaik-sdk-material';
-
-<MarkdownRenderer content="# Hello **world**" />
-```
-
-## Development
-
-```bash
-bun install
+```sh
 bun run build
-bun run dev        # Watch mode
 bun run type-check
-bun run lint
 ```
-
-## License
-
-MIT - Copyright (c) 2026 Siili Solutions Oyj

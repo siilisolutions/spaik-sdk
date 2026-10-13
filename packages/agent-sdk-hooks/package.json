@@ -42,6 +42,8 @@
         "react-dom": "^18.0.0"
     },
     "dependencies": {
+        "@ag-ui/client": "1.0.0",
+        "@ag-ui/core": "1.0.0",
         "axios": "^1.13.2",
         "zod": "^3.22.4",
         "zustand": "^4.4.7"

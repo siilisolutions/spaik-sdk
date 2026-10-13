@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
-import { useThread, useThreadSelection, useThreadActions } from 'spaik-sdk-react';
+import { Message, messageText, useThread, useThreadSelection, useThreadActions } from 'spaik-sdk-react';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from '../MessageInput/MessageInput';
@@ -8,6 +8,8 @@ import { MenuIcon } from '../../utils/icons';
 
 interface Props {
     filesBaseUrl?: string;
+    renderMessage?: (message: Message, messages: Message[]) => ReactNode;
+    renderState?: (state: unknown) => ReactNode;
     onMenuClick?: () => void;
     showMenuButton?: boolean;
     enableTTS?: boolean;
@@ -17,9 +19,9 @@ interface Props {
     sttLanguage?: string;
 }
 
-export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton, enableTTS = false, enableSTT = false, enableCopy = true, sttLanguage = 'en' }: Props) {
+export function ChatPanel({ filesBaseUrl, renderMessage, renderState, onMenuClick, showMenuButton, enableTTS = false, enableSTT = false, enableCopy = true, sttLanguage = 'en' }: Props) {
     const { selectedThreadId } = useThreadSelection();
-    const { thread, loading, isGenerating } = useThread(selectedThreadId || '');
+    const { thread, state, error, loading, isGenerating } = useThread(selectedThreadId || '');
     const { cancelGeneration } = useThreadActions();
     const prevMessageCountRef = useRef(0);
 
@@ -69,7 +71,7 @@ export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton, enableTTS
     }
 
     const firstMessage = thread?.messages?.[0];
-    const title = firstMessage?.blocks?.[0]?.content?.slice(0, 40) || 'Chat';
+    const title = firstMessage ? messageText(firstMessage).slice(0, 40) || 'Chat' : 'Chat';
 
     return (
         <Box
@@ -88,12 +90,16 @@ export function ChatPanel({ filesBaseUrl, onMenuClick, showMenuButton, enableTTS
             />
             <MessageList
                 messages={thread?.messages}
+                messageMetadata={thread?.message_metadata}
+                renderMessage={renderMessage}
                 isLoading={loading}
                 filesBaseUrl={filesBaseUrl}
                 showTypingIndicator={isGenerating}
                 enableTTS={enableTTS}
                 enableCopy={enableCopy}
             />
+            {error && <Typography role="alert" color="error">{error}</Typography>}
+            {renderState ? renderState(state) : Object.keys(state ?? {}).length > 0 ? <Box component="details"><summary>State</summary><pre>{JSON.stringify(state, null, 2)}</pre></Box> : null}
             <MessageInput 
                 threadId={selectedThreadId} 
                 filesBaseUrl={filesBaseUrl}
