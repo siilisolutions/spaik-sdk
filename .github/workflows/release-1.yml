@@ -50,6 +50,8 @@ jobs:
           uv venv /tmp/spaik-release-check
           uv pip install --python /tmp/spaik-release-check/bin/python release-dist/*.whl
           /tmp/spaik-release-check/bin/python -c 'from spaik_sdk import BaseAgent; from langchain_core.language_models.fake_chat_models import FakeListChatModel; assert BaseAgent(system_prompt="test", chat_model=FakeListChatModel(responses=["OK"])).get_response_text("test") == "OK"'
+      - name: Validate installed npm tarballs in a fresh application
+        run: python scripts/validate_npm_artifacts.py --dist release-dist
       - name: Save validated artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -58,14 +60,14 @@ jobs:
       - name: Publish Python
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        run: uv publish release-dist/*
+        run: uv publish release-dist/*.whl release-dist/*.tar.gz
       - name: Publish npm packages in dependency order
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TAG: ${{ steps.versions.outputs.npm_tag }}
         run: |
-          npm publish ./packages/agent-sdk-hooks --tag "$NPM_TAG" --provenance --access public
-          npm publish ./packages/agent-sdk-material --tag "$NPM_TAG" --provenance --access public
+          npm publish release-dist/spaik-sdk-react-*.tgz --tag "$NPM_TAG" --provenance --access public
+          npm publish release-dist/spaik-sdk-material-*.tgz --tag "$NPM_TAG" --provenance --access public
       - name: Tag validated release
         env:
           RELEASE_VERSION: ${{ inputs.version }}

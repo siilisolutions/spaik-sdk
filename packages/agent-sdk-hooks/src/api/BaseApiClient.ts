@@ -1,6 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import z from 'zod';
-import { nullToUndefined } from '../utils/nullToUndefined';
 
 export interface BaseApiClientConfig {
     baseUrl: string;
@@ -44,8 +43,7 @@ export abstract class BaseApiClient {
     }
 
     private parseResponse<T>(response: AxiosResponse<T>, responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>): T {
-        const cleanedData = nullToUndefined(response.data);
-        return responseSchema.parse(cleanedData);
+        return responseSchema.parse(response.data);
     }
 
     protected async get<T>(url: string, responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>, config?: AxiosRequestConfig): Promise<T> {

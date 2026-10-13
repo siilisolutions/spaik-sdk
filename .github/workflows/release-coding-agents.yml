@@ -1,17 +1,6 @@
-name: Release coding-agents
-
+name: Final legacy coding-agent release
 on:
   workflow_dispatch:
-    inputs:
-      version_bump:
-        description: 'Version bump type'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
 
 jobs:
   release:
@@ -25,75 +14,21 @@ jobs:
         working-directory: packages/coding-agents
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.RELEASE_TOKEN }}
-
       - uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
-
-      - name: Set up Python
-        run: uv python install 3.10
-
-      - name: Install dependencies
+      - name: Verify final legacy metadata
+        run: |
+          python -c 'import tomllib; p=tomllib.load(open("pyproject.toml","rb"))["project"]; assert p["version"] == "0.2.3"; assert "spaik-sdk==0.11.1" in p["dependencies"]'
+      - name: Install against released legacy SDK
         run: uv sync --no-sources --all-extras
-
-      - name: Get current version
-        id: current_version
+      - name: Validate imports and package
         run: |
-          VERSION=$(grep -Po '(?<=^version = ")[^"]*' pyproject.toml)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Calculate new version
-        id: new_version
-        run: |
-          CURRENT="${{ steps.current_version.outputs.version }}"
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
-          
-          case "${{ inputs.version_bump }}" in
-            major)
-              NEW_VERSION="$((MAJOR + 1)).0.0"
-              ;;
-            minor)
-              NEW_VERSION="$MAJOR.$((MINOR + 1)).0"
-              ;;
-            patch)
-              NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
-              ;;
-          esac
-          
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "Bumping version from $CURRENT to $NEW_VERSION"
-
-      - name: Update version in pyproject.toml
-        run: |
-          sed -i 's/^version = ".*"/version = "${{ steps.new_version.outputs.version }}"/' pyproject.toml
-
-      - name: Run checks
-        run: |
-          uv run ruff check .
-          uv run ty check spaik_coding_agents
-
-      - name: Commit version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add pyproject.toml
-          git commit -m "chore: bump spaik-coding-agents version to ${{ steps.new_version.outputs.version }}"
-
-      - name: Remove local path dependency for publishing
-        run: |
-          sed -i '/^\[tool\.uv\.sources\]/,/^$/d' pyproject.toml
-
-      - name: Build package
-        run: uv build
-
-      - name: Publish to PyPI
+          uv run --no-sync python -c 'from spaik_coding_agents import ClaudeAgent, CursorAgent'
+          uv build
+      - name: Publish final legacy patch
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: uv publish
-
-      - name: Tag and push
+      - name: Preserve legacy tag
         run: |
-          git tag "spaik-coding-agents-v${{ steps.new_version.outputs.version }}"
-          git push origin HEAD --tags
+          git tag spaik-coding-agents-v0.2.3
+          git push origin spaik-coding-agents-v0.2.3

@@ -1,6 +1,6 @@
 import { AbstractAgent, AgentSubscriber } from '@ag-ui/client';
 import type { State } from '@ag-ui/core';
-import { CreateMessageRequest, CreateThreadRequest, ListThreadsFilters, ThreadRepository, ThreadsApiClient } from '../api/ThreadsApiClient';
+import { CreateMessageRequest, CreateThreadRequest, ListThreadsFilters, ThreadRepository, ThreadSummary, ThreadsApiClient } from '../api/ThreadsApiClient';
 import { Thread } from '../stores/messageTypes';
 
 export interface AgentSdkClientConfig {
@@ -14,6 +14,7 @@ export class AgentSdkClient {
     readonly defaultThreadId?: string;
     private readonly agents = new Map<string, AbstractAgent>();
     private readonly threads = new Map<string, Thread>();
+    private readonly listListeners = new Set<(threads: ThreadSummary[]) => void>();
     private readonly loads = new Map<string, Promise<Thread>>();
     private readonly createAgent?: (id: string) => AbstractAgent;
 
@@ -36,14 +37,27 @@ export class AgentSdkClient {
             if (!this.createAgent) throw new Error('Supply an AG-UI agent or createAgent factory');
             agent = this.createAgent(id);
             this.agents.set(id, agent);
+            if (this.threadRepository) agent.subscribe({ onRunFinalized: () => { this.refreshList(); } });
         }
         return agent;
     }
-    getThreads(filters?: ListThreadsFilters) { return this.requireRepository().listThreads(filters).then(r => r.threads); }
+    async getThreads(filters?: ListThreadsFilters) {
+        const { threads } = await this.requireRepository().listThreads(filters);
+        this.listListeners.forEach(listener => listener(threads));
+        return threads;
+    }
+    subscribeThreadList(listener: (threads: ThreadSummary[]) => void) {
+        this.listListeners.add(listener);
+        return () => { this.listListeners.delete(listener); };
+    }
+    private refreshList() {
+        if (this.listListeners.size) void this.getThreads().catch(() => undefined);
+    }
     async createThread(request: CreateThreadRequest = {}) {
         const thread = await this.requireRepository().createThread(request);
         this.threads.set(thread.id, thread);
         this.getAgent(thread.id).setMessages(thread.messages);
+        this.refreshList();
         return thread;
     }
     getThread(id: string): Promise<Thread> {
@@ -65,6 +79,7 @@ export class AgentSdkClient {
         await this.requireRepository().deleteThread(id);
         this.agents.delete(id);
         this.threads.delete(id);
+        this.refreshList();
     }
     async sendMessage(id: string, request: CreateMessageRequest, subscriber?: AgentSubscriber) {
         if (this.threadRepository) await this.getThread(id);

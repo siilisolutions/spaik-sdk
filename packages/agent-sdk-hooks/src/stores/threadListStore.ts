@@ -14,6 +14,7 @@ export function useThreadList() {
         catch (error) { setError(String(error)); }
         finally { setLoading(false); }
     }, [client]);
+    useEffect(() => client.subscribeThreadList(setThreads), [client]);
     useEffect(() => { void refresh(); }, [refresh]);
     return { threadSummaries, loading, error, refresh };
 }

@@ -10,7 +10,7 @@ import { CopyButton } from '../AudioControls/CopyButton';
 interface Props {
     message: Message;
     messages?: Message[];
-    metadata?: { timestamp?: number; attachments?: Attachment[] };
+    metadata?: { timestamp?: number; author_name?: string; attachments?: Attachment[] };
     filesBaseUrl?: string;
     enableTTS?: boolean;
     enableCopy?: boolean;
@@ -18,6 +18,7 @@ interface Props {
 
 export function MessageCard({ message, messages, metadata, filesBaseUrl, enableTTS = false, enableCopy = true }: Props) {
     const theme = useTheme();
+    metadata = { ...(message.metadata?.spaik as Props['metadata']), ...metadata };
     const isAi = message.role !== 'user';
     const copyText = messageText(message);
     const ttsText = message.role === 'assistant' ? messageText(message) : '';
@@ -74,7 +75,7 @@ export function MessageCard({ message, messages, metadata, filesBaseUrl, enableT
                     }}
                 >
                     <Typography variant="caption" fontWeight={600} color="text.primary">
-                        {'name' in message ? message.name ?? message.role : message.role}
+                        {metadata?.author_name ?? ('name' in message ? message.name ?? message.role : message.role)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                         {metadata?.timestamp ? formatTimestamp(metadata.timestamp) : null}

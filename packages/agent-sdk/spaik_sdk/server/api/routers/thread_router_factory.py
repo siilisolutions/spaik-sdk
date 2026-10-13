@@ -17,9 +17,11 @@ from ag_ui.core import (
 from ag_ui.encoder import EventEncoder
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
+from pydantic import TypeAdapter, ValidationError
 
 from spaik_sdk.agent.base_agent import BaseAgent
 from spaik_sdk.attachments.file_storage_provider import get_file_storage
+from spaik_sdk.attachments.models import Attachment
 from spaik_sdk.server.authorization.dummy_authorizer import DummyAuthorizer
 from spaik_sdk.server.services.thread_models import CreateThreadRequest
 from spaik_sdk.server.services.thread_service import ThreadService
@@ -164,7 +166,14 @@ class ThreadRouterFactory:
                     raise HTTPException(400, "Submit a new user message")
                 # Attachments use a small Spaik forwardedProps extension; validate ownership before inference.
                 props = input.forwarded_props or {}
-                attachment_map = props.get("attachments", {}) if isinstance(props, dict) else {}
+                try:
+                    attachment_adapter = TypeAdapter(dict[str, list[Attachment]])
+                    attachment_map = attachment_adapter.dump_python(
+                        attachment_adapter.validate_python(props.get("attachments", {}) if isinstance(props, dict) else {}),
+                        mode="json",
+                    )
+                except ValidationError as error:
+                    raise HTTPException(422, "Invalid attachment metadata") from error
                 storage = get_file_storage()
                 for message in new:
                     attachments = attachment_map.get(message.id, [])
@@ -188,7 +197,14 @@ class ThreadRouterFactory:
                     raise HTTPException(501, "Agent is not configured")
                 agent.set_thread_container(thread)
                 for message in new:
-                    thread.add_message(message, {"author_id": current.get_id(), "attachments": attachment_map.get(message.id, [])})
+                    thread.add_message(
+                        message,
+                        {
+                            "author_id": current.get_id(),
+                            "author_name": current.get_name(),
+                            "attachments": attachment_map.get(message.id, []),
+                        },
+                    )
                 thread.envelope.metadata.setdefault("run_ids", []).append(input.run_id)
                 await self.service.update_thread(thread)
             except BaseException:

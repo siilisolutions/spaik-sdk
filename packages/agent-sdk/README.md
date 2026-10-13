@@ -44,7 +44,7 @@ Local persistence uses JSON at `data-v1/threads`. Legacy pickle export must run 
 ## Development
 
 ```sh
-uv sync --extra server --extra dev
+uv sync --all-extras --dev --locked
 make test-unit
 make test-integration
 make lint

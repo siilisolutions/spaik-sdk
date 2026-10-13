@@ -58,3 +58,21 @@ test('Python-produced SSE round-trips reasoning, tools and final snapshots', asy
     expect(agent.isRunning).toBe(false);
     expect(fixture.includes('private-signature')).toBe(false);
 });
+
+test('REST history preserves opaque metadata nulls when replaying an AG-UI run', async () => {
+    const axios = (await import('axios')).default;
+    const original = axios.defaults.adapter;
+    const message = { id: 'existing', role: 'user' as const, content: 'old', metadata: { nullable: null } };
+    axios.defaults.adapter = async config => ({ data: { id: 'thread', messages: [message], message_metadata: {} }, status: 200, statusText: 'OK', headers: {}, config });
+    try {
+        const { ThreadsApiClient } = await import('../src/api/ThreadsApiClient');
+        const repository = new ThreadsApiClient({ baseUrl: 'http://rest' });
+        const agent = new HttpAgent({ url: 'http://agent', threadId: 'thread', fetch: async (_, init) => {
+            const input = JSON.parse(String(init.body));
+            expect(input.messages[0].metadata.nullable).toBeNull();
+            return eventStream([{ type: 'RUN_STARTED', threadId: input.threadId, runId: input.runId }, { type: 'RUN_FINISHED', threadId: input.threadId, runId: input.runId }]);
+        } });
+        const client = new AgentSdkClient({ threadRepository: repository, createAgent: () => agent });
+        await client.sendMessage('thread', { content: 'new' });
+    } finally { axios.defaults.adapter = original; }
+});

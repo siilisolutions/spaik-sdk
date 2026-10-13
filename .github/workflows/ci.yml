@@ -34,6 +34,7 @@ jobs:
           bun run --cwd packages/agent-sdk-hooks lint
           bun run --cwd packages/agent-sdk-hooks type-check
           bun run --cwd packages/agent-sdk-material type-check
+          bun run --cwd packages/agent-sdk-material lint
           bun run --cwd examples/frontend build
       - name: Python-to-TypeScript AG-UI contract
         run: |
@@ -47,6 +48,9 @@ jobs:
       - name: Build SDK wheel
         working-directory: packages/agent-sdk
         run: uv build
+      - name: Installed npm artifacts
+        if: matrix.python == '3.13'
+        run: python scripts/validate_npm_artifacts.py --dist /tmp/spaik-npm-dist
       - name: Legacy coding-agent compatibility (released SDK, no workspace source)
         working-directory: packages/coding-agents
         run: |

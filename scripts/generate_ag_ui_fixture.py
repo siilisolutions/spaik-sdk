@@ -1,6 +1,9 @@
 """Generate contract fixtures from the real Python endpoint, without provider keys."""
 
 from pathlib import Path
+from itertools import count
+from unittest.mock import patch
+from uuid import UUID
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -23,6 +26,10 @@ def weather(city: str) -> str:
     return f"{city}: sunny"
 
 
+identifiers = count(1)
+# Pin only IDs and wall-clock metadata; the fixture still runs the real endpoint and execution adapter.
+patch("uuid.uuid4", side_effect=lambda: UUID(int=next(identifiers))).start()
+patch("time.time", return_value=1791849600.0).start()
 app = FastAPI()
 agent = BaseAgent(
     system_prompt="test",
@@ -62,6 +69,6 @@ response = client.post(
     },
 )
 response.raise_for_status()
-# Random IDs are valid protocol identifiers; the TS test asserts semantics, not a hand-written implementation copy.
+# The TS test asserts protocol semantics against this endpoint-produced fixture.
 Path("tests/fixtures/python-ag-ui.sse").write_text(response.text, encoding="utf-8")
 print("Wrote Python AG-UI contract fixture")

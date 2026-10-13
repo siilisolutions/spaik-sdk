@@ -29,17 +29,18 @@ class AzureProvider(BaseProvider):
             return self._get_proxy_config("api_key", "azure_endpoint", "default_headers")
 
         result: Dict[str, Any] = {
-            "api_version": self.api_version or get_required_env("AZURE_API_VERSION"),
-            "azure_endpoint": self.azure_endpoint or get_required_env("AZURE_ENDPOINT"),
+            "api_version": self.api_version or config.provider_kwargs.get("api_version") or get_required_env("AZURE_API_VERSION"),
+            "azure_endpoint": self.azure_endpoint or config.provider_kwargs.get("azure_endpoint") or get_required_env("AZURE_ENDPOINT"),
         }
-        if self.azure_ad_token_provider:
-            result["azure_ad_token_provider"] = self.azure_ad_token_provider
+        token_provider = self.azure_ad_token_provider or config.provider_kwargs.get("azure_ad_token_provider")
+        if token_provider:
+            result["azure_ad_token_provider"] = token_provider
             return result
-        result["api_key"] = self.api_key or get_required_env("AZURE_API_KEY")
+        result["api_key"] = self.api_key or config.provider_kwargs.get("api_key") or get_required_env("AZURE_API_KEY")
         return result
 
     def create_langchain_model(self, config: LLMConfig, full_config: Dict[str, Any]) -> BaseChatModel:
-        full_config["azure_deployment"] = config.model_name
+        full_config.setdefault("azure_deployment", config.model_name)
         from langchain_openai import AzureChatOpenAI
 
         return AzureChatOpenAI(**full_config)

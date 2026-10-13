@@ -46,7 +46,10 @@ class LLMConfig:
         if isinstance(self.provider_type, ProviderType):
             return self.provider_type.value
         if self.provider_type:
-            return self.provider_type
+            try:
+                return ProviderType.from_name(self.provider_type).value
+            except ValueError:
+                return self.provider_type
         if isinstance(self.model, LLMModel):
             return self.model.family
         if self.chat_model is not None:

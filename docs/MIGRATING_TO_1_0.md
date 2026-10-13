@@ -12,7 +12,7 @@ Azure deployment names are supplied as model IDs or provider kwargs; per-model d
 
 `get_response()`/`get_response_async()` now return official AG-UI assistant messages; use `.content` or `message_text(message)` instead of `.blocks` or `.get_text_content()`. Streaming methods yield official AG-UI events. Replace `/messages/stream` with `/threads/{id}/runs`, `RunAgentInput`, and an official `HttpAgent`. Legacy block/event schemas and custom stream framing are removed.
 
-The backend owns history. Clients may submit existing unchanged messages and new user messages. IDs deduplicate unchanged input; conflicting IDs, changed history, reused run IDs and overlapping runs are rejected. Thread ownership exists at creation, including empty threads. Private system prompts/provider replay data are omitted from GET responses.
+The backend owns history. Clients may submit existing unchanged messages and new user messages. IDs deduplicate unchanged input; conflicting IDs, changed history, reused run IDs and overlapping runs are rejected. Thread ownership exists at creation, including empty threads. Private system prompts/provider replay data are omitted from GET responses. Server-owned display metadata lives in `message.metadata.spaik` so snapshots carry timestamps, authors, and attachments; preserve message metadata verbatim when submitting history.
 
 The built-in runner coordinates one server process: use one worker per repository. Application integrations must supply distributed run coordination if using multiple workers. Client-side tool execution and interrupt resume are not implemented by this convenience runner; other AG-UI backends may implement them.
 

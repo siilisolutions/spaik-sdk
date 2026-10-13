@@ -50,13 +50,17 @@ class AzureFoundryProvider(BaseProvider):
         if env_config.is_proxy_mode():
             return self._get_proxy_config("credential", "endpoint", "default_headers")
 
-        project_endpoint = self.project_endpoint or get_required_env("AZURE_FOUNDRY_PROJECT_ENDPOINT")
+        if config.provider_kwargs.get("endpoint") and config.provider_kwargs.get("credential"):
+            return {"endpoint": config.provider_kwargs["endpoint"], "credential": config.provider_kwargs["credential"]}
+        project_endpoint = (
+            self.project_endpoint or config.provider_kwargs.get("project_endpoint") or get_required_env("AZURE_FOUNDRY_PROJECT_ENDPOINT")
+        )
         if self.azure_ad_token_provider:
             return {
                 "project_endpoint": project_endpoint,
                 "credential": _CallableTokenCredential(self.azure_ad_token_provider),
             }
-        api_key = self.api_key or get_required_env("AZURE_FOUNDRY_API_KEY")
+        api_key = self.api_key or config.provider_kwargs.get("credential") or get_required_env("AZURE_FOUNDRY_API_KEY")
         return {
             "endpoint": openai_v1_endpoint_from_project_endpoint(project_endpoint),
             "credential": api_key,

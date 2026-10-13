@@ -346,3 +346,167 @@ async def test_overlapping_runs_are_rejected_and_cancellation_releases_reservati
         assert response.status_code == 200
         assert "cancelled" in response.text
         assert not builder._thread_router.active
+
+
+def test_native_multimodal_parts_reach_the_model():
+    thread = ThreadContainer()
+    thread.add_message(
+        ui.UserMessage(
+            id="multimodal",
+            content=[
+                ui.TextPart(type="text", text="Describe this"),
+                ui.ImagePart(type="image", source=ui.UrlSource(type="url", value="https://example.test/image.png")),
+                ui.DocumentPart(type="document", source=ui.DataSource(type="data", value="cGRm", mime_type="application/pdf")),
+            ],
+        )
+    )
+    content = thread.get_langchain_messages()[0].content
+    assert content[1] == {"type": "image", "url": "https://example.test/image.png"}
+    assert content[2]["type"] == "file"
+    assert content[2]["base64"] == "cGRm"
+    assert content[2]["filename"] == "attachment.pdf"
+
+
+def test_azure_deployment_configuration_needs_no_environment_or_registry(monkeypatch):
+    for key in ["AZURE_API_KEY", "AZURE_ENDPOINT", "AZURE_API_VERSION"]:
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("LLM_AUTH_MODE", raising=False)
+    from spaik_sdk.models.providers.azure_provider import AzureProvider
+
+    config = LLMConfig(
+        model="unregistered-deployment",
+        provider_type="azure_openai",
+        provider_kwargs={"api_key": "test", "azure_endpoint": "https://example.openai.azure.com", "api_version": "2025-03-01-preview"},
+    )
+    assert AzureProvider().get_model_config(config)["api_key"] == "test"
+    with patch("langchain_openai.AzureChatOpenAI") as initialize:
+        config.get_model_wrapper()
+        assert initialize.call_args.kwargs["azure_deployment"] == "unregistered-deployment"
+
+
+@pytest.mark.asyncio
+async def test_cost_lookup_is_coalesced_and_reports_zero():
+    import asyncio
+    from unittest.mock import AsyncMock
+
+    import httpx
+
+    provider = CostProvider(base_url="https://openrouter.ai/api/v1", api_key="test")
+    response = httpx.Response(
+        200, json={"data": {"total_cost": 0}}, request=httpx.Request("GET", "https://openrouter.ai/api/v1/generation")
+    )
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock, return_value=response) as lookup:
+        context = CostContext(provider="openrouter", response_id="zero-generation")
+        results = await asyncio.gather(*(provider.resolve(context) for _ in range(3)))
+        assert lookup.call_count == 1
+        assert all(result is not None and result.cost == 0 for result in results)
+
+
+def test_spawn_isolates_callback_context_and_child_transcript():
+    import contextvars
+
+    from langchain_core.language_models.fake_chat_models import FakeMessagesListChatModel
+    from langchain_core.tools import tool
+
+    marker = contextvars.ContextVar("parent_marker", default="isolated")
+    marker.set("parent")
+
+    class Model(FakeMessagesListChatModel):
+        def bind_tools(self, tools, **kwargs):
+            return self
+
+    @tool
+    def echo() -> str:
+        """Return the child context marker."""
+        return marker.get()
+
+    child = BaseAgent(
+        system_prompt="child",
+        tools=[echo],
+        chat_model=Model(
+            responses=[AIMessage(content="", tool_calls=[{"id": "child-call", "name": "echo", "args": {}}]), AIMessage(content="isolated")]
+        ),
+    )
+
+    @tool
+    def spawn_child() -> str:
+        """Run the child agent."""
+        return child.spawn("test").content or ""
+
+    parent = BaseAgent(
+        system_prompt="parent",
+        tools=[spawn_child],
+        chat_model=Model(
+            responses=[
+                AIMessage(content="", tool_calls=[{"id": "parent-call", "name": "spawn_child", "args": {}}]),
+                AIMessage(content="done"),
+            ]
+        ),
+    )
+    assert parent.get_response_text("test") == "done"
+    calls = [
+        call.function.name
+        for message in parent.thread_container.messages
+        if isinstance(message, ui.AssistantMessage)
+        for call in message.tool_calls or []
+    ]
+    assert calls == ["spawn_child"]
+    assert any(message.role == "tool" and message.content == "isolated" for message in child.thread_container.messages)
+    assert marker.get() == "parent"
+
+
+@pytest.mark.parametrize(
+    "alias,canonical", [("azure", "azure_openai"), ("foundry", "azure_ai_foundry"), ("google_genai", "google"), ("mistralai", "mistral")]
+)
+def test_provider_aliases_are_normalized_for_model_construction(alias, canonical):
+    assert LLMConfig(model="arbitrary-model", provider_type=alias).provider_name == canonical
+
+
+@pytest.mark.asyncio
+async def test_structured_output_records_cost_and_advances_recording_once(tmp_path):
+    from langchain_core.runnables import RunnableLambda
+    from pydantic import BaseModel
+
+    from spaik_sdk.recording.conditional_recorder import ConditionalRecorderMode
+    from spaik_sdk.recording.impl.local_recorder import LocalRecorder
+
+    class Output(BaseModel):
+        word: str
+
+    class Model(FakeListChatModel):
+        def with_structured_output(self, schema, **kwargs):
+            assert kwargs["include_raw"]
+            return RunnableLambda(
+                lambda prompt: {
+                    "parsed": Output(word="OK"),
+                    "raw": AIMessage(
+                        content='{"word":"OK"}',
+                        id="structured",
+                        response_metadata={"cost": 0.1, "currency": "USD"},
+                        usage_metadata={"input_tokens": 1, "output_tokens": 1, "total_tokens": 2},
+                    ),
+                    "parsing_error": None,
+                }
+            )
+
+    recording = LocalRecorder.create_conditional_recorder("structured", str(tmp_path), mode=ConditionalRecorderMode.ALWAYS_RECORD)
+    agent = BaseAgent(system_prompt="test", chat_model=Model(responses=["unused"]), recorder=recording)
+    assert (await agent.get_structured_response_async("test", Output)).word == "OK"
+    cost = agent.get_cost()
+    assert cost is not None and cost.totals == {"USD": 0.1}
+    assert recording.recorder.current_session == 2
+    assert (tmp_path / "structured" / "1.json").exists()
+
+
+@pytest.mark.parametrize("attachments", [[], {"u": "file"}, {"u": [{"file_id": "only"}]}])
+def test_invalid_attachment_metadata_is_a_client_error(attachments):
+    c = client()
+    thread_id = c.post("/threads", json={}).json()["id"]
+    body = {
+        "threadId": thread_id,
+        "runId": "invalid-attachment",
+        "messages": [{"id": "u", "role": "user", "content": "hi"}],
+        "forwardedProps": {"attachments": attachments},
+    }
+    assert c.post(f"/threads/{thread_id}/runs", json=body).status_code == 422
+    assert c.get(f"/threads/{thread_id}").json()["messages"] == []

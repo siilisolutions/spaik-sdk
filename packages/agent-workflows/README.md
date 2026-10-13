@@ -1,4 +1,4 @@
-> Spaik 1.0 compatibility: YAML execution remains an optional convenience. The deprecated `agents/general` plugin and mandatory coding-agent dependency have been removed; use `agents/general` or `agents/structured`. Install `[audio]` only for audio plugins. Legacy coding workflows require the legacy package line in a separate environment.
+> Spaik 1.0 compatibility: YAML execution remains an optional convenience. The deprecated `agents/claude_code` plugin and mandatory coding-agent dependency have been removed; use `agents/general` or `agents/structured`. Install `[audio]` only for audio plugins. Legacy coding workflows require the legacy package line in a separate environment.
 
 # Agent Workflows
 
@@ -61,34 +61,16 @@ Create `my-workflow.yml`:
 
 ```yaml
 name: my-workflow
-env:
-  API_KEY: ${{ env.MY_API_KEY }}
-
-vars:
-  project_name: my-project
-
 jobs:
-  setup:
-    steps:
-      - uses: terminal/run
-        with:
-          command: npm install
-
-  generate:
-    needs: setup
+  summarize:
     steps:
       - uses: agents/general
         with:
-          prompt: "Create a README for ${{ vars.project_name }}"
-          cwd: "."
-
-  test:
-    needs: generate
-    steps:
-      - uses: terminal/run
-        with:
-          command: npm test
+          prompt: "Explain the purpose of a reusable chat UI kit."
+          output_var: summary
 ```
+
+General agents return text; they do not edit repository files. Install a provider extra in the workflow environment, for example `pip install 'spaik-sdk[anthropic]'`, and configure its credentials. Arbitrary models accept `model`, `provider`, and `provider_kwargs`.
 
 ## CLI Options
 
@@ -152,12 +134,6 @@ spaik-agent-workflows apply-template --template agent --path ./my-agent
 ### Agents
 
 ```yaml
-# Claude Code agent (requires ANTHROPIC_API_KEY)
-- uses: agents/general
-  with:
-    prompt: "Implement feature X"
-    cwd: "."                 # working directory
-
 # General LLM agent (returns text response only)
 - uses: agents/general
   with:

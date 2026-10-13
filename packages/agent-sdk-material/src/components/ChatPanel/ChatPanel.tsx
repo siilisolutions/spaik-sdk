@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
 import { Message, messageText, useThread, useThreadSelection, useThreadActions } from 'spaik-sdk-react';
 import { ChatHeader } from './ChatHeader';
@@ -23,13 +23,6 @@ export function ChatPanel({ filesBaseUrl, renderMessage, renderState, onMenuClic
     const { selectedThreadId } = useThreadSelection();
     const { thread, state, error, loading, isGenerating } = useThread(selectedThreadId || '');
     const { cancelGeneration } = useThreadActions();
-    const prevMessageCountRef = useRef(0);
-
-    // Reset message count ref when thread changes
-    useEffect(() => {
-        prevMessageCountRef.current = thread?.messages?.length ?? 0;
-    }, [selectedThreadId]);
-
     const handleCancelGeneration = () => {
         if (selectedThreadId) {
             console.log('Cancelling generation for thread:', selectedThreadId);

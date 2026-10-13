@@ -101,30 +101,6 @@ markers = [
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
-[tool.mypy]
-python_version = "3.10"
-warn_redundant_casts = true
-warn_unused_ignores = true
-disallow_any_generics = true
-check_untyped_defs = true
-no_implicit_reexport = true
-
-[[tool.mypy.overrides]]
-module = "azure.storage.blob.*"
-ignore_missing_imports = true 
-
-[[tool.mypy.overrides]]
-module = "pytest.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "jwt.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "requests.*"
-ignore_missing_imports = true
-
 [dependency-groups]
 dev = [
     "pytest-timeout>=2.4.0",

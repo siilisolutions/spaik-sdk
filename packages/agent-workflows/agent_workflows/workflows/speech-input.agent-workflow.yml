@@ -2,17 +2,17 @@ name: speech-input
 # Voice-to-task workflow: Record speech, transcribe, and create structured task
 #
 # Usage:
-#   siili-agent-workflows speech-input
-#   siili-agent-workflows speech-input --language fi
+#   spaik-agent-workflows speech-input
+#   spaik-agent-workflows speech-input --language fi
 #
 # This workflow:
 # 1. Records audio from microphone (press Enter to stop)
 # 2. Transcribes the speech to text
-# 3. Uses Claude Code to analyze and create SPEECH_INPUT.md
+# 3. Uses a general agent to return a cleaned task specification
 #
 # Requirements:
 #   - OPENAI_API_KEY (for Whisper STT)
-#   - ANTHROPIC_API_KEY (for Claude Code)
+#   - ANTHROPIC_API_KEY and the SDK anthropic extra
 
 vars:
   language: en
@@ -30,8 +30,8 @@ jobs:
   process:
     needs: record
     steps:
-      # Step 2: Use Claude Code to process the transcription
-      - uses: agents/claude_code
+      # Step 2: Use a general agent to process the transcription
+      - uses: agents/general
         with:
           prompt: |
             I just recorded a voice memo about a task I want to do in this repository.
@@ -42,7 +42,7 @@ jobs:
             </raw_transcription>
 
             ## Context
-            - This is the siili-agent-workflows repository
+            - This is the spaik-agent-workflows repository
             - I'm likely describing a coding task, feature request, or bug to fix
             - The speech may be informal, contain filler words, or be stream-of-consciousness
 
@@ -51,7 +51,7 @@ jobs:
             2. If not in English, translate it to English
             3. Clean it up - fix transcription errors, remove filler words like "um", "uh", "so", etc.
             4. Understand the intent - what am I actually trying to accomplish?
-            5. Create a file called SPEECH_INPUT.md with this structure:
+            5. Return a Markdown task specification with this structure:
 
             ```markdown
             # Voice Input Task
@@ -73,4 +73,4 @@ jobs:
             ```
 
             Be concise but thorough. The goal is to turn messy voice input into a clear task specification.
-          cwd: "."
+          output_var: task_specification

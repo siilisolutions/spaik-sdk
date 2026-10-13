@@ -15,14 +15,13 @@ interface Props {
 
 export function ThreadSidebar({ width = 300, header, title = 'Agent Chat' }: Props) {
     const { selectedThreadId, selectThread } = useThreadSelection();
-    const { threadSummaries, refresh } = useThreadList();
+    const { threadSummaries } = useThreadList();
     const { createThread } = useThreadActions();
     const { toggleMode, isDark } = useAgentTheme();
 
     const handleCreateThread = async () => {
         try {
             const thread = await createThread({});
-            await refresh();
             selectThread(thread.id);
         } catch (error) {
             console.error('Failed to create thread:', error);

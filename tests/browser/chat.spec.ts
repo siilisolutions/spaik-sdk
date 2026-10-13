@@ -17,6 +17,11 @@ test('managed threads persist, switch, cancel and delete', async ({ page, reques
     await input.press('Enter');
     await page.getByRole('button', { name: 'Stop generation' }).click();
     await expect(input).toBeEnabled();
+    await input.fill('Continue after cancellation');
+    await input.press('Enter');
+    await expect(page.getByText('Continue after cancellation', { exact: true })).toBeVisible();
+    await expect(input).toBeEnabled();
+    await expect(page.getByRole('alert')).toHaveCount(0);
     const threads = await (await request.get('http://localhost:8000/threads')).json();
     const second = threads.threads.find((t: { title: string }) => t.title === 'Second conversation');
     expect(second).toBeTruthy();

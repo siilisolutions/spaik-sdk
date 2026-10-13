@@ -206,14 +206,15 @@ class BaseAgent(ABC):
             result = output_schema.model_validate(next(self.playback))
         else:
             model = self.llm_config.as_structured_response_config().get_model_wrapper().get_langchain_model()
-            response = await model.with_structured_output(output_schema, include_raw=True).ainvoke(prompt)
+            options = {"method": "json_schema"} if self.llm_config.provider_name == "anthropic" else {}
+            response = await model.with_structured_output(output_schema, include_raw=True, **options).ainvoke(prompt)
             if not isinstance(response, dict):
                 raise TypeError("Structured output with include_raw must return a dictionary")
-            if response.get("parsing_error"):
-                raise response["parsing_error"]
-            result = output_schema.model_validate(response["parsed"])
             raw = response["raw"]
-            message = ui.AssistantMessage(id=str(uuid.uuid4()), content=result.model_dump_json())
+            raw_text = (
+                raw.content if isinstance(raw.content, str) else "".join(b.get("text", "") for b in raw.content if isinstance(b, dict))
+            )
+            message = ui.AssistantMessage(id=str(uuid.uuid4()), content=raw_text)
             self.thread_container.add_message(ui.UserMessage(id=str(uuid.uuid4()), content=prompt))
             self.thread_container.add_message(message)
             self.thread_container.envelope.replay[message.id] = {"langchain": message_to_dict(raw)}
@@ -231,6 +232,10 @@ class BaseAgent(ABC):
                     cost=cost,
                 )
             )
+            if response.get("parsing_error"):
+                raise response["parsing_error"]
+            result = output_schema.model_validate(response["parsed"])
+            message.content = result.model_dump_json()
         if self.recorder is not None:
             self.recorder.record_structured(result.model_dump())
         self.trace.add_structured_response_output(result)

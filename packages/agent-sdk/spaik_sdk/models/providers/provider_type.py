@@ -65,12 +65,14 @@ PROVIDER_ALIASES = {
     "azure_foundry": ProviderType.AZURE_AI_FOUNDRY,
     "openai": ProviderType.OPENAI_DIRECT,
     "google": ProviderType.GOOGLE,
+    "google_genai": ProviderType.GOOGLE,
     "gemini": ProviderType.GOOGLE,
     "deepseek": ProviderType.DEEPSEEK,
     "xai": ProviderType.XAI,
     "grok": ProviderType.XAI,
     "cohere": ProviderType.COHERE,
     "mistral": ProviderType.MISTRAL,
+    "mistralai": ProviderType.MISTRAL,
 }
 
 

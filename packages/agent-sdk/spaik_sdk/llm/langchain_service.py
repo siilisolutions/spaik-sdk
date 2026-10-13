@@ -67,11 +67,7 @@ class LangChainService:
 
     async def stream(self):
         storage = get_file_storage()
-        messages = (
-            await self.thread.get_langchain_messages_multimodal(storage, self.config.provider_name)
-            if storage
-            else self.thread.get_langchain_messages()
-        )
+        messages = await self.thread.get_langchain_messages_multimodal(storage) if storage else self.thread.get_langchain_messages()
         source = (
             self.playback
             if self.playback is not None

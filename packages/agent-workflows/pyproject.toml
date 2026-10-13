@@ -83,4 +83,3 @@ quote-style = "double"
 
 [tool.uv.sources]
 spaik-sdk = { path = "../agent-sdk", editable = true }
-spaik-coding-agents = { path = "../coding-agents", editable = true }

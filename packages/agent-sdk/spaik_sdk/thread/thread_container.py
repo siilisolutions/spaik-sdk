@@ -57,8 +57,10 @@ class ThreadContainer:
     def add_message(self, message: Message, metadata: dict[str, Any] | None = None) -> None:
         if any(existing.id == message.id for existing in self.messages):
             raise ValueError(f"Duplicate message ID: {message.id}")
+        details = {"timestamp": int(time.time() * 1000), "author_name": getattr(message, "name", None) or message.role, **(metadata or {})}
+        message.metadata = {**(message.metadata or {}), "spaik": details}
         self.messages.append(message)
-        self.envelope.message_metadata[message.id] = {"timestamp": int(time.time() * 1000), **(metadata or {})}
+        self.envelope.message_metadata[message.id] = details
         self.touch()
 
     def touch(self) -> None:
@@ -96,12 +98,14 @@ class ThreadContainer:
             self.envelope.invocations.append(invocation)
 
     def get_langchain_messages(self) -> list[Any]:
+        from spaik_sdk.llm.converters import message_content
+
         result: list[Any] = [SystemMessage(content=self.system_prompt)] if self.system_prompt else []
         hidden_tools: set[str] = set()
         tool_results = {m.tool_call_id: m for m in self.messages if isinstance(m, ToolMessage)}
         for message in self.messages:
             if isinstance(message, UserMessage):
-                result.append(HumanMessage(content=message_text(message), id=message.id))
+                result.append(HumanMessage(content=message_content(message.content), id=message.id))
             elif isinstance(message, AssistantMessage):
                 raw = self.envelope.replay.get(message.id, {}).get("langchain")
                 ai = (
@@ -182,7 +186,7 @@ class ThreadContainer:
 
         return ToolProvider.render_tool_block_for_history
 
-    async def get_langchain_messages_multimodal(self, file_storage, provider_family: str) -> list[Any]:
+    async def get_langchain_messages_multimodal(self, file_storage) -> list[Any]:
         from spaik_sdk.attachments.models import Attachment
         from spaik_sdk.llm.converters import attachment_content
 
@@ -192,9 +196,9 @@ class ThreadContainer:
                 continue
             attachments = self.envelope.message_metadata.get(message.id, {}).get("attachments", [])
             if attachments:
-                parts = [{"type": "text", "text": message.content}]
+                parts = [{"type": "text", "text": message.content}] if isinstance(message.content, str) else list(message.content)
                 for data in attachments:
-                    part = await attachment_content(Attachment.from_dict(data), file_storage, provider_family)
+                    part = await attachment_content(Attachment.from_dict(data), file_storage)
                     if part:
                         parts.append(part)
                 message.content = parts

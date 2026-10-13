@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from spaik_sdk.llm.cost.cost_estimate import CostEstimate
 
 logger = logging.getLogger(__name__)
+_warned_configurations: set[tuple[str, str]] = set()
 
 
 class CostContext(BaseModel):
@@ -77,7 +78,9 @@ class CostProvider:
         except Exception:
             # Billing is ancillary: do not expose credentials or fail inference.
             logger.debug("Request-level cost resolution failed")
-        if not self._warned:
+        configuration = (context.provider, self.base_url)
+        if not self._warned and configuration not in _warned_configurations:
+            _warned_configurations.add(configuration)
             logger.warning("Cost unavailable: this provider does not expose a request-level charge.")
             self._warned = True
         return None
