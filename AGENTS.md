@@ -19,7 +19,7 @@ Spaik's core is thread management and a reusable React/Material UI kit. Canonica
 
 ## Commands
 
-Python: `cd packages/agent-sdk; uv sync --extra server --extra dev`, `make test-unit`, `make test-integration`, `make lint`, `make typecheck`. Ruff configuration enables fixes; use `ruff check --no-fix` for read-only inspection.
+Python: `cd packages/agent-sdk; uv sync --all-extras --dev --locked`, `make test-unit`, `make test-integration`, `make lint`, `make typecheck`. Ruff configuration enables fixes; use `ruff check --no-fix` for read-only inspection.
 
 Frontend: root `bun install`, `bun run build:packages`, `bun test packages/agent-sdk-hooks/tests`, `bunx playwright test`. Package `bun run type-check`/`lint` are available. Examples run with root `bun run dev:backend`/`dev:frontend`.
 

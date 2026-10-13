@@ -2,6 +2,10 @@
 
 This branch is an unreleased migration. The release gates in [the implementation plan](SPAIK_1_0_PLAN.md) must pass before publishing stable packages.
 
+## Runtime
+
+Spaik 1.0 requires Python 3.11 or later. Python 3.10 fails to propagate nested async model callbacks in the upstream agent execution path, which can produce an empty streamed transcript. The previous event-loop workaround is removed. See [LangGraph async streaming requirements](https://github.com/langchain-ai/docs/blob/main/src/oss/langgraph/streaming.mdx).
+
 ## Models
 
 Presets are conveniences, not an eligibility list. Pass any model ID with `BaseAgent(system_prompt="...", llm_model="your-model-id", provider="openai", provider_kwargs={...})`, or inject `chat_model=YourLangChainModel(...)`. An injected model bypasses environment defaults and catalog lookup. Do not combine injection with llm_model/llm_config. Explicit provider kwargs override preset defaults. Install only the provider extra you use, such as `spaik-sdk[openai,server]`.
@@ -45,5 +49,13 @@ Only export your own trusted legacy pickle store. Under 1.0, import to a new dir
 ```sh
 python -m spaik_sdk.thread.migration export.json new-data
 ```
+
+The export contains attachment references, not file bytes. Copy a local file store to the new location, keeping IDs and metadata intact:
+
+```sh
+cp -R old-data/files new-data/files
+```
+
+Configure `ApiBuilder.stateful(..., file_storage=LocalFileStorage("new-data/files"))` to read the copied store. For remote file storage, retain the application's existing storage mapping. The default local file store remains `data/files`; explicitly select the copied location when migrating.
 
 Supply `--empty-owner USER_ID` if a legacy thread has no user message. Existing destination IDs are rejected. Original IDs, ordering, authors, timestamps, attachments and tool-provider references are preserved; legacy block IDs are retained as metadata. Reasoning/tool results become canonical AG-UI messages. Signatures absent from legacy persistence cannot be reconstructed. Historical token counts are retained; historical price-table estimates are not imported as reported charges.

@@ -1,7 +1,7 @@
-# Spaik frontend example
+# Spaik frontend template
 
-This example uses the shared `spaik-sdk-material` UI kit with AG-UI; message rendering is not duplicated here.
+A React/Vite app consuming the shared `spaik-sdk-material` UI kit and official AG-UI client. Message rendering belongs to the kit.
 
-From the repository root, run `bun install`, `bun run build:packages`, and `bun run dev:frontend`. Start the example backend separately at http://localhost:8000. The frontend supports managed threads, tools/reasoning, attachments, copy, speech and cancellation.
+After copying this template, run `bun install` and `bun run dev`. Start a Spaik backend at http://localhost:8000, or update `src/App.tsx` to pass an independent `HttpAgent`. The package versions currently target the 1.0 release candidate and must be available in your registry before installing outside this repository.
 
-See [the UI kit](../../packages/agent-sdk-material/README.md) for connecting an independent AG-UI agent, and [the 1.0 migration guide](../../docs/MIGRATING_TO_1_0.md).
+The UI retains managed threads, tools/reasoning, attachments, copy, speech and cancellation. See [the UI kit](../../packages/agent-sdk-material/README.md) and [migration guide](../../docs/MIGRATING_TO_1_0.md).

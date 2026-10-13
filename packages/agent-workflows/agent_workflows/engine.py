@@ -246,7 +246,7 @@ class WorkflowEngine:
 
             # 2) Handle {var} braces, but avoid KeyError if missing
             class SafeDict(dict):
-                def __missing__(self, key):  # type: ignore[override]
+                def __missing__(self, key):
                     return ""
 
             combined = SafeDict({**{str(k): str(v) for k, v in vars_map.items()},

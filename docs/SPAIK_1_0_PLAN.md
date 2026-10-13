@@ -43,10 +43,13 @@ Commit each validated implementation chunk with its docs. Do not merge or publis
 - [x] Canonical AG-UI backend, JSON migration, owner/history/replay/checkpoint/cancellation validation.
 - [x] Independent AG-UI React/Material integration, Python-to-TypeScript contract and browser coverage.
 - [x] Peripheral cleanup, optional dependencies and current READMEs/examples/templates/agent guidance.
-- [ ] Contract/browser/install/live checks and release candidates.
+- [x] Local contract/browser/installed-artifact validation and available live provider checks; see [validation results](1_0_VALIDATION.md).
+- [ ] Published release candidates and staging validation.
 - [ ] Stable 1.0 publication.
 
-Baseline tracked production: Python SDK 10,171 lines; hooks 1,732; Material 3,005; 33 mandatory Python dependencies. Initial backend migration removes approximately 4,000 net lines and reduces mandatory dependencies to 8 (including explicit AnyIO for cancellation-safe persistence). Frontend and release validation remain in progress.
+Measured production source across SDK, hooks, Material, frontend examples/templates, workflows and coding agents: 20,552 -> 13,526 lines, a net reduction of 7,026. Mandatory Python SDK dependencies: 33 -> 8. See [the measurement and validation report](1_0_VALIDATION.md). The legacy coding source is still present until its publication gate passes.
+
+Runtime decision: Python 3.11+ is required for reliable upstream async callback propagation; the Python 3.10 compatibility workaround is removed. CI validates 3.11 and 3.13.
 
 ## Remaining release work
 
@@ -54,6 +57,6 @@ Baseline tracked production: Python SDK 10,171 lines; hooks 1,732; Material 3,00
 - GitHub CLI, local PyPI and npm authentication were absent when checked. No package or remote tag has been published from this session.
 - Local candidate metadata is SDK `1.0.0rc1`, React/Material `1.0.0-rc.1`, workflow convenience `0.4.0rc1`. These are not stable releases.
 - OpenAI GPT-6 Luna and Anthropic Sonnet 5.5 minimal live checks passed. Google/Azure live checks require appropriate configured credentials. Sonnet 5.5 minimum thinking is `between_tools`; GPT-6.1 Sol/Astra minimum effort is `low`.
-- Finish installed-artifact validation and record final results in `1_0_VALIDATION.md`; run the unified main-only release workflow for RC publication.
+- Local installed-artifact results are recorded in `1_0_VALIDATION.md`; run the unified main-only release workflow for RC publication.
 - Validate published RC installations in staging before committing stable versions. PyPI/npm version metadata requires rebuilding stable artifacts from the same validated source; RC binaries cannot be relabeled as stable.
 - After stable 1.0, fixes go to 1.0.x. The 1.1 feature has not been chosen and requires its own proposal.

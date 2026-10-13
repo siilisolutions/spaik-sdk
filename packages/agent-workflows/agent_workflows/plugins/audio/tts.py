@@ -24,8 +24,8 @@ try:
     PLAYBACK_AVAILABLE = True
 except ImportError:
     PLAYBACK_AVAILABLE = False
-    sd = None  # type: ignore[assignment]
-    np = None  # type: ignore[assignment]
+    sd = None
+    np = None
 
 try:
     import io
@@ -35,7 +35,7 @@ try:
     PYDUB_AVAILABLE = True
 except ImportError:
     PYDUB_AVAILABLE = False
-    AudioSegment = None  # type: ignore[assignment]
+    AudioSegment = None
 
 
 async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
@@ -108,6 +108,7 @@ async def execute(ctx: Dict[str, Any]) -> Dict[str, Any]:
         else:
             logger("▶️  Playing audio...")
             try:
+                assert AudioSegment is not None and np is not None and sd is not None
                 # Convert MP3 to raw audio for playback
                 audio = AudioSegment.from_mp3(io.BytesIO(audio_bytes))
                 samples = np.array(audio.get_array_of_samples())

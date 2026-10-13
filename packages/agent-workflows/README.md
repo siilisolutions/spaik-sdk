@@ -2,7 +2,7 @@
 
 # Agent Workflows
 
-YAML-driven workflow engine for AI agents.
+YAML-driven workflow engine for AI agents. Requires Python 3.11+. The existing global config directory keeps its legacy `siili-agent-workflows` name.
 
 Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
 
@@ -42,7 +42,7 @@ Workflows are discovered from multiple locations (in order):
 
 1. **Current directory**: `./workflow-name.yml`, `./workflow-name.yaml`, etc.
 2. **Local workflows dir**: `./.agent_workflows/workflow-name.yml`
-3. **Global config**: `~/.config/spaik-agent-workflows/workflow-name.yml`
+3. **Global config**: `~/.config/siili-agent-workflows/workflow-name.yml`
 4. **Bundled**: Workflows shipped with the package
 
 Supported extensions: `.yml`, `.yaml`, `.agent-workflow.yml`, `.agent-workflow.yaml`
@@ -51,7 +51,7 @@ Supported extensions: `.yml`, `.yaml`, `.agent-workflow.yml`, `.agent-workflow.y
 
 Environment files are loaded in order (later overrides earlier):
 
-1. `~/.config/spaik-agent-workflows/.env` (global)
+1. `~/.config/siili-agent-workflows/.env` (global)
 2. `./.env` (current directory)
 3. `--env-file <path>` (explicit)
 

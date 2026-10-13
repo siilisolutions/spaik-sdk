@@ -21,8 +21,8 @@ try:
     AUDIO_AVAILABLE = True
 except ImportError:
     AUDIO_AVAILABLE = False
-    sd = None  # type: ignore[assignment]
-    np = None  # type: ignore[assignment]
+    sd = None
+    np = None
 
 try:
     from scipy.io import wavfile  # type: ignore[import-untyped]
@@ -30,7 +30,7 @@ try:
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
-    wavfile = None  # type: ignore[assignment]
+    wavfile = None
 
 
 class AudioRecorder:
@@ -55,13 +55,15 @@ class AudioRecorder:
         if not AUDIO_AVAILABLE:
             raise RuntimeError(
                 "Audio recording requires 'sounddevice' and 'numpy'. "
-                "Install with: pip install sounddevice numpy"
+                "Install with: pip install spaik-agent-workflows[audio]"
             )
         if not SCIPY_AVAILABLE:
             raise RuntimeError(
-                "Audio saving requires 'scipy'. Install with: pip install scipy"
+                "Audio saving requires 'scipy'. "
+                "Install with: pip install spaik-agent-workflows[audio]"
             )
 
+        assert sd is not None and np is not None and wavfile is not None
         self.audio_data = []
         self.recording = True
         stop_event = threading.Event()

@@ -2,7 +2,7 @@
 name = "agent-sdk-backend-example"
 version = "1.0.0"
 description = "FastAPI backend example using Agent SDK"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.100.0",
     "uvicorn[standard]>=0.20.0",

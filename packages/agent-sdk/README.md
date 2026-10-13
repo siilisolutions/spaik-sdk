@@ -1,6 +1,6 @@
 # spaik-sdk
 
-Python thread management and agent convenience using canonical AG-UI messages/events. This branch is preparing 1.0; see the [release plan](../../docs/SPAIK_1_0_PLAN.md) and [migration guide](../../docs/MIGRATING_TO_1_0.md).
+Python 3.11+ thread management and agent convenience using canonical AG-UI messages/events. This branch is preparing 1.0; see the [release plan](../../docs/SPAIK_1_0_PLAN.md) and [migration guide](../../docs/MIGRATING_TO_1_0.md).
 
 ```python
 from spaik_sdk import BaseAgent, LLMConfig
