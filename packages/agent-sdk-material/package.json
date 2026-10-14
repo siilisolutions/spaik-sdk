@@ -1,6 +1,6 @@
 {
     "name": "spaik-sdk-material",
-    "version": "1.0.0-rc.1",
+    "version": "0.1.2",
     "description": "Material UI components for Spaik SDK - themeable chat UI for AI agents",
     "type": "module",
     "main": "dist/index.js",
@@ -32,7 +32,7 @@
     "peerDependencies": {
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
-        "spaik-sdk-react": "^1.0.0-rc.1"
+        "spaik-sdk-react": "^1.0.0"
     },
     "dependencies": {
         "@emotion/react": "^11.11.3",

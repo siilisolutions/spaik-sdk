@@ -50,7 +50,7 @@ Skills live in `.agents/skills` (`.claude/skills` links to it). To add or change
 
 Work on branches and commit each validated chunk with its docs. Update READMEs/templates/examples with public API changes and record breaking changes in [the migration guide](docs/MIGRATING_TO_1_0.md).
 
-Release with the manual `release-1.yml` workflow from main. It checks the committed versions, validates the installed wheel and npm tarballs, then publishes. Release candidates go to npm under `next`. Stable versions are rebuilt from validated source; RC artifacts are never relabelled. Keep legacy tags for rollback.
+Each package has its own manual release workflow on main: `release-agent-sdk.yml`, `release-hooks.yml` and `release-material.yml`. Each bumps the version (patch/minor/major), runs checks, publishes, then commits the bump and tags it. Release hooks before Material, which peer-depends on it. Keep legacy tags for rollback.
 
 Tests must cover AG-UI Python/TypeScript contracts, independent backends, browser thread lifecycle, replay/migration, arbitrary models, cost unknown/zero/partial handling and minimal/extra installed packages.
 
