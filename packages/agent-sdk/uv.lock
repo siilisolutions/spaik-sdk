@@ -2507,7 +2507,7 @@ wheels = [
 
 [[package]]
 name = "spaik-sdk"
-version = "0.11.2"
+version = "1.0.0rc1"
 source = { editable = "." }
 dependencies = [
     { name = "ag-ui-protocol" },
