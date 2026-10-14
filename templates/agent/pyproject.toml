@@ -1,7 +1,7 @@
 [project]
-name = "agents-examples"
+name = "spaik-agent"
 version = "0.1.0"
-description = "Example agents using agent-sdk"
+description = "Agents built with Spaik SDK"
 requires-python = ">=3.11"
 dependencies = [
     "spaik-sdk[server,openai,anthropic,google,azure,audio,mcp]>=1.0.0rc1,<2",

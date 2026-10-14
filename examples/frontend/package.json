@@ -1,5 +1,5 @@
 {
-    "name": "frontend-examples",
+    "name": "spaik-frontend-example",
     "private": true,
     "version": "0.1.0",
     "type": "module",
@@ -7,17 +7,13 @@
         "dev": "bun run vite",
         "build": "bun run tsc && bun run vite build",
         "lint": "bun run eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-        "preview": "bun run vite preview",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "preview": "bun run vite preview"
     },
     "dependencies": {
         "spaik-sdk-material": "workspace:*",
         "spaik-sdk-react": "workspace:*",
-        "axios": "^1.12.0",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "zod": "^3.25.63",
-        "zustand": "^5.0.5"
+        "react-dom": "^18.2.0"
     },
     "devDependencies": {
         "@types/react": "^18.2.47",

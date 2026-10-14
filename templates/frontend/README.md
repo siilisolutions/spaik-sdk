@@ -1,7 +1,7 @@
-# Spaik frontend template
+# Spaik agent chat
 
-A React/Vite app consuming the shared `spaik-sdk-material` UI kit and official AG-UI client. Message rendering belongs to the kit.
+A React/Vite chat app built on the [spaik-sdk-material](https://github.com/siilisolutions/spaik-sdk/blob/main/packages/agent-sdk-material/README.md) UI kit and the official AG-UI client.
 
-After copying this template, run `bun install` and `bun run dev`. Start a Spaik backend at http://localhost:8000, or update `src/App.tsx` to pass an independent `HttpAgent`.
+Run `bun install` and `bun run dev`, then open http://localhost:5173. By default the app talks to a Spaik backend at http://localhost:8000. To use another AG-UI backend, open the app with `?agent=<endpoint URL>` or pass your own `HttpAgent` in `src/App.tsx`.
 
-The UI retains managed threads, tools/reasoning, attachments, copy, speech and cancellation. See [the UI kit](../../packages/agent-sdk-material/README.md) and [migration guide](../../docs/MIGRATING_TO_1_0.md).
+Against a Spaik backend you get managed threads, tool calls and reasoning, attachments, copy, speech input and output, and cancellation. See the [1.0 migration guide](https://github.com/siilisolutions/spaik-sdk/blob/main/docs/MIGRATING_TO_1_0.md) if you are upgrading from 0.x.

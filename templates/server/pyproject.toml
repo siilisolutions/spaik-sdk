@@ -1,7 +1,7 @@
 [project]
-name = "agent-sdk-backend-example"
-version = "1.0.0"
-description = "FastAPI backend example using Agent SDK"
+name = "spaik-agent-server"
+version = "0.1.0"
+description = "FastAPI AG-UI server built with Spaik SDK"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.100.0",

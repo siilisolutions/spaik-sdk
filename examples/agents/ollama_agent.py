@@ -1,108 +1,43 @@
-from typing import List
+"""Runs an agent with tools on a local Ollama model.
+
+Start Ollama with `ollama serve`, pull the model with `ollama pull gpt-oss:20b`, and set
+OLLAMA_BASE_URL if the server is not at http://localhost:11434.
+"""
 
 from dotenv import load_dotenv
-from spaik_sdk.agent.base_agent import BaseAgent
-from spaik_sdk.models.llm_model import LLMModel
-from spaik_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
+from spaik_sdk import BaseAgent, LLMModel
+from spaik_sdk.tools.tool_provider import tool
 
 
 @tool
-def calculator(expression: str) -> str:
-    """Evaluate mathematical expressions safely. Supports basic operations (+, -, *, /) and sqrt function.
-    
+def monthly_loan_payment(principal: float, annual_interest_rate_percent: float, years: int) -> str:
+    """Calculate the fixed monthly payment of an amortising loan.
+
     Args:
-        expression: Mathematical expression to evaluate (e.g., '2+2', '10*5', 'sqrt(16)')
+        principal: Amount borrowed.
+        annual_interest_rate_percent: Nominal yearly interest rate, e.g. 4.5 for 4.5 %.
+        years: Loan term in years.
     """
-    try:
-        # Simple safe evaluation - only allow basic math operations
-        if "sqrt" in expression:
-            import math
-            # Replace sqrt with math.sqrt
-            expression = expression.replace("sqrt", "math.sqrt")
-            result = eval(expression, {"__builtins__": {}, "math": math})
-        else:
-            # Basic arithmetic only
-            allowed_chars = set("0123456789+-*/.() ")
-            if not all(c in allowed_chars for c in expression):
-                return f"Error: Invalid characters in expression '{expression}'. Only numbers and +, -, *, /, (, ) are allowed."
-            
-            result = eval(expression, {"__builtins__": {}})
-        
-        return f"Result: {result}"
-    except Exception as e:
-        return f"Error evaluating '{expression}': {str(e)}"
+    months = years * 12
+    monthly_rate = annual_interest_rate_percent / 100 / 12
+    if monthly_rate == 0:
+        payment = principal / months
+    else:
+        payment = principal * monthly_rate / (1 - (1 + monthly_rate) ** -months)
+    return f"Monthly payment: {payment:.2f}. Total repaid: {payment * months:.2f}."
 
 
-class CalculatorToolProvider(ToolProvider):
-    def get_tools(self) -> List[BaseTool]:
-        return [calculator]
-
-
-class OllamaAgent(BaseAgent):
-    """
-    Sample agent demonstrating Ollama provider with gpt-oss:20b model.
-    
-    Features demonstrated:
-    - Tool calling with a simple calculator tool
-    - Reasoning mode (chain-of-thought)
-    - Streaming responses
-    
-    Prerequisites:
-    1. Install and start Ollama: `ollama serve`
-    2. Download the model: `ollama pull gpt-oss:20b`
-    3. Set OLLAMA_BASE_URL environment variable if not using default (http://localhost:11434)
-    """
-    
-    def __init__(self):
-        # Create Ollama model - users can create any Ollama model this way
-        ollama_model = LLMModel(
-            family="ollama",
-            name="gpt-oss:20b",
-            reasoning=True,  # This model supports reasoning
-            prompt_caching=False  # Ollama doesn't support prompt caching like cloud providers
-        )
-        
+class LoanAdvisorAgent(BaseAgent):
+    def __init__(self) -> None:
         super().__init__(
-            system_prompt="You are a helpful AI assistant with access to a calculator. "
-                         "When asked to perform calculations, use the calculator tool. "
-                         "Show your reasoning step by step for complex problems.",
-            llm_model=ollama_model
+            system_prompt="You help people understand loan costs. Use the monthly_loan_payment tool for every calculation.",
+            llm_model=LLMModel(family="ollama", name="gpt-oss:20b", reasoning=True, prompt_caching=False),
+            tools=[monthly_loan_payment],
         )
-
-    def get_tool_providers(self) -> List[ToolProvider]:
-        return [CalculatorToolProvider()]
 
 
 if __name__ == "__main__":
     load_dotenv()
-    
-    print("🦙 Ollama Agent Demo")
-    print("Prerequisites:")
-    print("1. Start Ollama server: ollama serve")
-    print("2. Download model: ollama pull gpt-oss:20b")
-    print("3. Set OLLAMA_BASE_URL if not using localhost:11434")
-    print()
-    
-    agent = OllamaAgent()
-    
-    # Test basic response
-    print("=== Basic Response ===")
-    response = agent.get_response_text("Hello! What can you help me with?")
-    print(response)
-    print()
-    
-    # Test tool calling
-    print("=== Tool Calling Test ===")
-    response = agent.get_response_text("What is 15 * 7 + 12?")
-    print(response)
-    print()
-    
-    # Test reasoning with complex math
-    print("=== Reasoning + Tool Test ===")
-    response = agent.get_response_text("I have a rectangle with length 12.5 and width 8.3. What's its area and perimeter?")
-    print(response)
-    print()
-    
-    # Interactive CLI (uncomment to use)
-    # print("Starting interactive CLI...")
-    # agent.run_cli()
+    agent = LoanAdvisorAgent()
+    question = "I want to borrow 250,000 at 4.2 % for 25 years. What would I pay each month, and how much interest in total?"
+    print(agent.get_response_text(question))
