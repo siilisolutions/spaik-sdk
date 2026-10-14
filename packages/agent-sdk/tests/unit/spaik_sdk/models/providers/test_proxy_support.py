@@ -19,7 +19,7 @@ from spaik_sdk.models.providers.xai_provider import XAIProvider
 
 def _make_config(family: str = "openai", name: str = "test-model") -> LLMConfig:
     model = LLMModel(family=family, name=name, reasoning=False, prompt_caching=False)
-    return LLMConfig(model=model, reasoning=False, tool_usage=False, streaming=False)
+    return LLMConfig(model=model, reasoning=False, streaming=False)
 
 
 PROXY_ENV = {
@@ -159,7 +159,6 @@ class TestLLMConfigProviderInjection:
             provider_type=None,
             provider=provider,
             reasoning=False,
-            tool_usage=False,
             streaming=False,
         )
 

@@ -20,6 +20,7 @@ from spaik_sdk.llm.cost.cost_provider import CostContext, CostProvider
 from spaik_sdk.llm.langchain_service import LangChainService, RunCancelled
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.llm_model import LLMModel
+from spaik_sdk.models.model_registry import ModelRegistry
 from spaik_sdk.prompt.get_prompt_loader import get_prompt_loader
 from spaik_sdk.prompt.prompt_loader import PromptLoader
 from spaik_sdk.prompt.prompt_loader_mode import PromptLoaderMode
@@ -261,9 +262,8 @@ class BaseAgent(ABC):
 
     def create_llm_config(self, llm_model=None, reasoning=None, provider=None, provider_kwargs=None) -> LLMConfig:
         model = llm_model if llm_model is not None else self.get_llm_model()
-        provider = (
-            provider or env_config.get_key("MODEL_PROVIDER", required=False) or (model.family if isinstance(model, LLMModel) else None)
-        )
+        preset = model if isinstance(model, LLMModel) else ModelRegistry.by_id(model)
+        provider = provider or env_config.get_key("MODEL_PROVIDER", required=False) or (preset.family if preset else None)
         if provider is None:
             raise ValueError("An arbitrary model ID requires provider")
         return LLMConfig(
@@ -271,7 +271,6 @@ class BaseAgent(ABC):
             provider_type=provider,
             provider_kwargs=provider_kwargs or {},
             reasoning=reasoning if reasoning is not None else True,
-            tool_usage=bool(self.tools),
         )
 
     def get_llm_model(self) -> LLMModel:

@@ -31,8 +31,6 @@ def main() -> None:
             model=ModelRegistry.GPT_6_1_SOL,
             provider=AzureProvider(azure_ad_token_provider=create_token_provider()),
             reasoning=False,
-            tool_usage=False,
-            temperature=0,
         ),
     )
 

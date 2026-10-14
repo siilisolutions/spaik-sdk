@@ -5,7 +5,7 @@ description: Discover, verify and add or retire LLM presets in the Spaik SDK mod
 
 # Model update
 
-Presets in `ModelRegistry` are optional shortcuts. Any provider model ID works without one (`BaseAgent(llm_model="any-id", provider="openai")`), so a preset is only worth adding for a current, commonly used model or one that needs provider-specific reasoning settings. Spaik keeps no price tables or per-model Azure deployment maps; costs come from provider-reported charges.
+Presets in `ModelRegistry` are optional shortcuts. Any model works without one, either as `LLMModel(family=..., name=...)` or as a plain ID with a provider, and family settings apply either way. A preset is worth adding for a current, commonly used model, or to record capability flags (`reasoning`, `reasoning_min_effort`, `prompt_caching`) so that its plain string ID also picks them up. Spaik keeps no price tables or per-model Azure deployment maps; costs come from provider-reported charges.
 
 LLMs hallucinate model names. Do not skip verification.
 
@@ -17,18 +17,19 @@ All paths are under `packages/agent-sdk/`.
 | --- | --- |
 | `spaik_sdk/models/model_registry.py` | `LLMModel` preset constants, and the bare aliases in `from_name` (`sonnet`, `opus`, `haiku`, `fable`, `claude`, `gpt`, `gemini flash`) |
 | `spaik_sdk/models/llm_model.py` | `LLMModel` fields: `family`, `name` (exact API ID), `reasoning`, `reasoning_min_effort`, `prompt_caching` |
-| `spaik_sdk/models/llm_config.py` | `_preset_kwargs`: per-family reasoning settings applied to presets only |
+| `spaik_sdk/models/family_settings.py` | Per-family reasoning and token settings, applied to any `LLMModel` of that family |
 | `spaik_sdk/models/llm_families.py` | Family constants (new provider families only) |
 | `spaik_sdk/models/providers/provider_type.py` | `ProviderType`, `from_model_name` prefixes and `from_family` (new providers only) |
-| `tests/unit/spaik_sdk/models/test_model_registry.py` | Alias resolution and preset kwargs |
+| `tests/unit/spaik_sdk/models/test_model_registry.py`, `test_family_settings.py` | Alias resolution and family settings |
 
-How `_preset_kwargs` applies reasoning:
+How `family_settings.py` applies reasoning (only when `model.reasoning` is true; Anthropic always gets `max_tokens`):
 
-- **Anthropic 5.x**: adaptive thinking with `output_config.effort` when reasoning is on. With reasoning off, `claude-opus-5-5` and `claude-fable-5-1` raise `ValueError`, `claude-sonnet-5-5` uses `between_tools`, and others use `disabled`. Older reasoning models use `thinking.type: "enabled"` with `reasoning_budget_tokens`.
+- **Anthropic 5.x and later** (matched by name prefix): adaptive thinking with `output_config.effort` when reasoning is on; structured responses use the minimum, except on models that require thinking. With reasoning off, `claude-opus-5-5` and `claude-fable-5-1` raise `ValueError`, `claude-sonnet-5-5` uses `between_tools`, and others use `disabled`. Older reasoning models use `thinking.type: "enabled"` with `reasoning_budget_tokens`.
 - **OpenAI reasoning models**: Responses API with `reasoning.effort`. With reasoning off, it uses the model's `reasoning_min_effort`. Set this to the lowest effort the model accepts, for example `"low"` for GPT-6.1 Sol and GPT-6 Astra.
-- **Google**: Gemini 3.x uses `thinking_level`; older models use `thinking_budget` and `include_thoughts`.
+- **Google**: Gemini 3.x uses `thinking_level`: `high` with reasoning, otherwise the model's `reasoning_min_effort`, or `minimal` when unset (set `"low"` for models without minimal thinking, such as Pro). Older models use `thinking_budget` and `include_thoughts`.
+- **Ollama**: passes the `reasoning` flag.
 
-A new model whose reasoning rules differ from these needs a branch in `_preset_kwargs` and a test.
+A new model whose reasoning rules differ from these needs a change in its family function in `family_settings.py` and a test.
 
 ## 2. Official sources
 

@@ -3,16 +3,18 @@
 Python 3.11+ thread management and agent convenience using canonical AG-UI messages/events. Upgrading from 0.x? See the [migration guide](../../docs/MIGRATING_TO_1_0.md).
 
 ```python
-from spaik_sdk import BaseAgent, LLMConfig
+from spaik_sdk import BaseAgent, LLMModel
 from spaik_sdk.models.model_registry import ModelRegistry
 
-agent = BaseAgent(system_prompt="Be helpful.", llm_model="my-model", provider="openai")
-# Or: BaseAgent(system_prompt="Be helpful.", chat_model=my_langchain_model)
-# Optional preset: llm_model=ModelRegistry.CLAUDE_SONNET_5_5
+agent = BaseAgent(system_prompt="Be helpful.", llm_model=ModelRegistry.CLAUDE_SONNET_5_5)
+# A model without a preset: llm_model=LLMModel(family="anthropic", name="claude-new-model")
+# A plain ID with an explicit provider: llm_model="my-deployment", provider="azure"
 print(agent.get_response_text("Hello"))
 ```
 
-Arbitrary model IDs require an explicit provider. `provider_kwargs` passes provider options through and overrides preset defaults. `LLMConfig` also accepts `chat_model`, an injected provider object, and `max_agent_steps`. No registry membership check or per-model Azure deployment mapping remains. Current aliases include `sonnet`, `opus`, `haiku`, `fable`, `gpt` and `gemini flash`; exact API IDs and constant names select presets. Historical/fuzzy aliases have been removed.
+Every model is an `LLMModel`: a family, the exact API ID and capability flags (`reasoning`, `reasoning_min_effort`, `prompt_caching`). Reasoning and token settings come from the model's family, whichever provider hosts it, so a preset, an `LLMModel` with the same name and the same string ID build the same model. A string that matches no preset uses provider defaults; opt into reasoning with `LLMModel(..., reasoning=True)`. `provider_kwargs` override everything. `temperature` is sent only when set.
+
+Spaik providers build every model for the providers they know, including credentials and proxy mode. Other provider names go through LangChain's `init_chat_model`, and `chat_model=` accepts a fully configured LangChain model as a last resort. Current aliases for `ModelRegistry.from_name` are `sonnet`, `opus`, `haiku`, `fable`, `gpt` and `gemini flash`.
 
 ## Tools and agent methods
 

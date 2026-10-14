@@ -9,7 +9,7 @@ Spaik's core is thread management and a reusable React/Material UI kit. Canonica
 - `packages/agent-sdk/spaik_sdk/agent/base_agent.py`: BaseAgent and AG-UI lifecycle.
 - `thread/`: canonical messages, private replay metadata, versioned envelope and migration.
 - `llm/langchain_service.py`: LangChain -> AG-UI execution; every model invocation records usage/reported charges.
-- `models/llm_config.py`: arbitrary provider/model IDs, provider kwargs or injected BaseChatModel. Optional presets are not required for construction.
+- `models/`: `LLMModel` describes every model (presets, custom models and plain IDs). `family_settings.py` applies per-family reasoning/token settings by `model.family`, never by registry membership; Spaik providers build every model they know. Provider kwargs override; `chat_model` injection is a last resort.
 - `llm/cost/`: provider-reported charge resolver; absent charge is None with a console message. Never infer price or zero.
 - `server/api/routers/`: authorized thread CRUD, `/threads/{id}/runs` SSE, cancellation/files/audio.
 - `packages/agent-sdk-hooks`: official AG-UI client state plus optional ThreadRepository, selection/uploads/audio.
@@ -25,9 +25,10 @@ Frontend: root `bun install`, `bun run build:packages`, `bun test packages/agent
 ## Usage
 
 ```python
-from spaik_sdk import BaseAgent
-agent = BaseAgent(system_prompt="Be helpful.", llm_model="any-model-id", provider="openai", provider_kwargs={})
-# Or inject chat_model=YourBaseChatModel(...).
+from spaik_sdk import BaseAgent, LLMModel
+from spaik_sdk.models.model_registry import ModelRegistry
+agent = BaseAgent(system_prompt="Be helpful.", llm_model=ModelRegistry.CLAUDE_SONNET_5_5)
+# Or llm_model=LLMModel(family="openai", name="new-model-id"), or llm_model="any-id", provider="openai".
 print(agent.get_response_text("Hello"))
 ```
 

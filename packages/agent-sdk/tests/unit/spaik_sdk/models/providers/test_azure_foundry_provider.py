@@ -28,7 +28,7 @@ PROXY_ENV = {
 
 def _make_config(name: str = "gpt-4o") -> LLMConfig:
     model = LLMModel(family="openai", name=name, reasoning=False, prompt_caching=False)
-    return LLMConfig(model=model, reasoning=False, tool_usage=False, streaming=False)
+    return LLMConfig(model=model, reasoning=False, streaming=False)
 
 
 @pytest.mark.unit

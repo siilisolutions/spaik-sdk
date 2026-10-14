@@ -15,9 +15,17 @@ Spaik 1.0 requires Python 3.11 or later. Python 3.10 fails to propagate nested a
 
 ## Models
 
-Presets are conveniences, not an eligibility list. Pass any model ID with `BaseAgent(system_prompt="...", llm_model="your-model-id", provider="openai", provider_kwargs={...})`, or inject `chat_model=YourLangChainModel(...)`. An injected model bypasses environment defaults and catalog lookup. Do not combine injection with llm_model/llm_config. Explicit provider kwargs override preset defaults. Install only the provider extra you use, such as `spaik-sdk[openai,server]`.
+`ModelRegistry` presets and `LLMModel` work as before, and the registry no longer limits which models you can use. Choose a model in one of these ways, in order of preference:
 
-Azure deployment names are supplied as model IDs or provider kwargs; per-model deployment environment variables have been removed. Existing proxy authentication remains available. Provider-specific capabilities belong in provider kwargs for arbitrary IDs.
+1. A preset: `llm_model=ModelRegistry.CLAUDE_SONNET_5_5`, or an alias with `ModelRegistry.from_name("sonnet")`.
+2. A model without a preset: `llm_model=LLMModel(family="anthropic", name="claude-new-model", reasoning=True)`. Its family's reasoning and token settings apply whichever provider hosts it.
+3. A plain string ID with an explicit provider: `llm_model="your-model-id", provider="openai"`. An ID that matches a preset uses that preset's settings; any other ID uses provider defaults.
+
+`provider_kwargs` override every setting. Spaik providers build all models for the providers they know; other provider names go through LangChain's `init_chat_model`. As a last resort, `chat_model=` accepts a fully configured LangChain model, which bypasses environment defaults and Spaik's model settings; do not combine it with `llm_model` or `llm_config`. Install only the provider extra you use, such as `spaik-sdk[openai,server]`.
+
+`LLMConfig.temperature` now defaults to the provider's own default and is sent only when you set it; 0.x sent 0.1 to models without reasoning. Remove `temperature` for reasoning models, which reject it. `LLMConfig.tool_usage` is removed. `streaming=False` disables model streaming for every provider.
+
+Azure deployment names are supplied as model IDs or provider kwargs; per-model deployment environment variables have been removed. Existing proxy authentication remains available.
 
 ## Messages and runs
 

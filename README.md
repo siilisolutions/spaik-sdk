@@ -13,18 +13,20 @@ pip install 'spaik-sdk[openai,server]'
 ```
 
 ```python
-from spaik_sdk import BaseAgent
+from spaik_sdk import BaseAgent, LLMModel
+from spaik_sdk.models.model_registry import ModelRegistry
 
+agent = BaseAgent(system_prompt="You are a helpful assistant.", llm_model=ModelRegistry.GPT_6_1_SOL)
+print(agent.get_response_text("Hello"))
+
+# A model without a preset: describe it, and Spaik applies its family's settings.
 agent = BaseAgent(
     system_prompt="You are a helpful assistant.",
-    llm_model="your-provider-model-id",
-    provider="openai",
-    provider_kwargs={"temperature": 0.2},
+    llm_model=LLMModel(family="openai", name="your-model-id", reasoning=True),
 )
-print(agent.get_response_text("Hello"))
 ```
 
-Alternatively pass `chat_model=YourLangChainChatModel(...)`. Optional `ModelRegistry` presets select sensible defaults; model IDs never need catalog membership. Configure an Azure deployment by its actual deployment ID and Azure provider kwargs, rather than per-model environment variables.
+A plain string ID with an explicit `provider` also works; it uses the preset's settings when the ID matches one and provider defaults otherwise. `provider_kwargs` override everything. Configure an Azure deployment by its actual deployment ID and Azure provider kwargs, rather than per-model environment variables.
 
 The SDK retains ToolProvider/LangChain tools, structured responses, cancellation, attachments, audio, recording, tracing, isolated `spawn()`, and the optional code-first orchestrator. `get_response()` returns an AG-UI assistant message; streaming methods yield official AG-UI events.
 

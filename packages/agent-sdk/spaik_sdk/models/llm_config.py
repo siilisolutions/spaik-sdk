@@ -4,17 +4,25 @@ from typing import Any
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models.chat_models import BaseChatModel
 
+from spaik_sdk.models.family_settings import family_kwargs
+from spaik_sdk.models.llm_families import LLMFamilies
 from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.llm_wrapper import LLMWrapper
+from spaik_sdk.models.model_registry import ModelRegistry
 from spaik_sdk.models.providers.base_provider import BaseProvider
 from spaik_sdk.models.providers.provider_type import ProviderType
+
+PROVIDER_FAMILIES = {ProviderType.AZURE_OPENAI.value: LLMFamilies.OPENAI}
+LANGCHAIN_PROVIDER_NAMES = {"google": "google_genai", "mistral": "mistralai"}
 
 
 @dataclass
 class LLMConfig:
-    """A provider/model identifier or an already configured LangChain model.
+    """A model plus generation settings, or an already configured LangChain model.
 
-    Strings never consult the preset catalog. Provider kwargs are passed through.
+    A string model ID that matches a preset uses the preset; any other string becomes an
+    LLMModel with provider defaults. Family settings apply by model family, provider
+    kwargs override everything, and Spaik providers build every model they know.
     """
 
     model: LLMModel | str = ""
@@ -23,14 +31,13 @@ class LLMConfig:
     chat_model: BaseChatModel | None = None
     provider_kwargs: dict[str, Any] = field(default_factory=dict)
     reasoning: bool = True
-    tool_usage: bool = True
     streaming: bool = True
     reasoning_summary: str | None = "detailed"
     reasoning_effort: str = "medium"
     max_output_tokens: int | None = None
     reasoning_budget_tokens: int = 4096
     max_agent_steps: int = 100
-    temperature: float = 0.1
+    temperature: float | None = None
     structured_response: bool = False
     _model_wrapper: LLMWrapper | None = field(default=None, init=False, repr=False)
 
@@ -50,8 +57,9 @@ class LLMConfig:
                 return ProviderType.from_name(self.provider_type).value
             except ValueError:
                 return self.provider_type
-        if isinstance(self.model, LLMModel):
-            return self.model.family
+        preset = self.model if isinstance(self.model, LLMModel) else ModelRegistry.by_id(self.model)
+        if preset is not None:
+            return preset.family
         if self.chat_model is not None:
             for base in type(self.chat_model).__mro__:
                 module = base.__module__.split(".")[0]
@@ -59,76 +67,57 @@ class LLMConfig:
                     return module.removeprefix("langchain_")
         return "injected"
 
+    def resolved_model(self) -> LLMModel:
+        if isinstance(self.model, LLMModel):
+            return self.model
+        preset = ModelRegistry.by_id(self.model_name)
+        if preset is not None:
+            return preset
+        family = PROVIDER_FAMILIES.get(self.provider_name, self.provider_name)
+        return LLMModel(family=family, name=self.model_name, reasoning=False)
+
     def get_model_wrapper(self) -> LLMWrapper:
         if self._model_wrapper is None:
             self._model_wrapper = self.create_model_wrapper()
         return self._model_wrapper
 
     def create_model_wrapper(self) -> LLMWrapper:
-        identity = self.model if isinstance(self.model, LLMModel) else LLMModel(self.provider_name, self.model_name, reasoning=False)
+        model = self.resolved_model()
         if self.chat_model is not None:
-            return LLMWrapper(self.chat_model, None, identity)
+            return LLMWrapper(self.chat_model, None, model)
         if not self.model_name:
             raise ValueError("Supply a model ID and provider, or chat_model")
-        kwargs = self._preset_kwargs()
+        kwargs = family_kwargs(model, self)
         if self.max_output_tokens is not None:
             kwargs["max_tokens"] = self.max_output_tokens
-        provider = self.provider
-        if provider is None:
-            try:
-                kind = ProviderType.from_name(self.provider_name)
-            except ValueError:
-                kind = None
-            if kind is not None:
-                provider = BaseProvider.create_provider(kind)
+        if self.temperature is not None:
+            kwargs["temperature"] = self.temperature
+        if not self.streaming:
+            kwargs["disable_streaming"] = True
+        provider = self.provider or self._known_provider()
         if provider is not None:
             kwargs.update(provider.get_model_config(self))
         kwargs.update(self.provider_kwargs)
-        if self.provider is not None or (provider is not None and self.provider_name in {"azure_openai", "azure_ai_foundry"}):
+        if provider is not None:
             kwargs["model"] = self.model_name
-            assert provider is not None
-            model = provider.create_langchain_model(self, kwargs)
+            langchain_model = provider.create_langchain_model(self, kwargs)
+        elif self.provider_name == "injected":
+            raise ValueError("An arbitrary model ID requires an explicit provider_type")
         else:
-            name = {"google": "google_genai", "mistral": "mistralai"}.get(self.provider_name, self.provider_name)
-            if name == "injected":
-                raise ValueError("An arbitrary model ID requires an explicit provider_type")
-            model = init_chat_model(self.model_name, model_provider=name, **kwargs)
-        cache = {"type": "ephemeral"} if isinstance(self.model, LLMModel) and self.model.prompt_caching else None
-        return LLMWrapper(model, cache, identity)
+            name = LANGCHAIN_PROVIDER_NAMES.get(self.provider_name, self.provider_name)
+            langchain_model = init_chat_model(self.model_name, model_provider=name, **kwargs)
+        cache = {"type": "ephemeral"} if model.prompt_caching else None
+        return LLMWrapper(langchain_model, cache, model)
 
-    def _preset_kwargs(self) -> dict[str, Any]:
-        from spaik_sdk.models.model_registry import ModelRegistry
-
-        if not isinstance(self.model, LLMModel) or self.model not in ModelRegistry.get_all():
-            return {}
-        if self.model.family == "anthropic":
-            kwargs: dict[str, Any] = {"max_tokens": self.max_output_tokens or 8192}
-            if self.model.name.startswith(("claude-opus-5", "claude-fable-5", "claude-sonnet-5", "claude-haiku-5")):
-                if not self.reasoning and self.model.name in {"claude-opus-5-5", "claude-fable-5-1"}:
-                    raise ValueError(f"{self.model.name} requires adaptive thinking")
-                minimum = "between_tools" if self.model.name == "claude-sonnet-5-5" else "disabled"
-                kwargs["thinking"] = {"type": "adaptive" if self.reasoning else minimum}
-                if self.reasoning:
-                    kwargs["model_kwargs"] = {"output_config": {"effort": self.reasoning_effort}}
-            elif self.reasoning and self.model.reasoning:
-                kwargs["thinking"] = {"type": "enabled", "budget_tokens": self.reasoning_budget_tokens}
-            return kwargs
-        if self.model.family == "openai" and self.model.reasoning:
-            return {
-                "use_responses_api": True,
-                "reasoning": {
-                    "effort": self.reasoning_effort if self.reasoning else self.model.reasoning_min_effort,
-                    "summary": self.reasoning_summary,
-                },
-            }
-        if self.model.family == "google":
-            if self.model.name.startswith("gemini-3"):
-                return {"thinking_level": "high" if self.reasoning else "low"}
-            return {"thinking_budget": self.reasoning_budget_tokens if self.reasoning else 0, "include_thoughts": self.reasoning}
-        return {}
+    def _known_provider(self) -> BaseProvider | None:
+        try:
+            kind = ProviderType.from_name(self.provider_name)
+        except ValueError:
+            return None
+        return BaseProvider.create_provider(kind)
 
     def get_provider(self) -> BaseProvider:
         return self.provider or BaseProvider.create_provider(ProviderType.from_name(self.provider_name))
 
     def as_structured_response_config(self) -> "LLMConfig":
-        return replace(self, structured_response=True, tool_usage=False)
+        return replace(self, structured_response=True)

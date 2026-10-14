@@ -1,4 +1,5 @@
-"""Optional convenience presets. Model construction never requires registry membership."""
+"""Optional convenience presets. Model construction never requires registry membership;
+a string ID that matches a preset picks up its settings."""
 
 import re
 
@@ -35,6 +36,10 @@ class ModelRegistry:
     @classmethod
     def get_by_family(cls, family: str) -> set[LLMModel]:
         return {model for model in cls.get_all() if model.family == family}
+
+    @classmethod
+    def by_id(cls, model_id: str) -> LLMModel | None:
+        return next((model for model in cls.get_all() if model.name == model_id), None)
 
     @classmethod
     def from_name(cls, name: str) -> LLMModel:
