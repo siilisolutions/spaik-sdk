@@ -7,7 +7,7 @@ dependencies = [
     "fastapi>=0.100.0",
     "uvicorn[standard]>=0.20.0",
     "python-dotenv>=1.0.0",
-    "spaik-sdk[server,openai,anthropic,google,azure,audio,mcp]>=1.0.0,<2",
+    "spaik-sdk[server,openai,anthropic,google,azure,audio,mcp]>=1.0.0rc1,<2",
 ]
 
 [project.optional-dependencies]

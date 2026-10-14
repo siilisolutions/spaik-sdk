@@ -84,7 +84,7 @@
       "peerDependencies": {
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
-        "spaik-sdk-react": "^1.0.0",
+        "spaik-sdk-react": "^1.0.0-rc.1",
       },
     },
   },
