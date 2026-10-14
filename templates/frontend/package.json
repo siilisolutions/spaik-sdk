@@ -10,14 +10,17 @@
         "preview": "bun run vite preview"
     },
     "dependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.0",
+        "@mui/material": "^9.5.0",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
         "spaik-sdk-material": "^1.0.0-rc.1",
-        "spaik-sdk-react": "^1.0.0-rc.1",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "spaik-sdk-react": "^1.0.0-rc.1"
     },
     "devDependencies": {
-        "@types/react": "^18.2.47",
-        "@types/react-dom": "^18.2.18",
+        "@types/react": "^19.2.0",
+        "@types/react-dom": "^19.2.0",
         "@typescript-eslint/eslint-plugin": "^6.19.0",
         "@typescript-eslint/parser": "^6.19.0",
         "@vitejs/plugin-react": "^5.0.0",

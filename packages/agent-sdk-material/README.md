@@ -2,6 +2,12 @@
 
 Themeable Material UI chat components backed by AG-UI. Upgrading from 0.x? See the [migration guide](../../docs/MIGRATING_TO_1_0.md).
 
+```sh
+npm install spaik-sdk-material spaik-sdk-react @mui/material @emotion/react @emotion/styled
+```
+
+React, React DOM, MUI and emotion are peer dependencies, so the kit renders with your application's copies and theme. It supports React 18 and 19, and `@mui/material` 5.15 or later, 6, 7 and 9.
+
 ```tsx
 import { HttpAgent } from 'spaik-sdk-react';
 import { AgentChat, AgentThemeProvider } from 'spaik-sdk-material';

@@ -2,6 +2,12 @@
 
 React hooks for AG-UI conversations and optional persisted thread management. The official AG-UI client owns messages, state and run lifecycle. Upgrading from 0.x? See the [migration guide](../../docs/MIGRATING_TO_1_0.md).
 
+```sh
+npm install spaik-sdk-react
+```
+
+React 18 and 19 are supported; `react` is a peer dependency.
+
 ```tsx
 import { HttpAgent, AgentSdkClient, AgentSdkClientProvider, useThread, useThreadSelection, useThreadActions } from 'spaik-sdk-react';
 

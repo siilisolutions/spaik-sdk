@@ -44,7 +44,7 @@ export function ThreadSidebar({ width = 300, header, title = 'Agent Chat' }: Pro
             >
                 <SmartToyIcon sx={{ fontSize: 22 }} />
             </Box>
-            <Typography variant="h6" fontWeight={700} color="text.primary">
+            <Typography variant="h6" color="text.primary" sx={{ fontWeight: 700 }}>
                 {title}
             </Typography>
         </Box>

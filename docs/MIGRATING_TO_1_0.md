@@ -70,6 +70,8 @@ Coding-agent wrappers (`spaik-coding-agents`, final 0.2.3) and YAML workflows (`
 
 The conversation model is AG-UI `Message`. Use `AgentChat agent={new HttpAgent(...)}` for another AG-UI backend or `AgentChat baseUrl="..."` for Spaik's managed threads. A custom `ThreadRepository` plus `createAgent(threadId)` integrates other persistence backends. Sidebar requires a repository. `AgentSdkClient.getThread` caches the first response; to poll a thread that runs in the background, call `ThreadsApiClient.getThread`. The `MessageBlock` type is removed: use `message.role`, `toolCalls` and `toolCallId`, and read timestamps and authors from `thread.message_metadata`. The official AG-UI client owns message and run state; hooks subscribe to it. Use `renderMessage` and `renderState` for custom presentation.
 
+Both packages accept React 18 or 19. `spaik-sdk-material` no longer bundles MUI: `@mui/material` (5.15 or later, 6, 7 or 9), `@emotion/react` and `@emotion/styled` are peer dependencies, so add them to your application if you did not already have them. `@mui/icons-material` is no longer installed; add it yourself if your application imported it through Spaik.
+
 ## Threads in your own database
 
 Applications that store threads in SQL, Cosmos DB or similar keep their data where it is. Spaik 1.0 converts legacy threads when it reads them, so no batch job or downtime is needed:

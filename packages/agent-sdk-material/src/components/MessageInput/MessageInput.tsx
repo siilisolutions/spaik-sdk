@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Box, TextField, IconButton, Paper, alpha, useTheme } from '@mui/material';
+import { Box, InputBase, IconButton, Paper, alpha, useTheme } from '@mui/material';
 import {
     useThreadActions,
     useFileUploadStore,
@@ -144,7 +144,7 @@ export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGen
                             disabled={isGenerating}
                         />
                     )}
-                    <TextField
+                    <InputBase
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyDown={handleKeyDown}
@@ -153,13 +153,10 @@ export function MessageInput({ threadId, filesBaseUrl, isGenerating, onCancelGen
                         multiline
                         maxRows={5}
                         fullWidth
-                        variant="standard"
-                        InputProps={{
-                            disableUnderline: true,
-                            style: { fontSize: '0.95rem', lineHeight: 1.5 }
-                        }}
                         sx={{
                             mb: 0.5,
+                            fontSize: '0.95rem',
+                            lineHeight: 1.5,
                         }}
                     />
                     {isGenerating ? (

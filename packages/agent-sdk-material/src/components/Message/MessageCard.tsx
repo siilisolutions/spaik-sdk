@@ -74,7 +74,7 @@ export function MessageCard({ message, messages, metadata, filesBaseUrl, enableT
                         px: 0.5
                     }}
                 >
-                    <Typography variant="caption" fontWeight={600} color="text.primary">
+                    <Typography variant="caption" color="text.primary" sx={{ fontWeight: 600 }}>
                         {metadata?.author_name ?? ('name' in message ? message.name ?? message.role : message.role)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">

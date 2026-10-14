@@ -117,22 +117,22 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
                             </Typography>
                         ),
                         h1: ({ children }) => (
-                            <Typography variant="h4" fontWeight={700} sx={{ mt: 3, mb: 1.5 }}>
+                            <Typography variant="h4" sx={{ fontWeight: 700, mt: 3, mb: 1.5 }}>
                                 {children}
                             </Typography>
                         ),
                         h2: ({ children }) => (
-                            <Typography variant="h5" fontWeight={600} sx={{ mt: 2.5, mb: 1 }}>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mt: 2.5, mb: 1 }}>
                                 {children}
                             </Typography>
                         ),
                         h3: ({ children }) => (
-                            <Typography variant="h6" fontWeight={600} sx={{ mt: 2, mb: 1 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 600, mt: 2, mb: 1 }}>
                                 {children}
                             </Typography>
                         ),
                         h4: ({ children }) => (
-                            <Typography variant="subtitle1" fontWeight={600} sx={{ mt: 1.5, mb: 0.5 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 1.5, mb: 0.5 }}>
                                 {children}
                             </Typography>
                         ),

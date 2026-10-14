@@ -33,7 +33,7 @@ export function ReasoningBlock({ content }: Props) {
                 }}
             >
                 <PsychologyIcon sx={{ fontSize: 16 }} />
-                <Typography variant="caption" fontWeight={600} sx={{ letterSpacing: '0.02em' }}>
+                <Typography variant="caption" sx={{ fontWeight: 600, letterSpacing: '0.02em' }}>
                     {expanded ? 'Hide Reasoning' : 'View Reasoning'}
                 </Typography>
                 <ExpandMoreIcon 
