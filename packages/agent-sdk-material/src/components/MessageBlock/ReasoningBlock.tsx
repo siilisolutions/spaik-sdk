@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Collapse, Typography, alpha, useTheme } from '@mui/material';
-import { PsychologyIcon, ExpandMoreIcon } from '../../utils/icons';
+import { PsychologyIcon, ExpandMoreIcon } from '../../utils/icons.js';
 
 interface Props {
     content: string;

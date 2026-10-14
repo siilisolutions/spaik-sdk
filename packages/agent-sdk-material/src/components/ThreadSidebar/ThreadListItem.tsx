@@ -1,6 +1,6 @@
 import { ListItemButton, ListItemText, Typography, Box, alpha, useTheme } from '@mui/material';
-import { formatTimestamp } from '../../utils/formatTime';
-import { ChatBubbleOutlineIcon } from '../../utils/icons';
+import { formatTimestamp } from '../../utils/formatTime.js';
+import { ChatBubbleOutlineIcon } from '../../utils/icons.js';
 
 interface Props {
     title: string;

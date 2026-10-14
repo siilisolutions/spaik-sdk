@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BaseApiClient, BaseApiClientConfig } from './BaseApiClient';
+import { BaseApiClient, BaseApiClientConfig } from './BaseApiClient.js';
 
 export const FileMetadataSchema = z.object({
     file_id: z.string(),

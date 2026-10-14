@@ -6,10 +6,10 @@ import {
     createFilesApiClient,
     PendingUpload,
 } from 'spaik-sdk-react';
-import { AttachButton } from './AttachButton';
-import { PendingAttachments } from './PendingAttachments';
-import { PushToTalkButton } from '../AudioControls/PushToTalkButton';
-import { SendIcon, StopIcon } from '../../utils/icons';
+import { AttachButton } from './AttachButton.js';
+import { PendingAttachments } from './PendingAttachments.js';
+import { PushToTalkButton } from '../AudioControls/PushToTalkButton.js';
+import { SendIcon, StopIcon } from '../../utils/icons.js';
 
 interface Props {
     threadId: string;

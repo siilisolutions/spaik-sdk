@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
-import { AgentSdkClient } from './AgentSdkClient';
+import { AgentSdkClient } from './AgentSdkClient.js';
 
 interface ClientContext {
     client: AgentSdkClient;

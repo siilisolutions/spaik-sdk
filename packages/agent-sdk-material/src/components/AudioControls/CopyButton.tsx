@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
-import { ContentCopyIcon, CheckIcon } from '../../utils/icons';
+import { ContentCopyIcon, CheckIcon } from '../../utils/icons.js';
 
 interface CopyButtonProps {
     text: string;

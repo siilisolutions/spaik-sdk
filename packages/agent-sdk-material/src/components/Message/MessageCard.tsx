@@ -1,11 +1,11 @@
 import { Paper, Box, useTheme, Avatar, Typography, alpha } from '@mui/material';
 import { Attachment, Message, messageText } from 'spaik-sdk-react';
-import { MessageContent } from './MessageContent';
-import { AttachmentGallery } from './AttachmentGallery';
-import { SmartToyIcon, PersonIcon } from '../../utils/icons';
-import { formatTimestamp } from '../../utils/formatTime';
-import { SpeakButton } from '../AudioControls/SpeakButton';
-import { CopyButton } from '../AudioControls/CopyButton';
+import { MessageContent } from './MessageContent.js';
+import { AttachmentGallery } from './AttachmentGallery.js';
+import { SmartToyIcon, PersonIcon } from '../../utils/icons.js';
+import { formatTimestamp } from '../../utils/formatTime.js';
+import { SpeakButton } from '../AudioControls/SpeakButton.js';
+import { CopyButton } from '../AudioControls/CopyButton.js';
 
 interface Props {
     message: Message;

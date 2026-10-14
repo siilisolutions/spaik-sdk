@@ -1,7 +1,7 @@
 import { Box, CircularProgress, Paper, Typography } from '@mui/material';
 import { useState } from 'react';
-import { useMarkdownContext, CustomComponentProps } from './MarkdownContext';
-import { ImageActions } from '../components/AudioControls/ImageActions';
+import { useMarkdownContext, CustomComponentProps } from './MarkdownContext.js';
+import { ImageActions } from '../components/AudioControls/ImageActions.js';
 
 interface StoredImageProps extends CustomComponentProps {
     id?: string;

@@ -1,6 +1,6 @@
 import { IconButton, Tooltip, CircularProgress } from '@mui/material';
 import { useTextToSpeech } from 'spaik-sdk-react';
-import { VolumeUpIcon, VolumeOffIcon } from '../../utils/icons';
+import { VolumeUpIcon, VolumeOffIcon } from '../../utils/icons.js';
 
 interface SpeakButtonProps {
     text: string;

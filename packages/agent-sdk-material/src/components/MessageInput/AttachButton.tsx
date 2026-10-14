@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
-import { AttachFileIcon } from '../../utils/icons';
+import { AttachFileIcon } from '../../utils/icons.js';
 
 interface Props {
     onFilesSelected: (files: File[]) => void;

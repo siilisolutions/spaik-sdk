@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import type { AbstractAgent, AgentSubscriber } from '@ag-ui/client';
-import { useAgentSdkClient } from '../client/AgentSdkClientProvider';
-import { CreateMessageRequest, CreateThreadRequest } from '../api/ThreadsApiClient';
+import { useAgentSdkClient } from '../client/AgentSdkClientProvider.js';
+import { CreateMessageRequest, CreateThreadRequest } from '../api/ThreadsApiClient.js';
 
 function observeAgent(agent: AbstractAgent) {
     let snapshot = { messages: agent.messages, state: agent.state, isGenerating: agent.isRunning, error: undefined as string | undefined };

@@ -1,7 +1,7 @@
 import { HttpAgent } from '@ag-ui/client';
 import { z } from 'zod';
-import { BaseApiClient, BaseApiClientConfig } from './BaseApiClient';
-import { Attachment, Thread, ThreadSchema } from '../stores/messageTypes';
+import { BaseApiClient, BaseApiClientConfig } from './BaseApiClient.js';
+import { Attachment, Thread, ThreadSchema } from '../stores/messageTypes.js';
 
 export interface ThreadRepository {
     createThread(request?: CreateThreadRequest): Promise<Thread>;

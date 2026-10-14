@@ -1,8 +1,8 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import { Box, Skeleton } from '@mui/material';
 import { Attachment, Message, messageText } from 'spaik-sdk-react';
-import { MessageCard } from '../Message/MessageCard';
-import { TypingIndicator } from './TypingIndicator';
+import { MessageCard } from '../Message/MessageCard.js';
+import { TypingIndicator } from './TypingIndicator.js';
 
 interface Props {
     messages: Message[] | undefined;

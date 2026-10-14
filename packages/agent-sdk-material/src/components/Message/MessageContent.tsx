@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
 import { Message, messageText } from 'spaik-sdk-react';
-import { TextBlock } from '../MessageBlock/TextBlock';
-import { ReasoningBlock } from '../MessageBlock/ReasoningBlock';
-import { ToolCallBlock } from '../MessageBlock/ToolCallBlock';
+import { TextBlock } from '../MessageBlock/TextBlock.js';
+import { ReasoningBlock } from '../MessageBlock/ReasoningBlock.js';
+import { ToolCallBlock } from '../MessageBlock/ToolCallBlock.js';
 
 interface Props { message: Message; messages?: Message[]; }
 

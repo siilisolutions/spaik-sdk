@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BaseApiClient, BaseApiClientConfig } from './BaseApiClient';
+import { BaseApiClient, BaseApiClientConfig } from './BaseApiClient.js';
 
 export const STTResponseSchema = z.object({
     text: z.string(),

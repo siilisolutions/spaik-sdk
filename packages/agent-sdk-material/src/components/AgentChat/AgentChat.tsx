@@ -1,9 +1,9 @@
 import { ReactNode, useMemo, useState } from 'react';
 import { Box, Drawer, useMediaQuery, useTheme } from '@mui/material';
 import { AbstractAgent, AgentSdkClientProvider, AgentSdkClient, createThreadsApiClient, Message, ThreadRepository, useAgentSdkClient } from 'spaik-sdk-react';
-import { ThreadSidebar } from '../ThreadSidebar/ThreadSidebar';
-import { ChatPanel } from '../ChatPanel/ChatPanel';
-import { MarkdownProvider, CustomComponentRegistry } from '../../markdown';
+import { ThreadSidebar } from '../ThreadSidebar/ThreadSidebar.js';
+import { ChatPanel } from '../ChatPanel/ChatPanel.js';
+import { MarkdownProvider, CustomComponentRegistry } from '../../markdown/index.js';
 
 export interface AgentChatProps {
     baseUrl?: string;

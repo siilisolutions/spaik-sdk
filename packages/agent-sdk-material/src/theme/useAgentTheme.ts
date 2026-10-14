@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { AgentThemeContext, AgentThemeContextValue } from './AgentThemeProvider';
+import { AgentThemeContext, AgentThemeContextValue } from './AgentThemeProvider.js';
 
 export function useAgentTheme(): AgentThemeContextValue {
     const context = useContext(AgentThemeContext);

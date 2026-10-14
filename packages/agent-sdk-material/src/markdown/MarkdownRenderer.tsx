@@ -2,8 +2,8 @@ import { useMemo, ComponentType } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Typography, Link, Box, Paper, useTheme, alpha } from '@mui/material';
-import { useMarkdownContext, CustomComponentProps } from './MarkdownContext';
-import { StoredImage } from './StoredImage';
+import { useMarkdownContext, CustomComponentProps } from './MarkdownContext.js';
+import { StoredImage } from './StoredImage.js';
 
 interface MarkdownRendererProps {
     content: string;

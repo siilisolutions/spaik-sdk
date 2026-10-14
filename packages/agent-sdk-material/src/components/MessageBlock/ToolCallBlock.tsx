@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Collapse, IconButton, Typography, CircularProgress, alpha, Chip } from '@mui/material';
-import { BuildIcon, ExpandMoreIcon, CheckCircleIcon, ErrorIcon } from '../../utils/icons';
+import { BuildIcon, ExpandMoreIcon, CheckCircleIcon, ErrorIcon } from '../../utils/icons.js';
 
 interface Props {
     toolName?: string;

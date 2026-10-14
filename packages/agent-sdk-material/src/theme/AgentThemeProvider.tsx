@@ -1,6 +1,6 @@
 import { createContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import { ThemeProvider, CssBaseline, Theme } from '@mui/material';
-import { lightTheme, darkTheme } from './defaultTheme';
+import { lightTheme, darkTheme } from './defaultTheme.js';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 

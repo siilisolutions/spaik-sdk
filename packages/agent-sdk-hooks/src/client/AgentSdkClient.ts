@@ -1,7 +1,7 @@
 import { AbstractAgent, AgentSubscriber } from '@ag-ui/client';
 import type { State } from '@ag-ui/core';
-import { CreateMessageRequest, CreateThreadRequest, ListThreadsFilters, ThreadRepository, ThreadSummary, ThreadsApiClient } from '../api/ThreadsApiClient';
-import { Thread } from '../stores/messageTypes';
+import { CreateMessageRequest, CreateThreadRequest, ListThreadsFilters, ThreadRepository, ThreadSummary, ThreadsApiClient } from '../api/ThreadsApiClient.js';
+import { Thread } from '../stores/messageTypes.js';
 
 export interface AgentSdkClientConfig {
     agent?: AbstractAgent;

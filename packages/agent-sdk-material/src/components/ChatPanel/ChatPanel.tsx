@@ -1,10 +1,10 @@
 import { ReactNode } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
 import { Message, messageText, useThread, useThreadSelection, useThreadActions } from 'spaik-sdk-react';
-import { ChatHeader } from './ChatHeader';
-import { MessageList } from './MessageList';
-import { MessageInput } from '../MessageInput/MessageInput';
-import { MenuIcon } from '../../utils/icons';
+import { ChatHeader } from './ChatHeader.js';
+import { MessageList } from './MessageList.js';
+import { MessageInput } from '../MessageInput/MessageInput.js';
+import { MenuIcon } from '../../utils/icons.js';
 
 interface Props {
     filesBaseUrl?: string;

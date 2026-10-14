@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { IconButton, Tooltip, CircularProgress, Box, alpha, useTheme } from '@mui/material';
 import { usePushToTalk } from 'spaik-sdk-react';
-import { MicIcon, StopIcon } from '../../utils/icons';
+import { MicIcon, StopIcon } from '../../utils/icons.js';
 
 interface VoiceInputButtonProps {
     baseUrl: string;

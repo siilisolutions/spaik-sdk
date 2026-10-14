@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ThreadSummary, ListThreadsFilters } from '../api/ThreadsApiClient';
-import { useAgentContext, useAgentSdkClient } from '../client/AgentSdkClientProvider';
+import { ThreadSummary, ListThreadsFilters } from '../api/ThreadsApiClient.js';
+import { useAgentContext, useAgentSdkClient } from '../client/AgentSdkClientProvider.js';
 
 export function useThreadList() {
     const client = useAgentSdkClient();

@@ -1,5 +1,5 @@
 import { Box, Typography, IconButton, Tooltip } from '@mui/material';
-import { DeleteOutlineIcon, RefreshIcon, MenuIcon } from '../../utils/icons';
+import { DeleteOutlineIcon, RefreshIcon, MenuIcon } from '../../utils/icons.js';
 
 interface Props {
     title?: string;

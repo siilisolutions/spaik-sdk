@@ -1,4 +1,4 @@
-export { MarkdownProvider, useMarkdownContext } from './MarkdownContext';
-export type { CustomComponentProps, CustomComponentRegistry } from './MarkdownContext';
-export { MarkdownRenderer } from './MarkdownRenderer';
-export { StoredImage } from './StoredImage';
+export { MarkdownProvider, useMarkdownContext } from './MarkdownContext.js';
+export type { CustomComponentProps, CustomComponentRegistry } from './MarkdownContext.js';
+export { MarkdownRenderer } from './MarkdownRenderer.js';
+export { StoredImage } from './StoredImage.js';
