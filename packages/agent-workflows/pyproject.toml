@@ -1,6 +1,6 @@
 [project]
 name = "spaik-agent-workflows"
-version = "0.3.1"
+version = "0.3.2"
 description = "YAML-driven workflow engine for AI agents"
 readme = "README.md"
 license = "MIT"
@@ -9,7 +9,7 @@ authors = [
 ]
 keywords = ["ai", "agents", "workflows", "yaml", "automation", "developer-tools"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 7 - Inactive",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -25,8 +25,8 @@ dependencies = [
     "click>=8.0",
     "python-dotenv>=1.0",
     "platformdirs>=4.0",
-    "spaik-sdk>=0.2.0",
-    "spaik-coding-agents>=0.2.0",
+    "spaik-sdk==0.11.1",
+    "spaik-coding-agents==0.2.3",
     # Audio plugins
     "sounddevice>=0.4.6",
     "numpy>=1.24.0",

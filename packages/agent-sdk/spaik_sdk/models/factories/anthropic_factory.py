@@ -8,6 +8,10 @@ from spaik_sdk.models.model_registry import ModelRegistry
 
 ADAPTIVE_THINKING_MODELS: frozenset[str] = frozenset(
     {
+        "claude-fable-5-1",
+        "claude-opus-5-5",
+        "claude-sonnet-5-5",
+        "claude-haiku-5-5",
         "claude-opus-4-8",
         "claude-fable-5",
         "claude-opus-5",
@@ -35,8 +39,10 @@ class AnthropicModelFactory(BaseModelFactory):
         if config.model.name in ADAPTIVE_THINKING_MODELS:
             if config.structured_response:
                 return model_config
+            if not config.reasoning and config.model.name in {"claude-opus-5-5", "claude-fable-5-1"}:
+                raise ValueError(f"{config.model.name} requires adaptive thinking")
             if not config.reasoning:
-                model_config["thinking"] = {"type": "disabled"}
+                model_config["thinking"] = {"type": "between_tools" if config.model.name == "claude-sonnet-5-5" else "disabled"}
             else:
                 model_config["thinking"] = {"type": "adaptive"}
                 model_config["output_config"] = {"effort": config.reasoning_effort}

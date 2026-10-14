@@ -248,10 +248,10 @@ ModelRegistry.GROK_4
 ModelRegistry.KIMI_K2_THINKING
 
 # Aliases
-ModelRegistry.from_name("sonnet")      # CLAUDE_SONNET_5
+ModelRegistry.from_name("sonnet")      # CLAUDE_SONNET_5_5
 ModelRegistry.from_name("gpt 4.1")     # GPT_4_1
-ModelRegistry.from_name("opus")        # CLAUDE_OPUS_5
-ModelRegistry.from_name("gemini flash")  # GEMINI_3_6_FLASH
+ModelRegistry.from_name("opus")        # CLAUDE_OPUS_5_5
+ModelRegistry.from_name("gemini flash")  # GEMINI_3_8_FLASH
 
 # Custom model
 from spaik_sdk.models.llm_model import LLMModel
@@ -459,3 +459,5 @@ MessageBlockType.ERROR      # Error message
 ## License
 
 MIT - Copyright (c) 2026 Siili Solutions Oyj
+
+Current optional presets (verified 2026-10-13): `CLAUDE_SONNET_5_5`, `CLAUDE_OPUS_5_5`, `CLAUDE_HAIKU_5_5`, `CLAUDE_FABLE_5_1`, `GPT_6_1_SOL`, `GPT_6_ASTRA`, `GPT_6_LUNA`, `GEMINI_3_8_FLASH`. Preset availability depends on your provider account.

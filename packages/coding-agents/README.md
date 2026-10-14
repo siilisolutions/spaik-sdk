@@ -1,5 +1,7 @@
 # Spaik Coding Agents
 
+**Deprecated.** This package targets the legacy Spaik block protocol and does not support Spaik 1.0/AG-UI. Version 0.2.3 is the final planned compatibility patch; keep it in a separate environment from Spaik 1.0. Existing PyPI artifacts and tagged source remain available. Use application-owned coding tools with the 1.0 ToolProvider interface.
+
 Pre-built coding agents for AI-assisted software development.
 
 Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
@@ -7,7 +9,7 @@ Spaik SDK is an open-source project developed by engineers at Siili Solutions Oy
 ## Installation
 
 ```bash
-pip install spaik-coding-agents
+pip install "spaik-coding-agents==0.2.3" "spaik-sdk==0.11.1"
 ```
 
 ## Agents
@@ -57,7 +59,7 @@ result = agent.run("Refactor this function")
 ## Requirements
 
 - Python 3.10+
-- spaik-sdk >= 0.2.0
+- spaik-sdk == 0.11.1
 - Claude Code SDK (for ClaudeAgent)
 
 ## License

@@ -13,8 +13,8 @@ import json
 from pathlib import Path
 from typing import Any, Callable, Dict
 
-from spaik_sdk import MessageBlock, MessageBlockType
 from spaik_coding_agents import ClaudeAgent, ClaudeAgentOptions
+from spaik_sdk import MessageBlock, MessageBlockType
 
 
 def format_block(block: MessageBlock, logger: Callable[[str], None]) -> str | None:

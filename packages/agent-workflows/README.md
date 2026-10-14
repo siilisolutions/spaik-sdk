@@ -1,5 +1,7 @@
 # Agent Workflows
 
+**Deprecated.** This package targets the legacy Spaik block protocol and does not support Spaik 1.0/AG-UI. Version 0.3.2 is the final planned compatibility patch, pinned to `spaik-sdk==0.11.1` and `spaik-coding-agents==0.2.3`; keep it in a separate environment from Spaik 1.0. Existing PyPI artifacts and tagged source remain available. With Spaik 1.0, orchestrate steps in application code using `BaseAgent` and `ToolProvider`.
+
 YAML-driven workflow engine for AI agents.
 
 Spaik SDK is an open-source project developed by engineers at Siili Solutions Oyj. This is not an official Siili product.
@@ -8,10 +10,10 @@ Spaik SDK is an open-source project developed by engineers at Siili Solutions Oy
 
 ```bash
 # Install globally with uvx (recommended)
-uvx spaik-agent-workflows --help
+uvx --from "spaik-agent-workflows==0.3.2" spaik-agent-workflows --help
 
-# Or install with pip
-pip install spaik-agent-workflows
+# Or install with pip in an environment without Spaik 1.0
+pip install "spaik-agent-workflows==0.3.2"
 
 # Or install locally for development
 cd packages/agent-workflows
