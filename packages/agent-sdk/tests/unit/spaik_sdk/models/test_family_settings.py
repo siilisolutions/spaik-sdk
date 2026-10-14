@@ -28,8 +28,10 @@ def test_older_gemini_uses_thinking_budget():
     }
 
 
-def test_new_claude_generation_gets_adaptive_thinking():
-    assert kwargs_for(LLMModel(family="anthropic", name="claude-opus-6-0"))["thinking"] == {"type": "adaptive"}
+def test_new_claude_generation_gets_adaptive_thinking_with_visible_summary():
+    model = LLMModel(family="anthropic", name="claude-opus-6-0")
+    assert kwargs_for(model)["thinking"] == {"type": "adaptive", "display": "summarized"}
+    assert kwargs_for(model, reasoning_summary=None)["thinking"] == {"type": "adaptive"}
 
 
 def test_older_claude_reasoning_uses_budget():

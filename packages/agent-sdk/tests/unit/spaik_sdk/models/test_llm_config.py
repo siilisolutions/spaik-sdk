@@ -27,7 +27,7 @@ def settings(config: LLMConfig) -> dict[str, Any]:
 
 def test_preset_custom_model_and_string_id_build_the_same_model():
     preset = settings(LLMConfig(model=ModelRegistry.CLAUDE_SONNET_5_5))
-    assert preset["thinking"] == {"type": "adaptive"}
+    assert preset["thinking"] == {"type": "adaptive", "display": "summarized"}
     assert preset["max_tokens"] == 8192
     assert settings(LLMConfig(model=LLMModel(family="anthropic", name="claude-sonnet-5-5"))) == preset
     assert settings(LLMConfig(model="claude-sonnet-5-5", provider_type="anthropic")) == preset
@@ -56,7 +56,7 @@ def test_structured_response_defaults_to_minimum_reasoning():
     sonnet = LLMConfig(model=ModelRegistry.CLAUDE_SONNET_5_5).as_structured_response_config()
     assert settings(sonnet)["thinking"] == {"type": "between_tools"}
     opus = settings(LLMConfig(model=ModelRegistry.CLAUDE_OPUS_5_5).as_structured_response_config())
-    assert opus["thinking"] == {"type": "adaptive"}
+    assert opus["thinking"] == {"type": "adaptive", "display": "summarized"}
     assert opus["model_kwargs"] == {"output_config": {"effort": "low"}}
     gpt = settings(LLMConfig(model=ModelRegistry.GPT_6_1_SOL).as_structured_response_config())
     assert gpt["reasoning"]["effort"] == "low"
@@ -65,7 +65,7 @@ def test_structured_response_defaults_to_minimum_reasoning():
 def test_structured_reasoning_effort_is_configurable():
     configured = LLMConfig(model=ModelRegistry.CLAUDE_SONNET_5_5, structured_reasoning_effort="medium")
     built = settings(configured.as_structured_response_config())
-    assert built["thinking"] == {"type": "adaptive"}
+    assert built["thinking"] == {"type": "adaptive", "display": "summarized"}
     assert built["model_kwargs"] == {"output_config": {"effort": "medium"}}
     per_call = settings(configured.as_structured_response_config(reasoning_effort="high"))
     assert per_call["model_kwargs"] == {"output_config": {"effort": "high"}}

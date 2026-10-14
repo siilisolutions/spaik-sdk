@@ -38,7 +38,7 @@ def _anthropic(model: LLMModel, config: "LLMConfig") -> dict[str, Any]:
         if effort is None:
             kwargs["thinking"] = {"type": "between_tools" if model.name in BETWEEN_TOOLS_MINIMUM else "disabled"}
         else:
-            kwargs["thinking"] = {"type": "adaptive"}
+            kwargs["thinking"] = {"type": "adaptive", **({"display": "summarized"} if config.reasoning_summary else {})}
             kwargs["model_kwargs"] = {"output_config": {"effort": effort}}
     elif effort is not None:
         kwargs["thinking"] = {"type": "enabled", "budget_tokens": config.reasoning_budget_tokens}

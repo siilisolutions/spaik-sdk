@@ -23,7 +23,7 @@ class StructuredModel(FakeListChatModel):
         return RunnableLambda(lambda prompt: {"parsed": Answer(city="Helsinki"), "raw": raw, "parsing_error": None})
 
 
-@pytest.mark.parametrize("effort,expected", [(None, {"type": "between_tools"}), ("high", {"type": "adaptive"})])
+@pytest.mark.parametrize("effort,expected", [(None, {"type": "between_tools"}), ("high", {"type": "adaptive", "display": "summarized"})])
 async def test_structured_response_effort_reaches_the_model(effort, expected):
     provider = MagicMock(spec=BaseProvider)
     provider.get_model_config.return_value = {}
