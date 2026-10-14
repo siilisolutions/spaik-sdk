@@ -23,6 +23,7 @@ class LLMConfig:
     A string model ID that matches a preset uses the preset; any other string becomes an
     LLMModel with provider defaults. Family settings apply by model family, provider
     kwargs override everything, and Spaik providers build every model they know.
+    Structured responses use the model's minimum reasoning unless structured_reasoning_effort is set.
     """
 
     model: LLMModel | str = ""
@@ -39,6 +40,7 @@ class LLMConfig:
     max_agent_steps: int = 100
     temperature: float | None = None
     structured_response: bool = False
+    structured_reasoning_effort: str | None = None
     _model_wrapper: LLMWrapper | None = field(default=None, init=False, repr=False)
 
     @property
@@ -119,5 +121,6 @@ class LLMConfig:
     def get_provider(self) -> BaseProvider:
         return self.provider or BaseProvider.create_provider(ProviderType.from_name(self.provider_name))
 
-    def as_structured_response_config(self) -> "LLMConfig":
-        return replace(self, structured_response=True)
+    def as_structured_response_config(self, reasoning_effort: str | None = None) -> "LLMConfig":
+        effort = reasoning_effort or self.structured_reasoning_effort
+        return replace(self, structured_response=True, structured_reasoning_effort=effort)

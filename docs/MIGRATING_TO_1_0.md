@@ -23,7 +23,7 @@ Spaik 1.0 requires Python 3.11 or later. Python 3.10 fails to propagate nested a
 
 `provider_kwargs` override every setting. Spaik providers build all models for the providers they know; other provider names go through LangChain's `init_chat_model`. As a last resort, `chat_model=` accepts a fully configured LangChain model, which bypasses environment defaults and Spaik's model settings; do not combine it with `llm_model` or `llm_config`. Install only the provider extra you use, such as `spaik-sdk[openai,server]`.
 
-`LLMConfig.temperature` now defaults to the provider's own default and is sent only when you set it; 0.x sent 0.1 to models without reasoning. Remove `temperature` for reasoning models, which reject it. `LLMConfig.tool_usage` is removed. `streaming=False` disables model streaming for every provider.
+`LLMConfig.temperature` now defaults to the provider's own default and is sent only when you set it; 0.x sent 0.1 to models without reasoning. Remove `temperature` for reasoning models, which reject it. `LLMConfig.tool_usage` is removed. `streaming=False` disables model streaming for every provider. Structured responses use each model's minimum reasoning by default; pass `reasoning_effort` to `get_structured_response()` or set `LLMConfig.structured_reasoning_effort` to raise it.
 
 Azure deployment names are supplied as model IDs or provider kwargs; per-model deployment environment variables have been removed. Existing proxy authentication remains available.
 

@@ -52,11 +52,25 @@ def test_streaming_off_disables_streaming():
     assert settings(LLMConfig(model=ModelRegistry.GPT_4_1, streaming=False))["disable_streaming"] is True
 
 
-def test_structured_response_uses_minimum_thinking_unless_model_requires_it():
+def test_structured_response_defaults_to_minimum_reasoning():
     sonnet = LLMConfig(model=ModelRegistry.CLAUDE_SONNET_5_5).as_structured_response_config()
     assert settings(sonnet)["thinking"] == {"type": "between_tools"}
-    opus = LLMConfig(model=ModelRegistry.CLAUDE_OPUS_5_5).as_structured_response_config()
-    assert settings(opus)["thinking"] == {"type": "adaptive"}
+    opus = settings(LLMConfig(model=ModelRegistry.CLAUDE_OPUS_5_5).as_structured_response_config())
+    assert opus["thinking"] == {"type": "adaptive"}
+    assert opus["model_kwargs"] == {"output_config": {"effort": "low"}}
+    gpt = settings(LLMConfig(model=ModelRegistry.GPT_6_1_SOL).as_structured_response_config())
+    assert gpt["reasoning"]["effort"] == "low"
+
+
+def test_structured_reasoning_effort_is_configurable():
+    configured = LLMConfig(model=ModelRegistry.CLAUDE_SONNET_5_5, structured_reasoning_effort="medium")
+    built = settings(configured.as_structured_response_config())
+    assert built["thinking"] == {"type": "adaptive"}
+    assert built["model_kwargs"] == {"output_config": {"effort": "medium"}}
+    per_call = settings(configured.as_structured_response_config(reasoning_effort="high"))
+    assert per_call["model_kwargs"] == {"output_config": {"effort": "high"}}
+    gpt = LLMConfig(model=ModelRegistry.GPT_6_1_SOL).as_structured_response_config(reasoning_effort="high")
+    assert settings(gpt)["reasoning"]["effort"] == "high"
 
 
 def test_provider_kwargs_override_family_settings():

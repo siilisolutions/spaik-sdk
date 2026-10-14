@@ -54,3 +54,21 @@ def test_ollama_reasoning_flag_is_passed():
 
 def test_unknown_family_has_no_settings():
     assert kwargs_for(LLMModel(family="cohere", name="command-a")) == {}
+
+
+def test_structured_gemini_uses_minimum_or_requested_level():
+    gemini = LLMModel(family="google", name="gemini-3.8-flash")
+    assert kwargs_for(gemini, structured_response=True) == {"thinking_level": "minimal"}
+    assert kwargs_for(gemini, structured_response=True, structured_reasoning_effort="medium") == {"thinking_level": "medium"}
+
+
+def test_structured_older_claude_thinks_only_when_requested():
+    claude = LLMModel(family="anthropic", name="claude-sonnet-4-5")
+    assert "thinking" not in kwargs_for(claude, structured_response=True)
+    assert kwargs_for(claude, structured_response=True, structured_reasoning_effort="high")["thinking"]["type"] == "enabled"
+
+
+def test_structured_effort_applies_even_with_reasoning_off():
+    astra = LLMModel(family="openai", name="gpt-6-astra")
+    result = kwargs_for(astra, reasoning=False, structured_response=True, structured_reasoning_effort="high")
+    assert result["reasoning"]["effort"] == "high"

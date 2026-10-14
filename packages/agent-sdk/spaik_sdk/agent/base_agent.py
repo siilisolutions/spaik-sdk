@@ -201,12 +201,13 @@ class BaseAgent(ABC):
             raise error[0]
         return result[0]
 
-    async def get_structured_response_async(self, prompt: str, output_schema: Type[T]) -> T:
+    async def get_structured_response_async(self, prompt: str, output_schema: Type[T], reasoning_effort: Optional[str] = None) -> T:
         self.trace.add_structured_response_input(prompt, output_schema)
         if self.playback is not None:
             result = output_schema.model_validate(next(self.playback))
         else:
-            model = self.llm_config.as_structured_response_config().get_model_wrapper().get_langchain_model()
+            config = self.llm_config.as_structured_response_config(reasoning_effort)
+            model = config.get_model_wrapper().get_langchain_model()
             options = {"method": "json_schema"} if self.llm_config.provider_name == "anthropic" else {}
             response = await model.with_structured_output(output_schema, include_raw=True, **options).ainvoke(prompt)
             if not isinstance(response, dict):
@@ -242,8 +243,8 @@ class BaseAgent(ABC):
         self.trace.add_structured_response_output(result)
         return result
 
-    def get_structured_response(self, prompt: str, output_schema: Type[T]) -> T:
-        return asyncio.run(self.get_structured_response_async(prompt, output_schema))
+    def get_structured_response(self, prompt: str, output_schema: Type[T], reasoning_effort: Optional[str] = None) -> T:
+        return asyncio.run(self.get_structured_response_async(prompt, output_schema, reasoning_effort))
 
     def run_cli(self):
         async def run():

@@ -24,7 +24,7 @@ All paths are under `packages/agent-sdk/`.
 
 How `family_settings.py` applies reasoning (only when `model.reasoning` is true; Anthropic always gets `max_tokens`):
 
-- **Anthropic 5.x and later** (matched by name prefix): adaptive thinking with `output_config.effort` when reasoning is on; structured responses use the minimum, except on models that require thinking. With reasoning off, `claude-opus-5-5` and `claude-fable-5-1` raise `ValueError`, `claude-sonnet-5-5` uses `between_tools`, and others use `disabled`. Older reasoning models use `thinking.type: "enabled"` with `reasoning_budget_tokens`.
+- **Anthropic 5.x and later** (matched by name prefix): adaptive thinking with `output_config.effort` when reasoning is on; structured responses use the minimum (`low` effort on models that require thinking) unless `structured_reasoning_effort` or the per-call `reasoning_effort` is set. With reasoning off, `claude-opus-5-5` and `claude-fable-5-1` raise `ValueError`, `claude-sonnet-5-5` uses `between_tools`, and others use `disabled`. Older reasoning models use `thinking.type: "enabled"` with `reasoning_budget_tokens`.
 - **OpenAI reasoning models**: Responses API with `reasoning.effort`. With reasoning off, it uses the model's `reasoning_min_effort`. Set this to the lowest effort the model accepts, for example `"low"` for GPT-6.1 Sol and GPT-6 Astra.
 - **Google**: Gemini 3.x uses `thinking_level`: `high` with reasoning, otherwise the model's `reasoning_min_effort`, or `minimal` when unset (set `"low"` for models without minimal thinking, such as Pro). Older models use `thinking_budget` and `include_thoughts`.
 - **Ollama**: passes the `reasoning` flag.

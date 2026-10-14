@@ -23,7 +23,7 @@ Subclass `ToolProvider.get_tools()` to supply LangChain `BaseTool` objects or pa
 - `get_response_text()` / `get_response_text_async()` return final text.
 - `get_response()` / `get_response_async()` return an AG-UI `AssistantMessage`.
 - `get_event_stream()` / `get_response_stream()` yield AG-UI events.
-- `get_structured_response()` / `get_structured_response_async()` return the supplied Pydantic schema and collect raw usage/costs.
+- `get_structured_response()` / `get_structured_response_async()` return the supplied Pydantic schema and collect raw usage/costs. They use the model's minimum reasoning by default; raise it per call with `reasoning_effort="high"` or for every call with `LLMConfig(structured_reasoning_effort=...)`.
 - `spawn()` / `run_isolated()` isolate nested agent callback contexts.
 - `get_langchain_model()` and `get_react_agent()` expose configured LangChain/LangGraph integrations.
 - `run_cli()` supplies a minimal interactive console without additional CLI dependencies.
