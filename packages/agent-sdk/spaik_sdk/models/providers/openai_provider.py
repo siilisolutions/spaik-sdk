@@ -1,21 +1,14 @@
-from typing import Any, Collection, Dict
+from typing import Any, Dict
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_openai import ChatOpenAI
 
 from spaik_sdk.config.env import env_config
 from spaik_sdk.config.get_credentials_provider import credentials_provider
-from spaik_sdk.models.factories.openai_factory import OpenAIModelFactory
 from spaik_sdk.models.llm_config import LLMConfig
-from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.providers.base_provider import BaseProvider
 
 
 class OpenAIProvider(BaseProvider):
-    def get_supported_models(self) -> Collection[LLMModel]:
-        """Get list of models supported by OpenAI provider."""
-        return OpenAIModelFactory.MODELS
-
     def get_model_config(self, config: LLMConfig) -> Dict[str, Any]:
         """Get OpenAI provider configuration (provider-specific only)."""
         if env_config.is_proxy_mode():
@@ -29,4 +22,6 @@ class OpenAIProvider(BaseProvider):
 
     def create_langchain_model(self, config: LLMConfig, full_config: Dict[str, Any]) -> BaseChatModel:
         """Create OpenAI langchain model with complete configuration."""
+        from langchain_openai import ChatOpenAI
+
         return ChatOpenAI(**full_config)

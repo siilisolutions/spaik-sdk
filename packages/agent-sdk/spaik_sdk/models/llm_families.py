@@ -1,3 +1,4 @@
+# Families group models by request shape, not vendor; e.g. older Claude could be "anthropic-extended-thinking".
 class LLMFamilies:
     """Model identifier with extensibility support."""
 

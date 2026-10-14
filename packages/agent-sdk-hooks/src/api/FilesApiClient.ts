@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { BaseApiClient, BaseApiClientConfig } from './BaseApiClient';
+import { BaseApiClient, BaseApiClientConfig } from './BaseApiClient.js';
 
 export const FileMetadataSchema = z.object({
     file_id: z.string(),
     mime_type: z.string(),
-    filename: z.string().optional(),
+    filename: z.string().nullish().transform(value => value ?? undefined),
     size: z.number().optional(),
     uploaded_at: z.number().optional(),
     owner_id: z.string().optional(),

@@ -1,0 +1,64 @@
+import pytest
+
+from spaik_sdk.models.family_settings import family_kwargs
+from spaik_sdk.models.llm_config import LLMConfig
+from spaik_sdk.models.llm_model import LLMModel
+
+pytestmark = pytest.mark.unit
+
+
+def kwargs_for(model: LLMModel, **config) -> dict:
+    return family_kwargs(model, LLMConfig(model=model, **config))
+
+
+def test_gemini_3_without_reasoning_uses_minimal_thinking():
+    assert kwargs_for(LLMModel(family="google", name="gemini-3.8-flash"), reasoning=False) == {"thinking_level": "minimal"}
+
+
+def test_gemini_3_minimum_follows_model_setting():
+    pro = LLMModel(family="google", name="gemini-3.9-pro", reasoning_min_effort="low")
+    assert kwargs_for(pro, reasoning=False) == {"thinking_level": "low"}
+    assert kwargs_for(pro) == {"thinking_level": "high"}
+
+
+def test_new_claude_generation_gets_adaptive_thinking_with_visible_summary():
+    model = LLMModel(family="anthropic", name="claude-opus-6-0")
+    assert kwargs_for(model)["thinking"] == {"type": "adaptive", "display": "summarized"}
+    assert kwargs_for(model, reasoning_summary=None)["thinking"] == {"type": "adaptive"}
+
+
+def test_claude_reasoning_off_uses_the_model_minimum():
+    def reasoning_off(**model) -> dict:
+        return kwargs_for(LLMModel(family="anthropic", name="claude-opus-6-0", **model), reasoning=False)
+
+    assert reasoning_off()["thinking"] == {"type": "disabled"}
+    assert reasoning_off(reasoning_min_effort="between_tools")["thinking"] == {"type": "between_tools"}
+    required = reasoning_off(reasoning_min_effort="low")
+    assert required["thinking"]["type"] == "adaptive"
+    assert required["model_kwargs"] == {"output_config": {"effort": "low"}}
+
+
+def test_openai_reasoning_off_uses_minimum_effort():
+    result = kwargs_for(LLMModel(family="openai", name="gpt-6-astra", reasoning_min_effort="low"), reasoning=False)
+    assert result["reasoning"]["effort"] == "low"
+
+
+def test_ollama_reasoning_flag_is_passed():
+    assert kwargs_for(LLMModel(family="ollama", name="deepseek-r1"), reasoning=False) == {"reasoning": False}
+    assert kwargs_for(LLMModel(family="ollama", name="llama3", reasoning=False)) == {}
+
+
+def test_unknown_family_has_no_settings():
+    assert kwargs_for(LLMModel(family="cohere", name="command-a")) == {}
+
+
+def test_structured_gemini_uses_minimum_or_requested_level():
+    gemini = LLMModel(family="google", name="gemini-3.8-flash")
+    assert kwargs_for(gemini, structured_response=True) == {"thinking_level": "minimal"}
+    assert kwargs_for(gemini, structured_response=True, structured_reasoning_effort="medium") == {"thinking_level": "medium"}
+
+
+def test_structured_effort_applies_even_with_reasoning_off():
+    astra = LLMModel(family="openai", name="gpt-6-astra")
+    result = kwargs_for(astra, reasoning=False, structured_response=True, structured_reasoning_effort="high")
+    assert result["reasoning"]["effort"] == "high"

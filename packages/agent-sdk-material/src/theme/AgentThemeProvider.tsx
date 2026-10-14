@@ -1,6 +1,6 @@
-import { createContext, useState, useMemo, useEffect, ReactNode } from 'react';
+import { createContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
 import { ThemeProvider, CssBaseline, Theme } from '@mui/material';
-import { lightTheme, darkTheme } from './defaultTheme';
+import { lightTheme, darkTheme } from './defaultTheme.js';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -47,17 +47,17 @@ export function AgentThemeProvider({
         return customLightTheme || lightTheme;
     }, [isDark, customLightTheme, customDarkTheme]);
 
-    const toggleMode = () => {
+    const toggleMode = useCallback(() => {
         setMode((prev) => {
             if (prev === 'light') return 'dark';
             if (prev === 'dark') return 'light';
             return isDark ? 'light' : 'dark';
         });
-    };
+    }, [isDark]);
 
     const contextValue = useMemo(
         () => ({ mode, setMode, toggleMode, isDark }),
-        [mode, isDark]
+        [mode, isDark, toggleMode]
     );
 
     return (

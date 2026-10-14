@@ -1,21 +1,15 @@
-"""Spaik SDK - SDK for building various kinds of agentic + AI solutions."""
+"""Thread management and agent convenience using the AG-UI protocol."""
+
+from importlib.metadata import version
+
+from ag_ui.core import Message
 
 from .agent.base_agent import BaseAgent
 from .models.llm_config import LLMConfig
 from .models.llm_model import LLMModel
 from .models.providers.provider_type import ProviderType
-from .thread.models import MessageBlock, MessageBlockType, ThreadMessage
-from .thread.thread_container import ThreadContainer
+from .thread.thread_container import ThreadContainer, message_text
 
-__all__ = [
-    "BaseAgent",
-    "LLMConfig",
-    "LLMModel",
-    "ProviderType",
-    "ThreadContainer",
-    "ThreadMessage",
-    "MessageBlock",
-    "MessageBlockType",
-]
+__all__ = ["BaseAgent", "LLMConfig", "LLMModel", "ProviderType", "ThreadContainer", "Message", "message_text"]
 
-__version__ = "0.0.1"
+__version__ = version("spaik-sdk")

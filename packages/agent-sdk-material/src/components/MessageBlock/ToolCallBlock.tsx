@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Collapse, IconButton, Typography, CircularProgress, alpha, Chip } from '@mui/material';
-import { BuildIcon, ExpandMoreIcon, CheckCircleIcon, ErrorIcon } from '../../utils/icons';
+import { BuildIcon, ExpandMoreIcon, CheckCircleIcon, ErrorIcon } from '../../utils/icons.js';
 
 interface Props {
     toolName?: string;
@@ -77,7 +77,7 @@ export function ToolCallBlock({ toolName, args, response, error, streaming }: Pr
                 <Box sx={{ px: 2, pb: 2 }}>
                     {args && Object.keys(args).length > 0 && (
                         <Box sx={{ mb: 1 }}>
-                            <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                                 Arguments:
                             </Typography>
                             <Box
@@ -99,7 +99,7 @@ export function ToolCallBlock({ toolName, args, response, error, streaming }: Pr
                     )}
                     {response && (
                         <Box>
-                            <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                                 Response:
                             </Typography>
                             <Box
@@ -123,7 +123,7 @@ export function ToolCallBlock({ toolName, args, response, error, streaming }: Pr
                     )}
                     {error && (
                         <Box>
-                            <Typography variant="caption" color="error" fontWeight={500}>
+                            <Typography variant="caption" color="error" sx={{ fontWeight: 500 }}>
                                 Error:
                             </Typography>
                             <Typography

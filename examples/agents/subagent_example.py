@@ -1,70 +1,65 @@
-"""
-Demonstrates spawning a nested agent from inside a tool without leaking
-the parent agent's LangChain callback context.
+"""Delegates work to a subagent from inside a tool.
 
-Without isolation the subagent's tool calls bleed into the parent thread.
-With spawn() they stay inside the subagent's own ThreadContainer.
+`spawn()` runs the subagent in its own thread container, so its tool calls stay out of the
+parent agent's transcript.
 
-Run:
-    uv run python examples/agents/subagent_example.py
+Run from this directory with `uv run python subagent_example.py`.
 """
 
 from dotenv import load_dotenv
-
-from spaik_sdk.agent.base_agent import BaseAgent
-from spaik_sdk.thread.models import MessageBlockType
+from spaik_sdk import BaseAgent, message_text
 from spaik_sdk.tools.tool_provider import BaseTool, ToolProvider, tool
 
+POLICIES = {
+    "returns": "Unused items can be returned within 30 days of delivery for a full refund.",
+    "shipping": "Orders ship within 2 business days. Delivery inside the EU takes 3 to 5 business days.",
+    "warranty": "Electronics carry a 24-month warranty covering manufacturing defects.",
+}
 
-class EchoTools(ToolProvider):
+
+@tool
+def read_policy(topic: str) -> str:
+    """Read a customer policy. Known topics: returns, shipping, warranty."""
+    return POLICIES.get(topic.lower(), f"No policy found for '{topic}'. Known topics: {', '.join(POLICIES)}.")
+
+
+class PolicyResearcher(BaseAgent):
+    def __init__(self) -> None:
+        super().__init__(
+            system_prompt="Answer questions about company policy using only the read_policy tool. Quote the policy you relied on.",
+            tools=[read_policy],
+        )
+
+
+class ResearchTools(ToolProvider):
     def get_tools(self) -> list[BaseTool]:
         @tool
-        def echo(message: str) -> str:
-            """Echo the message back."""
-            return message
+        def research_policy(question: str) -> str:
+            """Ask the policy researcher a question about returns, shipping or warranty."""
+            return message_text(PolicyResearcher().spawn(question))
 
-        return [echo]
-
-
-class SubAgent(BaseAgent):
-    def get_tool_providers(self) -> list[ToolProvider]:
-        return [EchoTools()]
+        return [research_policy]
 
 
-class SpawnTools(ToolProvider):
-    def get_tools(self) -> list[BaseTool]:
-        @tool
-        def spawn_sub(task: str) -> str:
-            """Delegate a task to a subagent that echoes the message."""
-            sub = SubAgent(system_prompt="Use the echo tool to echo the message exactly.")
-            msg = sub.spawn(task)
-            return msg.get_text_content()
-
-        return [spawn_sub]
-
-
-class MainAgent(BaseAgent):
-    def get_tool_providers(self) -> list[ToolProvider]:
-        return [SpawnTools()]
+class SupportAgent(BaseAgent):
+    def __init__(self) -> None:
+        super().__init__(
+            system_prompt="You are a customer support agent. Use research_policy to check policy before answering.",
+            tool_providers=[ResearchTools()],
+        )
 
 
 def main() -> None:
-    agent = MainAgent(system_prompt="Use spawn_sub to delegate tasks.")
-    response = agent.get_response("Spawn a subagent that echoes: hello world")
+    agent = SupportAgent()
+    print(agent.get_response_text("My headphones broke after 14 months and I want to send them back. What are my options?"))
 
-    parent_tool_names = [
-        b.tool_name
-        for b in response.blocks
-        if b.type == MessageBlockType.TOOL_USE and b.tool_name is not None
+    parent_tool_calls = [
+        call.function.name
+        for message in agent.thread_container.messages
+        if message.role == "assistant"
+        for call in message.tool_calls or []
     ]
-    print(f"Parent thread tool calls: {parent_tool_names}")
-    print("  -> should only contain ['spawn_sub'], not 'echo'")
-
-    assert parent_tool_names == ["spawn_sub"], (
-        f"Expected only ['spawn_sub'] but got {parent_tool_names}. "
-        "The subagent's tool calls leaked into the parent thread."
-    )
-    print("\nAll good — subagent context isolated correctly.")
+    print(f"\nTool calls in the support agent's thread: {parent_tool_calls}")
 
 
 if __name__ == "__main__":

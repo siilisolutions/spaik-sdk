@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
+from ag_ui.core import Message
+
 from spaik_sdk.server.storage.thread_filter import ThreadFilter
 from spaik_sdk.server.storage.thread_metadata import ThreadMetadata
-from spaik_sdk.thread.models import ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
 
 
@@ -21,12 +22,12 @@ class BaseThreadRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_message(self, thread_id: str, message_id: str) -> Optional[ThreadMessage]:
+    async def get_message(self, thread_id: str, message_id: str) -> Optional[Message]:
         """Get message from storage"""
         pass
 
     @abstractmethod
-    async def upsert_message(self, thread_id: str, message: ThreadMessage) -> None:
+    async def upsert_message(self, thread_id: str, message: Message) -> None:
         """Upsert message to storage"""
         pass
 

@@ -1,6 +1,6 @@
 import { ListItemButton, ListItemText, Typography, Box, alpha, useTheme } from '@mui/material';
-import { formatTimestamp } from '../../utils/formatTime';
-import { ChatBubbleOutlineIcon } from '../../utils/icons';
+import { formatTimestamp } from '../../utils/formatTime.js';
+import { ChatBubbleOutlineIcon } from '../../utils/icons.js';
 
 interface Props {
     title: string;
@@ -42,18 +42,18 @@ export function ThreadListItem({ title, messageCount, lastActivity, isSelected, 
             }}
         >
             <ListItemText
+                disableTypography
                 primary={
                     <Typography
                         variant="body2"
-                        fontWeight={isSelected ? 600 : 500}
                         noWrap
-                        sx={{ mb: 0.5 }}
+                        sx={{ fontWeight: isSelected ? 600 : 500, mb: 0.5 }}
                     >
                         {title || 'New Thread'}
                     </Typography>
                 }
                 secondary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'text.secondary' }}>
                         <Typography variant="caption" className="MuiTypography-caption" color="text.secondary">
                             {formatTimestamp(lastActivity)}
                         </Typography>
@@ -65,7 +65,6 @@ export function ThreadListItem({ title, messageCount, lastActivity, isSelected, 
                         </Box>
                     </Box>
                 }
-                secondaryTypographyProps={{ component: 'div' }}
             />
         </ListItemButton>
     );

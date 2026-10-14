@@ -14,6 +14,7 @@
         "install:all": "bun install"
     },
     "devDependencies": {
+        "@playwright/test": "^1.64.0",
         "typescript": "^5.9.3"
     }
 }

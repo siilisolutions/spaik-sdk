@@ -1,9 +1,10 @@
 from typing import Dict, List, Optional
 
+from ag_ui.core import Message
+
 from spaik_sdk.server.storage.base_thread_repository import BaseThreadRepository
 from spaik_sdk.server.storage.thread_filter import ThreadFilter
 from spaik_sdk.server.storage.thread_metadata import ThreadMetadata
-from spaik_sdk.thread.models import ThreadMessage
 from spaik_sdk.thread.thread_container import ThreadContainer
 
 
@@ -25,7 +26,7 @@ class InMemoryThreadRepository(BaseThreadRepository):
         """Load thread container from memory"""
         return self._threads.get(thread_id)
 
-    async def get_message(self, thread_id: str, message_id: str) -> Optional[ThreadMessage]:
+    async def get_message(self, thread_id: str, message_id: str) -> Optional[Message]:
         """Get message from memory"""
         thread = self._threads.get(thread_id)
         if not thread:
@@ -36,7 +37,7 @@ class InMemoryThreadRepository(BaseThreadRepository):
                 return message
         return None
 
-    async def upsert_message(self, thread_id: str, message: ThreadMessage) -> None:
+    async def upsert_message(self, thread_id: str, message: Message) -> None:
         """Upsert message to memory"""
         thread = self._threads.get(thread_id)
         if not thread:

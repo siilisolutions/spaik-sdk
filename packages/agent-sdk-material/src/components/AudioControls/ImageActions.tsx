@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { IconButton, Tooltip, Box, alpha, useTheme } from '@mui/material';
-import { ContentCopyIcon, CheckIcon, DownloadIcon } from '../../utils/icons';
+import { ContentCopyIcon, CheckIcon, DownloadIcon } from '../../utils/icons.js';
 
 interface ImageActionsProps {
     imageUrl: string;

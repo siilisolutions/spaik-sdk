@@ -1,9 +1,9 @@
 import { ReactNode } from 'react';
 import { Box, Button, List, Typography, Skeleton, Divider, IconButton } from '@mui/material';
 import { useThreadList, useThreadSelection, useThreadActions } from 'spaik-sdk-react';
-import { ThreadListItem } from './ThreadListItem';
-import { useAgentTheme } from '../../theme/useAgentTheme';
-import { AddIcon, DarkModeIcon, LightModeIcon, SmartToyIcon } from '../../utils/icons';
+import { ThreadListItem } from './ThreadListItem.js';
+import { useAgentTheme } from '../../theme/useAgentTheme.js';
+import { AddIcon, DarkModeIcon, LightModeIcon, SmartToyIcon } from '../../utils/icons.js';
 
 interface Props {
     width?: number | string;
@@ -15,14 +15,13 @@ interface Props {
 
 export function ThreadSidebar({ width = 300, header, title = 'Agent Chat' }: Props) {
     const { selectedThreadId, selectThread } = useThreadSelection();
-    const { threadSummaries, refresh } = useThreadList();
+    const { threadSummaries } = useThreadList();
     const { createThread } = useThreadActions();
     const { toggleMode, isDark } = useAgentTheme();
 
     const handleCreateThread = async () => {
         try {
             const thread = await createThread({});
-            await refresh();
             selectThread(thread.id);
         } catch (error) {
             console.error('Failed to create thread:', error);
@@ -45,7 +44,7 @@ export function ThreadSidebar({ width = 300, header, title = 'Agent Chat' }: Pro
             >
                 <SmartToyIcon sx={{ fontSize: 22 }} />
             </Box>
-            <Typography variant="h6" fontWeight={700} color="text.primary">
+            <Typography variant="h6" color="text.primary" sx={{ fontWeight: 700 }}>
                 {title}
             </Typography>
         </Box>

@@ -1,5 +1,5 @@
 import { Box, Typography, IconButton, Tooltip } from '@mui/material';
-import { DeleteOutlineIcon, RefreshIcon, MenuIcon } from '../../utils/icons';
+import { DeleteOutlineIcon, RefreshIcon, MenuIcon } from '../../utils/icons.js';
 
 interface Props {
     title?: string;
@@ -29,7 +29,7 @@ export function ChatHeader({ title, onDelete, onRefresh, onMenuClick, showMenuBu
                         <MenuIcon />
                     </IconButton>
                 )}
-                <Typography variant="h6" fontWeight={600} noWrap sx={{ minWidth: 0 }}>
+                <Typography variant="h6" noWrap sx={{ fontWeight: 600, minWidth: 0 }}>
                     {title || 'Chat'}
                 </Typography>
             </Box>

@@ -1,285 +1,58 @@
 # AGENTS.md
 
-Guidance for AI coding assistants working with this repository.
+Guidance for assistants working on Spaik SDK.
 
-## Project Structure
+## Product and architecture
 
-```
-agent-sdk/
-├── packages/
-│   ├── agent-sdk/              # Python SDK - core agent functionality
-│   ├── agent-sdk-hooks/        # React hooks for frontend state management
-│   ├── agent-sdk-material/     # Material UI chat components
-│   ├── coding-agents/          # Pre-built coding agents (Claude Code, Cursor)
-│   └── agent-workflows/        # YAML-driven workflow engine
-├── examples/
-│   ├── agents/                 # Standalone agent examples
-│   ├── backend/                # FastAPI server example
-│   └── frontend/               # React frontend example
-└── templates/                  # Project templates for scaffolding
-```
+Spaik's core is thread management and a reusable React/Material UI kit. Canonical transcripts and frontend events use official AG-UI types. Retain BaseAgent/tool convenience, structured responses, streaming, cancellation, attachments/audio, recording and tracing. Avoid price tables, model eligibility lists, duplicate stream parsers and renderer implementations.
 
-## Python SDK (packages/agent-sdk/)
+- `packages/agent-sdk/spaik_sdk/agent/base_agent.py`: BaseAgent and AG-UI lifecycle.
+- `thread/`: canonical messages, private replay metadata, versioned envelope and migration.
+- `llm/langchain_service.py`: LangChain -> AG-UI execution; every model invocation records usage/reported charges.
+- `models/`: `LLMModel` describes every model (presets, custom models and plain IDs). `family_settings.py` applies per-family reasoning/token settings by `model.family`, never by registry membership; Spaik providers build every model they know. Provider kwargs override; `chat_model` injection is a last resort.
+- `llm/cost/`: provider-reported charge resolver; absent charge is None with a console message. Never infer price or zero.
+- `server/api/routers/`: authorized thread CRUD, `/threads/{id}/runs` SSE, cancellation/files/audio.
+- `packages/agent-sdk-hooks`: official AG-UI client state plus optional ThreadRepository, selection/uploads/audio.
+- `packages/agent-sdk-material`: shared themed UI; examples/templates consume it.
+- Deprecated and removed in 1.0: `spaik-coding-agents` (final 0.2.3) and `spaik-agent-workflows` (final 0.3.2), both pinned to SDK 0.11.1.
 
-### Key Modules
+## Commands
 
-- `agent/base_agent.py` - Main agent class, handles prompts, tools, streaming
-- `models/model_registry.py` - LLM model definitions and aliases
-- `models/providers/` - Provider implementations (OpenAI, Anthropic, Google, Azure OpenAI, Azure AI Foundry project endpoint, DeepSeek, Mistral, Meta Llama, Cohere, xAI, Moonshot, Ollama)
-- `tools/tool_provider.py` - Tool definition system using LangChain. Use `persist_tool_block_history=False` or override `render_tool_block_for_history()` to control how provider-owned tool calls replay into model history.
-- `thread/` - Conversation state, message blocks, event streaming
-- `server/api/routers/api_builder.py` - FastAPI router factory
-- `orchestration/base_orchestrator.py` - Code-first workflow orchestration
+Python: `cd packages/agent-sdk; uv sync --all-extras --dev --locked`, `make test-unit`, `make test-integration`, `make lint`, `make typecheck`. Ruff configuration enables fixes; use `ruff check --no-fix` for read-only inspection.
 
-### Commands
+Frontend: root `bun install`, `bun run build:packages`, `bun test packages/agent-sdk-hooks/tests`, `bunx playwright test`. Package `bun run type-check`/`lint` are available. Examples run with root `bun run dev:backend`/`dev:frontend`.
 
-```bash
-cd packages/agent-sdk
-
-# Environment
-uv sync
-
-# Tests
-make test                           # All tests
-make test-unit                      # Unit only
-make test-integration               # Integration only
-make test-unit-single PATTERN=name  # Single test
-
-# Quality
-make lint                           # Check
-make lint-fix                       # Fix
-make typecheck                      # Type check
-```
-
-### Creating an Agent
+## Usage
 
 ```python
-from spaik_sdk.agent.base_agent import BaseAgent
+from spaik_sdk import BaseAgent, LLMModel
 from spaik_sdk.models.model_registry import ModelRegistry
-from spaik_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
-
-class MyTools(ToolProvider):
-    def get_tools(self) -> list[BaseTool]:
-        @tool
-        def get_weather(city: str) -> str:
-            """Get current weather for a city."""
-            return f"Weather in {city}: sunny"
-        return [get_weather]
-
-class MyAgent(BaseAgent):
-    def get_tool_providers(self) -> list[ToolProvider]:
-        return [MyTools()]
-
-agent = MyAgent(
-    system_prompt="You are a helpful assistant.",
-    llm_model=ModelRegistry.CLAUDE_4_SONNET
-)
-print(agent.get_response_text("What's the weather in Helsinki?"))
+agent = BaseAgent(system_prompt="Be helpful.", llm_model=ModelRegistry.CLAUDE_SONNET_5_5)
+# Or llm_model=LLMModel(family="openai", name="new-model-id"), or llm_model="any-id", provider="openai".
+print(agent.get_response_text("Hello"))
 ```
 
-### Agent Methods
+AG-UI assistant messages expose `.content`; use `message_text(message)` to extract display text. ToolProvider history hooks receive `ToolCallHistory`, preserving provider-owned markers/custom replay without losing UI tool transcripts. Provider SDKs and server/audio/MCP are optional extras and must be imported lazily.
 
-- `get_response_text(input)` - Sync, returns text
-- `get_response(input)` - Sync, returns ThreadMessage
-- `get_response_async(input)` - Async, returns ThreadMessage  
-- `get_response_stream(input)` - Async generator for streaming
-- `get_event_stream(input)` - Async generator for ThreadEvents
-- `get_structured_response(prompt, Schema)` - Returns Pydantic model
-- `spawn(task)` - Run as isolated subagent (prevents LangChain callback leaks)
-- `get_langchain_model()` - Return the underlying LangChain chat model
-- `get_react_agent()` - Return a LangGraph ReAct agent wired with the agent's tools
-- `run_cli()` - Interactive CLI mode
+Keep ownership authoritative from thread creation. Reject overwriting stored messages, conflicting IDs and overlapping runs; save tool/model checkpoints and partial output on cancellation/disconnect. Never expose private replay/system prompts through thread APIs. Built-in coordination is single-process; applications own distributed integrations.
 
-### FastAPI Server
+## Package-specific instructions
 
-```python
-from fastapi import FastAPI
-from spaik_sdk.server.api.routers.api_builder import ApiBuilder
+Nested `AGENTS.md` files hold the rules for each area. Before editing files in one of these directories, read its file, even if your tool only loads this root file:
 
-app = FastAPI()
-agent = MyAgent()
-api_builder = ApiBuilder.local(agent=agent)
+- [packages/agent-sdk/AGENTS.md](packages/agent-sdk/AGENTS.md): Python style, logging, tests.
+- [packages/agent-sdk-hooks/AGENTS.md](packages/agent-sdk-hooks/AGENTS.md): React/TypeScript conventions for the hooks package.
+- [examples/frontend/AGENTS.md](examples/frontend/AGENTS.md): example app conventions.
+- `templates/{agent,server,frontend}/AGENTS.md`: instructions shipped to projects created from the templates. Keep them in sync with public API changes.
 
-app.include_router(api_builder.build_thread_router())
-app.include_router(api_builder.build_file_router())
-app.include_router(api_builder.build_audio_router())
-```
+Skills live in `.agents/skills` (`.claude/skills` links to it). To add or change model presets, follow [model-update](.agents/skills/model-update/SKILL.md).
 
-### Model Registry
+## Work and release discipline
 
-```python
-from spaik_sdk.models.model_registry import ModelRegistry
+Work on branches and commit each validated chunk with its docs. Update READMEs/templates/examples with public API changes and record breaking changes in [the migration guide](docs/MIGRATING_TO_1_0.md).
 
-# Anthropic
-ModelRegistry.CLAUDE_4_SONNET
-ModelRegistry.CLAUDE_4_OPUS
-ModelRegistry.CLAUDE_4_5_SONNET
-ModelRegistry.CLAUDE_4_5_OPUS
-ModelRegistry.CLAUDE_4_6_SONNET
-ModelRegistry.CLAUDE_4_6_OPUS
-ModelRegistry.CLAUDE_4_7_OPUS
-ModelRegistry.CLAUDE_OPUS_5
-ModelRegistry.CLAUDE_SONNET_5
+Each package has its own manual release workflow on main: `release-agent-sdk.yml`, `release-hooks.yml` and `release-material.yml`. Each bumps the version (patch/minor/major), runs checks, publishes, then commits the bump and tags it. Tick *prerelease* to publish a release candidate (`1.0.0rc1`, npm `1.0.0-rc.1` under the `next` tag); running again with it ticked gives the next RC, and unticked publishes the final version. Release hooks before Material, which peer-depends on it. Keep legacy tags for rollback.
 
-# OpenAI
-ModelRegistry.GPT_4_1
-ModelRegistry.GPT_4O
-ModelRegistry.O4_MINI
-ModelRegistry.GPT_5_4
-ModelRegistry.GPT_5_4_NANO
-ModelRegistry.GPT_5_5
-ModelRegistry.GPT_5_6_SOL
+Tests must cover AG-UI Python/TypeScript contracts, independent backends, browser thread lifecycle, replay/migration, arbitrary models, cost unknown/zero/partial handling and minimal/extra installed packages.
 
-# Google
-ModelRegistry.GEMINI_2_5_FLASH
-ModelRegistry.GEMINI_2_5_PRO
-ModelRegistry.GEMINI_3_5_FLASH
-ModelRegistry.GEMINI_3_6_FLASH
-ModelRegistry.GEMINI_3_1_PRO
-
-# Azure AI Foundry and other provider families
-ModelRegistry.DEEPSEEK_V3_2
-ModelRegistry.MISTRAL_LARGE_3
-ModelRegistry.LLAMA_4_MAVERICK
-ModelRegistry.COHERE_COMMAND_A
-ModelRegistry.GROK_4
-ModelRegistry.KIMI_K2_THINKING
-
-# By alias
-ModelRegistry.from_name("sonnet")      # CLAUDE_SONNET_5_5
-ModelRegistry.from_name("gpt 4.1")     # GPT_4_1
-ModelRegistry.from_name("opus")        # CLAUDE_OPUS_5_5
-ModelRegistry.from_name("gemini flash")  # GEMINI_3_8_FLASH
-```
-
-## React Hooks (packages/agent-sdk-hooks/)
-
-### Commands
-
-```bash
-cd packages/agent-sdk-hooks
-bun run build      # Build
-bun run dev        # Watch mode
-bun run type-check # TypeScript
-bun run lint       # ESLint
-```
-
-### Usage
-
-```tsx
-import {
-  AgentSdkClientProvider,
-  AgentSdkClient,
-  useThreadList,
-  useThread,
-  useThreadActions,
-  useThreadSelection,
-} from 'spaik-sdk-react';
-
-const client = new AgentSdkClient({ baseUrl: 'http://localhost:8000' });
-
-function App() {
-  return (
-    <AgentSdkClientProvider apiClient={client}>
-      <Chat />
-    </AgentSdkClientProvider>
-  );
-}
-
-function Chat() {
-  const { threadSummaries } = useThreadList();
-  const { selectedThreadId, selectThread } = useThreadSelection();
-  const { thread } = useThread(selectedThreadId);
-  const { createThread, sendMessage } = useThreadActions();
-  // ...
-}
-```
-
-### Available Hooks
-
-- `useThreadList()` - Thread summaries, loading state, refresh
-- `useThread(threadId)` - Full thread with messages
-- `useThreadActions()` - createThread, sendMessage
-- `useThreadSelection()` - Selected thread ID management
-- `useTextToSpeech()` - TTS functionality
-- `useSpeechToText()` - STT functionality
-- `usePushToTalk()` - Voice input
-- `useFileUploadStore()` - File attachments
-
-## Material UI Components (packages/agent-sdk-material/)
-
-Pre-built chat UI components with theming support:
-
-- `AgentChat` - Full chat interface
-- `ChatPanel` - Message list with input
-- `MessageCard` - Individual message display
-- `ThreadSidebar` - Thread list navigation
-- `MessageInput` - Input with attachments
-- Audio controls (TTS, STT, push-to-talk)
-
-## Monorepo Commands
-
-```bash
-# Root directory
-bun install                    # Install all deps
-bun run build:hooks            # Build React hooks
-bun run build:material         # Build Material components
-bun run dev:frontend           # Start example frontend
-bun run dev:backend            # Start example backend
-```
-
-## Environment Variables
-
-```bash
-# Direct mode: at least one LLM provider API key required
-ANTHROPIC_API_KEY=sk-ant-...
-OPENAI_API_KEY=sk-...
-GOOGLE_API_KEY=...
-
-# Optional — classic Azure OpenAI
-AZURE_API_KEY=...
-AZURE_ENDPOINT=https://your-resource.openai.azure.com/
-
-# Optional — Azure AI Foundry project (MODEL_PROVIDER=foundry)
-# AZURE_FOUNDRY_PROJECT_ENDPOINT=https://resource.services.ai.azure.com/api/projects/project
-# AZURE_FOUNDRY_API_KEY=...
-
-DEFAULT_MODEL=claude-sonnet-4-20250514
-
-# Proxy mode for centralized LLM routing
-LLM_AUTH_MODE=proxy
-LLM_PROXY_BASE_URL=https://llm-proxy.example.com
-LLM_PROXY_API_KEY=proxy-key
-LLM_PROXY_HEADERS=X-Team:Agents,X-App:Demo
-```
-
-## API Endpoints
-
-Thread router provides:
-- `POST /threads` - Create thread
-- `GET /threads` - List threads
-- `GET /threads/{id}` - Get thread
-- `POST /threads/{id}/messages/stream` - Send message (SSE streaming)
-- `DELETE /threads/{id}` - Delete thread
-- `POST /threads/{id}/cancel` - Cancel generation
-
-File router:
-- `POST /files` - Upload file
-- `GET /files/{id}` - Download file
-
-Audio router:
-- `POST /audio/speech` - Text to speech
-- `POST /audio/transcribe` - Speech to text
-
-## Testing
-
-Python tests use pytest with recorded LLM responses for determinism:
-- Unit tests: `tests/unit/`
-- Integration tests: `tests/integration/`
-- Recordings: `tests/recordings/`
-
-## License
-
-MIT - Copyright (c) 2026 Siili Solutions Oyj
-
-Current optional presets (verified 2026-10-13): `CLAUDE_SONNET_5_5`, `CLAUDE_OPUS_5_5`, `CLAUDE_HAIKU_5_5`, `CLAUDE_FABLE_5_1`, `GPT_6_1_SOL`, `GPT_6_ASTRA`, `GPT_6_LUNA`, `GEMINI_3_8_FLASH`. Preset availability depends on your provider account.
+MIT — Copyright (c) 2026 Siili Solutions Oyj.

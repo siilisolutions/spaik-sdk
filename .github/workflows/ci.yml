@@ -1,216 +1,53 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
-  changes:
+  validate:
     runs-on: ubuntu-latest
-    outputs:
-      agent-sdk: ${{ steps.filter.outputs.agent-sdk }}
-      coding-agents: ${{ steps.filter.outputs.coding-agents }}
-      agent-workflows: ${{ steps.filter.outputs.agent-workflows }}
-      agent-sdk-hooks: ${{ steps.filter.outputs.agent-sdk-hooks }}
-      agent-sdk-material: ${{ steps.filter.outputs.agent-sdk-material }}
-      examples-agents: ${{ steps.filter.outputs.examples-agents }}
-      examples-backend: ${{ steps.filter.outputs.examples-backend }}
-      examples-frontend: ${{ steps.filter.outputs.examples-frontend }}
+    strategy:
+      matrix:
+        python: ['3.11', '3.13']
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            agent-sdk:
-              - 'packages/agent-sdk/**'
-            coding-agents:
-              - 'packages/coding-agents/**'
-            agent-workflows:
-              - 'packages/agent-workflows/**'
-            agent-sdk-hooks:
-              - 'packages/agent-sdk-hooks/**'
-            agent-sdk-material:
-              - 'packages/agent-sdk-material/**'
-            examples-agents:
-              - 'examples/agents/**'
-            examples-backend:
-              - 'examples/backend/**'
-            examples-frontend:
-              - 'examples/frontend/**'
-
-  agent-sdk:
-    needs: changes
-    if: ${{ needs.changes.outputs.agent-sdk == 'true' }}
-    runs-on: ubuntu-latest
-    env:
-      DEFAULT_MODEL: claude-sonnet-4-20250514
-    defaults:
-      run:
+      - uses: astral-sh/setup-uv@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: uv python install ${{ matrix.python }}
+      - name: Install SDK with optional integrations and development tools
+        run: uv sync --python ${{ matrix.python }} --all-extras --dev --locked
         working-directory: packages/agent-sdk
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
-      - name: Set up Python
-        run: uv python install 3.10
-      - name: Install dependencies
-        run: uv sync --dev
-      - name: Lint
-        run: uv run ruff check .
-      - name: Type check
-        run: uv run ty check spaik_sdk tests
-      - name: Unit tests
-        run: uv run python3 -m pytest tests/unit/ -m "unit" --no-cov
-
-  coding-agents:
-    needs: [changes, agent-sdk]
-    if: ${{ always() && needs.changes.outputs.coding-agents == 'true' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/coding-agents
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
-      - name: Set up Python
-        run: uv python install 3.10
-      - name: Install dependencies
-        run: uv sync --all-extras
-      - name: Lint
-        run: uv run ruff check .
-      - name: Type check
-        run: uv run ty check spaik_coding_agents
-
-  agent-workflows:
-    needs: [changes, agent-sdk]
-    if: ${{ always() && needs.changes.outputs.agent-workflows == 'true' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/agent-workflows
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
-      - name: Set up Python
-        run: uv python install 3.10
-      - name: Install dependencies
-        run: uv sync --all-extras
-      - name: Lint
-        run: uv run ruff check .
-      - name: Type check
-        run: uv run ty check agent_workflows
-      - name: Tests
-        run: uv run python3 -m pytest tests/
-
-  examples-agents:
-    needs: [changes, agent-sdk]
-    if: ${{ always() && needs.changes.outputs.examples-agents == 'true' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: examples/agents
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
-      - name: Set up Python
-        run: uv python install 3.10
-      - name: Install dependencies
-        run: uv sync --all-extras
-      - name: Lint
-        run: uv run ruff check .
-      - name: Type check
-        run: uv run ty check .
-
-  examples-backend:
-    needs: [changes, agent-sdk]
-    if: ${{ always() && needs.changes.outputs.examples-backend == 'true' }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: examples/backend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
-      - name: Set up Python
-        run: uv python install 3.10
-      - name: Install dependencies
-        run: uv sync --all-extras
-      - name: Lint
-        run: uv run ruff check .
-      - name: Type check
-        run: uv run ty check .
-
-  agent-sdk-hooks:
-    needs: changes
-    if: ${{ needs.changes.outputs.agent-sdk-hooks == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - name: Install dependencies
+      - name: Python checks and deterministic integration tests
+        working-directory: packages/agent-sdk
+        run: |
+          uv run --no-sync ruff check --no-fix .
+          uv run --no-sync ty check spaik_sdk tests
+          uv run --no-sync python -m pytest tests --no-cov
+      - name: Frontend dependencies
         run: bun install --frozen-lockfile
-      - name: Lint
-        run: bun run lint
-        working-directory: packages/agent-sdk-hooks
-      - name: Type check
-        run: bun run type-check
-        working-directory: packages/agent-sdk-hooks
-
-  agent-sdk-material:
-    needs: [changes, agent-sdk-hooks]
-    if: ${{ always() && needs.changes.outputs.agent-sdk-material == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-      - name: Build hooks
-        run: bun run build
-        working-directory: packages/agent-sdk-hooks
-      - name: Type check
-        run: bun run type-check
-        working-directory: packages/agent-sdk-material
-      - name: Build
-        run: bun run build
-        working-directory: packages/agent-sdk-material
-
-  examples-frontend:
-    needs: [changes, agent-sdk-hooks, agent-sdk-material]
-    if: ${{ always() && needs.changes.outputs.examples-frontend == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-      - name: Build hooks
-        run: bun run build
-        working-directory: packages/agent-sdk-hooks
-      - name: Build material
-        run: bun run build
-        working-directory: packages/agent-sdk-material
-      - name: Lint
-        run: bun run lint
-        working-directory: examples/frontend
-      - name: Type check
-        run: bun run tsc --noEmit
-        working-directory: examples/frontend
+      - name: Frontend builds and checks
+        run: |
+          bun run build:packages
+          bun run --cwd packages/agent-sdk-hooks lint
+          bun run --cwd packages/agent-sdk-hooks type-check
+          bun run --cwd packages/agent-sdk-material type-check
+          bun run --cwd packages/agent-sdk-material lint
+          bun run --cwd examples/frontend build
+      - name: Python-to-TypeScript AG-UI contract
+        run: |
+          packages/agent-sdk/.venv/bin/python scripts/generate_ag_ui_fixture.py
+          bun test packages/agent-sdk-hooks/tests
+      - name: Browser acceptance tests
+        if: matrix.python == '3.13'
+        run: |
+          bunx playwright install --with-deps chromium
+          bunx playwright test
+      - name: Build SDK wheel
+        working-directory: packages/agent-sdk
+        run: uv build
+      - name: Installed npm artifacts
+        if: matrix.python == '3.13'
+        run: python scripts/validate_npm_artifacts.py --dist /tmp/spaik-npm-dist

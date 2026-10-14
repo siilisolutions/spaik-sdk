@@ -1,4 +1,4 @@
-export { SpeakButton } from './SpeakButton';
-export { PushToTalkButton } from './PushToTalkButton';
-export { CopyButton } from './CopyButton';
-export { ImageActions } from './ImageActions';
+export { SpeakButton } from './SpeakButton.js';
+export { PushToTalkButton } from './PushToTalkButton.js';
+export { CopyButton } from './CopyButton.js';
+export { ImageActions } from './ImageActions.js';

@@ -1,5 +1,5 @@
 import { Box, Typography, alpha } from '@mui/material';
-import { ErrorOutlineIcon } from '../../utils/icons';
+import { ErrorOutlineIcon } from '../../utils/icons.js';
 
 interface Props {
     content: string;

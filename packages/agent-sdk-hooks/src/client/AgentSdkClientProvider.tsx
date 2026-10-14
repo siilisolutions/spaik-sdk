@@ -1,25 +1,21 @@
-import { createContext, ReactNode, useContext } from "react";
-import { AgentSdkClient } from "./AgentSdkClient";
+import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+import { AgentSdkClient } from './AgentSdkClient.js';
 
-// Create a context for the API client
-const AgentContext = createContext<AgentSdkClient | undefined>(undefined);
-
-// Provider component
-export function AgentSdkClientProvider({ children, apiClient }: {
-  children: ReactNode,
-  apiClient: AgentSdkClient
-}) {
-  return (
-    <AgentContext.Provider value={apiClient} >
-      {children}
-    </AgentContext.Provider>
-  );
+interface ClientContext {
+    client: AgentSdkClient;
+    selectedThreadId?: string;
+    selectThread: (id?: string) => void;
 }
+const AgentContext = createContext<ClientContext | undefined>(undefined);
 
-export function useAgentSdkClient() {
-  const context = useContext(AgentContext);
-  if (!context) {
-    throw new Error('useAgentSdkClient must be used within an AgentSdkClientProvider');
-  }
-  return context;
+export function AgentSdkClientProvider({ children, apiClient }: { children: ReactNode; apiClient: AgentSdkClient }) {
+    const [selectedThreadId, selectThread] = useState(apiClient.defaultThreadId);
+    const context = useMemo(() => ({ client: apiClient, selectedThreadId, selectThread }), [apiClient, selectedThreadId]);
+    return <AgentContext.Provider value={context}>{children}</AgentContext.Provider>;
 }
+export function useAgentContext() {
+    const context = useContext(AgentContext);
+    if (!context) throw new Error('Use AgentSdkClientProvider');
+    return context;
+}
+export function useAgentSdkClient() { return useAgentContext().client; }

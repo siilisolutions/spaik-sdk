@@ -1,18 +1,18 @@
+"""Authenticates to Azure OpenAI with Microsoft Entra ID instead of an API key.
+
+DefaultAzureCredential picks up `az login`, a managed identity or service principal
+environment variables. Set AZURE_ENDPOINT and AZURE_API_VERSION for your Azure OpenAI resource.
+"""
+
 from importlib import import_module
-from pathlib import Path
 from typing import Callable
 
 from dotenv import load_dotenv
-from spaik_sdk.agent.base_agent import BaseAgent
-from spaik_sdk.models.llm_config import LLMConfig
+from spaik_sdk import BaseAgent, LLMConfig
 from spaik_sdk.models.model_registry import ModelRegistry
 from spaik_sdk.models.providers.azure_provider import AzureProvider
 
 AZURE_TOKEN_SCOPE = "https://cognitiveservices.azure.com/.default"
-
-
-class AzureCredentialAuthAgent(BaseAgent):
-    pass
 
 
 def create_token_provider() -> Callable[[], str]:
@@ -21,22 +21,16 @@ def create_token_provider() -> Callable[[], str]:
 
 
 def main() -> None:
-    script_path = Path(__file__).resolve()
-    load_dotenv(script_path.parents[2] / ".env")
-    load_dotenv(script_path.parents[1] / ".env")
-
-    agent = AzureCredentialAuthAgent(
-        system_prompt="You are a concise assistant.",
+    load_dotenv()
+    agent = BaseAgent(
+        system_prompt="You are a concise, accurate assistant.",
         llm_config=LLMConfig(
-            model=ModelRegistry.GPT_4_1_MINI,
+            model=ModelRegistry.GPT_6_1_SOL,
             provider=AzureProvider(azure_ad_token_provider=create_token_provider()),
             reasoning=False,
-            tool_usage=False,
-            temperature=0,
         ),
     )
-
-    print(agent.get_response_text("Reply with sentence describing cats."))
+    print(agent.get_response_text("In one sentence, why is keyless authentication safer than API keys?"))
 
 
 if __name__ == "__main__":

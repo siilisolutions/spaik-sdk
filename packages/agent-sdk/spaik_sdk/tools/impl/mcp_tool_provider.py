@@ -1,10 +1,6 @@
 from typing import Dict, List, Literal, TypedDict, Union
 
 from langchain_core.tools import BaseTool
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain_mcp_adapters.tools import load_mcp_tools
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
 
 from spaik_sdk.tools.tool_provider import ToolProvider
 
@@ -38,6 +34,8 @@ class McpToolProvider(ToolProvider):
         if self._tools is not None:
             return self._tools
 
+        from langchain_mcp_adapters.client import MultiServerMCPClient
+
         client = MultiServerMCPClient(self._servers)  # type: ignore[arg-type]
         self._tools = await client.get_tools()
         return self._tools
@@ -61,6 +59,10 @@ class McpToolProvider(ToolProvider):
         args: List[str] | None = None,
         env: Dict[str, str] | None = None,
     ) -> List[BaseTool]:
+        from langchain_mcp_adapters.tools import load_mcp_tools
+        from mcp import ClientSession, StdioServerParameters
+        from mcp.client.stdio import stdio_client
+
         server_params = StdioServerParameters(
             command=command,
             args=args or [],

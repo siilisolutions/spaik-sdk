@@ -28,7 +28,7 @@ PROXY_ENV = {
 
 def _make_config(name: str = "gpt-4o") -> LLMConfig:
     model = LLMModel(family="openai", name=name, reasoning=False, prompt_caching=False)
-    return LLMConfig(model=model, reasoning=False, tool_usage=False, streaming=False)
+    return LLMConfig(model=model, reasoning=False, streaming=False)
 
 
 @pytest.mark.unit
@@ -135,7 +135,7 @@ class TestAzureFoundryProviderProxy:
 
 @pytest.mark.unit
 class TestAzureFoundryProviderCreateModel:
-    @patch("spaik_sdk.models.providers.azure_foundry_provider.AzureAIOpenAIApiChatModel")
+    @patch("langchain_azure_ai.chat_models.AzureAIOpenAIApiChatModel")
     def test_sets_deployment_model_name(self, mock_chat_model, monkeypatch):
         for k, v in DIRECT_ENV.items():
             monkeypatch.setenv(k, v)
@@ -153,4 +153,4 @@ class TestAzureFoundryProviderCreateModel:
 
         mock_chat_model.assert_called_once()
         call_kwargs = mock_chat_model.call_args.kwargs
-        assert call_kwargs["model"] == "my-gpt-4o-deployment"
+        assert call_kwargs["model"] == "gpt-4o"

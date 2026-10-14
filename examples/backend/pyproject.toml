@@ -1,13 +1,13 @@
 [project]
-name = "agent-sdk-backend-example"
+name = "spaik-backend-example"
 version = "1.0.0"
-description = "FastAPI backend example using Agent SDK"
-requires-python = ">=3.10"
+description = "FastAPI AG-UI backend example built with Spaik SDK"
+requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.100.0",
     "uvicorn[standard]>=0.20.0",
     "python-dotenv>=1.0.0",
-    "spaik-sdk",
+    "spaik-sdk[server,openai,anthropic,google,azure,audio,mcp]",
 ]
 
 [project.optional-dependencies]

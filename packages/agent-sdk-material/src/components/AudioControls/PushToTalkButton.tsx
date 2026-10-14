@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { IconButton, Tooltip, CircularProgress, Box, alpha, useTheme } from '@mui/material';
 import { usePushToTalk } from 'spaik-sdk-react';
-import { MicIcon, StopIcon } from '../../utils/icons';
+import { MicIcon, StopIcon } from '../../utils/icons.js';
 
 interface VoiceInputButtonProps {
     baseUrl: string;
@@ -55,6 +55,7 @@ export function PushToTalkButton({
             <Box sx={{ position: 'relative', display: 'inline-flex' }}>
                 <IconButton
                     onClick={handleClick}
+                    aria-label={isRecording ? "Stop recording" : "Start recording"}
                     disabled={disabled || isTranscribing}
                     sx={{
                         width: 40,

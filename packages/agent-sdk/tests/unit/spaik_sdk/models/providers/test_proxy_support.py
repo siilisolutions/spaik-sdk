@@ -19,7 +19,7 @@ from spaik_sdk.models.providers.xai_provider import XAIProvider
 
 def _make_config(family: str = "openai", name: str = "test-model") -> LLMConfig:
     model = LLMModel(family=family, name=name, reasoning=False, prompt_caching=False)
-    return LLMConfig(model=model, reasoning=False, tool_usage=False, streaming=False)
+    return LLMConfig(model=model, reasoning=False, streaming=False)
 
 
 PROXY_ENV = {
@@ -86,7 +86,7 @@ class TestAnthropicProviderProxy:
         assert result["base_url"] == "https://proxy.example.com/v1"
         assert result["default_headers"] == {"X-Tenant": "abc", "X-Region": "us"}
         # Should still include model_kwargs with extra_headers
-        assert "model_kwargs" in result
+        assert "model_kwargs" not in result
 
     @patch("spaik_sdk.models.providers.anthropic_provider.credentials_provider")
     def test_direct_mode_uses_credentials_provider(self, mock_creds, monkeypatch):
@@ -159,7 +159,6 @@ class TestLLMConfigProviderInjection:
             provider_type=None,
             provider=provider,
             reasoning=False,
-            tool_usage=False,
             streaming=False,
         )
 

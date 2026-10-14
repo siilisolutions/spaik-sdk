@@ -1,18 +1,14 @@
 import time
 from collections.abc import Callable
-from typing import Any, Collection, Dict, Optional
+from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
 from azure.core.credentials import AccessToken, TokenCredential
-from langchain_azure_ai.chat_models import AzureAIOpenAIApiChatModel
 from langchain_core.language_models.chat_models import BaseChatModel
 
 from spaik_sdk.config.env import env_config
 from spaik_sdk.models.llm_config import LLMConfig
-from spaik_sdk.models.llm_model import LLMModel
 from spaik_sdk.models.providers.azure_deployments import (
-    get_azure_supported_models,
-    get_deployment_name,
     get_required_env,
 )
 from spaik_sdk.models.providers.base_provider import BaseProvider
@@ -50,25 +46,28 @@ class AzureFoundryProvider(BaseProvider):
         self.azure_ad_token_provider = azure_ad_token_provider
         self.project_endpoint = project_endpoint
 
-    def get_supported_models(self) -> Collection[LLMModel]:
-        return get_azure_supported_models()
-
     def get_model_config(self, config: LLMConfig) -> Dict[str, Any]:
         if env_config.is_proxy_mode():
             return self._get_proxy_config("credential", "endpoint", "default_headers")
 
-        project_endpoint = self.project_endpoint or get_required_env("AZURE_FOUNDRY_PROJECT_ENDPOINT")
+        if config.provider_kwargs.get("endpoint") and config.provider_kwargs.get("credential"):
+            return {"endpoint": config.provider_kwargs["endpoint"], "credential": config.provider_kwargs["credential"]}
+        project_endpoint = (
+            self.project_endpoint or config.provider_kwargs.get("project_endpoint") or get_required_env("AZURE_FOUNDRY_PROJECT_ENDPOINT")
+        )
         if self.azure_ad_token_provider:
             return {
                 "project_endpoint": project_endpoint,
                 "credential": _CallableTokenCredential(self.azure_ad_token_provider),
             }
-        api_key = self.api_key or get_required_env("AZURE_FOUNDRY_API_KEY")
+        api_key = self.api_key or config.provider_kwargs.get("credential") or get_required_env("AZURE_FOUNDRY_API_KEY")
         return {
             "endpoint": openai_v1_endpoint_from_project_endpoint(project_endpoint),
             "credential": api_key,
         }
 
     def create_langchain_model(self, config: LLMConfig, full_config: Dict[str, Any]) -> BaseChatModel:
-        full_config["model"] = get_deployment_name(config.model.name)
+        full_config["model"] = config.model_name
+        from langchain_azure_ai.chat_models import AzureAIOpenAIApiChatModel
+
         return AzureAIOpenAIApiChatModel(**full_config)

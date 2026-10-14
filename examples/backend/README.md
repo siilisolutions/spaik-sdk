@@ -1,91 +1,11 @@
-# Backend Example
+# Spaik AG-UI backend
 
-FastAPI server demonstrating the Spaik SDK.
+A FastAPI server that exposes a Spaik agent over AG-UI, with thread management, file uploads and audio, using `ApiBuilder.local`. The agent has one example tool, `current_time`; replace it with your own.
 
-## Setup
+Configure `DEFAULT_MODEL` (a preset alias or model ID), `MODEL_PROVIDER` and the provider API key in `.env`. Arbitrary model IDs need an explicit provider.
 
-```bash
-cd examples/backend
-uv sync
-```
+Run `uv sync`, then `uv run uvicorn main:app --reload`. The server listens on http://localhost:8000 and accepts requests from the frontend at http://localhost:5173. Local storage writes JSON to `data-v1`; run one server worker per repository.
 
-Create `.env`:
+Routes: thread CRUD under `/threads`, `POST /threads/{id}/runs` (official AG-UI `RunAgentInput`, streamed as SSE), `POST /threads/{id}/cancel`, `/files`, `/audio/speech` and `/audio/transcribe`. The legacy `/messages/stream`, Azure queue and SignalR transports were removed in 1.0; see the repository's `docs/MIGRATING_TO_1_0.md`.
 
-```bash
-ANTHROPIC_API_KEY=your-key
-# or
-OPENAI_API_KEY=your-key
-# or
-GOOGLE_API_KEY=your-key
-```
-
-## Run
-
-```bash
-uv run uvicorn main:app --reload --port 8000
-```
-
-## Endpoints
-
-- `GET /docs` - Swagger UI
-- `POST /threads` - Create thread
-- `GET /threads` - List threads
-- `GET /threads/{id}` - Get thread
-- `POST /threads/{id}/messages/stream` - Send message (SSE)
-- `DELETE /threads/{id}` - Delete thread
-- `POST /files` - Upload file
-- `GET /files/{id}` - Download file
-- `POST /audio/speech` - Text to speech
-- `POST /audio/transcribe` - Speech to text
-
-## Structure
-
-```
-backend/
-├── main.py           # Server setup and agent definition
-└── prompts/
-    └── agent/
-        └── DemoAgent/
-            └── system.md   # System prompt (optional)
-```
-
-## Agent Configuration
-
-```python
-from spaik_sdk.agent.base_agent import BaseAgent
-from spaik_sdk.models.model_registry import ModelRegistry
-from spaik_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
-
-class MyTools(ToolProvider):
-    def get_tools(self) -> list[BaseTool]:
-        @tool
-        def my_function(arg: str) -> str:
-            """Description for the LLM."""
-            return f"Result: {arg}"
-        return [my_function]
-
-class MyAgent(BaseAgent):
-    def get_tool_providers(self) -> list[ToolProvider]:
-        return [MyTools()]
-
-# Use with ApiBuilder
-agent = MyAgent(llm_model=ModelRegistry.CLAUDE_4_SONNET)
-api_builder = ApiBuilder.local(agent=agent)
-app.include_router(api_builder.build_thread_router())
-```
-
-## Model Selection
-
-```python
-from spaik_sdk.models.model_registry import ModelRegistry
-
-agent = MyAgent(llm_model=ModelRegistry.CLAUDE_4_SONNET)
-# or
-agent = MyAgent(llm_model=ModelRegistry.GPT_4_1)
-# or
-agent = MyAgent(llm_model=ModelRegistry.GEMINI_2_5_FLASH)
-```
-
-## Frontend Integration
-
-Works with `examples/frontend`. CORS is enabled for all origins.
+Provider, audio, MCP and server support are optional SDK extras. Trim the extras in `pyproject.toml` to the ones your application uses.

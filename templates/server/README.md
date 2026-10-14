@@ -1,92 +1,11 @@
-# Server Template
+# Spaik AG-UI backend
 
-FastAPI server template for Spaik SDK agents.
+A FastAPI server that exposes a Spaik agent over AG-UI, with thread management, file uploads and audio, using `ApiBuilder.local`. The agent has one example tool, `current_time`; replace it with your own.
 
-## Setup
+Configure `DEFAULT_MODEL` (a preset alias or model ID), `MODEL_PROVIDER` and the provider API key in `.env`. Arbitrary model IDs need an explicit provider.
 
-```bash
-# Run init script
-./init_template.sh
+Run `uv sync`, then `uv run uvicorn main:app --reload`. The server listens on http://localhost:8000 and accepts requests from the frontend at http://localhost:5173. Local storage writes JSON to `data-v1`; run one server worker per repository.
 
-# Or manually
-uv sync
-```
+Routes: thread CRUD under `/threads`, `POST /threads/{id}/runs` (official AG-UI `RunAgentInput`, streamed as SSE), `POST /threads/{id}/cancel`, `/files`, `/audio/speech` and `/audio/transcribe`. The legacy `/messages/stream`, Azure queue and SignalR transports were removed in 1.0; see the repository's `docs/MIGRATING_TO_1_0.md`.
 
-Create `.env`:
-
-```bash
-ANTHROPIC_API_KEY=your-key
-```
-
-## Run
-
-```bash
-uv run uvicorn main:app --reload --port 8000
-```
-
-## Customization
-
-### Add Tools
-
-```python
-from spaik_sdk.tools.tool_provider import ToolProvider, BaseTool, tool
-
-class MyTools(ToolProvider):
-    def get_tools(self) -> list[BaseTool]:
-        @tool
-        def my_function(arg: str) -> str:
-            """Tool description for the LLM."""
-            return f"Result: {arg}"
-        return [my_function]
-
-class MyAgent(BaseAgent):
-    def get_tool_providers(self) -> list[ToolProvider]:
-        return [MyTools()]
-```
-
-### System Prompt from File
-
-Create `prompts/agent/MyAgent/system.md`:
-
-```markdown
-You are a helpful assistant.
-
-## Capabilities
-- Answer questions
-- Use tools when needed
-```
-
-The SDK automatically loads this based on agent class name.
-
-### Change Model
-
-```python
-from spaik_sdk.models.model_registry import ModelRegistry
-
-agent = MyAgent(llm_model=ModelRegistry.CLAUDE_4_SONNET)
-# or GPT_4_1, GEMINI_2_5_FLASH, etc.
-```
-
-### Production Setup
-
-```python
-from spaik_sdk.server.storage.impl.local_file_thread_repository import LocalFileThreadRepository
-
-api_builder = ApiBuilder.stateful(
-    repository=LocalFileThreadRepository(base_path="./data"),
-    authorizer=MyAuthorizer(),
-    agent=agent,
-)
-```
-
-## Endpoints
-
-- `POST /threads` - Create thread
-- `GET /threads` - List threads
-- `GET /threads/{id}` - Get thread
-- `POST /threads/{id}/messages/stream` - Send message (SSE)
-- `DELETE /threads/{id}` - Delete thread
-- `POST /files` - Upload file
-- `GET /files/{id}` - Download file
-- `POST /audio/speech` - TTS
-- `POST /audio/transcribe` - STT
+Provider, audio, MCP and server support are optional SDK extras. Trim the extras in `pyproject.toml` to the ones your application uses.

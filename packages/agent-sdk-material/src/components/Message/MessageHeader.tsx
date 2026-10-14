@@ -1,6 +1,6 @@
 import { Box, Typography, Avatar } from '@mui/material';
-import { formatTimestamp, formatFullTimestamp } from '../../utils/formatTime';
-import { SmartToyIcon, PersonIcon } from '../../utils/icons';
+import { formatTimestamp, formatFullTimestamp } from '../../utils/formatTime.js';
+import { SmartToyIcon, PersonIcon } from '../../utils/icons.js';
 
 interface Props {
     authorName: string;

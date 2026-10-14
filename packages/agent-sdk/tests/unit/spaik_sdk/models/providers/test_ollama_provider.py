@@ -15,7 +15,7 @@ class TestOllamaProvider:
         """ChatOllama should receive 'model' only once via full_config, not as a separate kwarg."""
         provider = OllamaProvider()
         ollama_model = LLMModel(family="ollama", name="test-model:7b", reasoning=False, prompt_caching=False)
-        config = LLMConfig(model=ollama_model, reasoning=False, tool_usage=False, streaming=False)
+        config = LLMConfig(model=ollama_model, reasoning=False, streaming=False)
 
         full_config = {
             "model": "test-model:7b",
@@ -23,6 +23,6 @@ class TestOllamaProvider:
             "base_url": "http://localhost:11434",
         }
 
-        with patch("spaik_sdk.models.providers.ollama_provider.ChatOllama") as mock_chat_ollama:
+        with patch("langchain_ollama.ChatOllama") as mock_chat_ollama:
             provider.create_langchain_model(config, full_config)
             mock_chat_ollama.assert_called_once_with(**full_config)

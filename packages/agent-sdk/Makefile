@@ -15,7 +15,7 @@ help:
 	@echo "  test-html    - Run tests with HTML coverage report"
 	@echo "  lint         - Run linting checks"
 	@echo "  lint-fix     - Run linting with auto-fix"
-	@echo "  typecheck    - Run type checking with mypy"
+	@echo "  typecheck    - Run type checking with ty"
 	@echo "  clean        - Clean test artifacts"
 
 # Run all tests
@@ -24,16 +24,16 @@ test:
 
 # Run only unit tests
 test-unit:
-	uv run python3 -m pytest tests/unit/ -m "unit" --no-cov
+	uv run python3 -m pytest tests/unit/ --no-cov
 
 # Run single unit test by pattern
 test-unit-single:
 	@if [ -z "$(PATTERN)" ]; then echo "Usage: make test-unit-single PATTERN=test_name_pattern"; exit 1; fi
-	LOG_LEVEL=DEBUG uv run python3 -m pytest tests/unit/ -m "unit" --no-cov -k "$(PATTERN)" -v
+	LOG_LEVEL=DEBUG uv run python3 -m pytest tests/unit/ --no-cov -k "$(PATTERN)" -v
 
 # Run only integration tests  
 test-integration:
-	uv run python3 -m pytest tests/integration/ -m "integration"
+	uv run python3 -m pytest tests/integration/
 
 # Run fast tests (exclude slow ones)
 test-fast:
@@ -64,7 +64,7 @@ test-pattern:
 
 # Run linting checks
 lint:
-	uv run ruff check .
+	uv run ruff check --no-fix .
 
 # Run linting with auto-fix
 lint-fix:

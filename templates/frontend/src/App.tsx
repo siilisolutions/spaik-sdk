@@ -1,28 +1,12 @@
-import { ThreadList } from './components/ThreadList/ThreadList';
-import { ThreadView } from './components/ThreadView/ThreadView';
-import { useThreadSelection } from 'spaik-sdk-react';
-import { NoThreadSelected } from './components/ThreadView/EmptyStates';
-
+import { useMemo } from 'react';
+import { HttpAgent } from 'spaik-sdk-react';
+import { AgentThemeProvider, AgentChat } from 'spaik-sdk-material';
 
 export function App() {
-    const { selectedThreadId } = useThreadSelection();
-    return (
-        <div style={{
-            display: 'flex',
-            height: '100vh',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-        }}>
-            <ThreadList />
-
-            {selectedThreadId ? (
-                <ThreadView
-                    threadId={selectedThreadId}
-                />
-            ) : (
-                <NoThreadSelected />
-            )}
-
-
-        </div>
-    );
+    const endpoint = new URLSearchParams(window.location.search).get('agent');
+    const agent = useMemo(() => endpoint ? new HttpAgent({ url: endpoint, threadId: 'external-conversation' }) : undefined, [endpoint]);
+    return <AgentThemeProvider>
+        <AgentChat agent={agent} baseUrl={agent ? undefined : 'http://localhost:8000'}
+            enableTTS={!agent} enableSTT={!agent} enableCopy />
+    </AgentThemeProvider>;
 }

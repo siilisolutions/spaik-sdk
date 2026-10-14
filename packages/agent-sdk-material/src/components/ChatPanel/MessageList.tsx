@@ -1,11 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { Box, Skeleton } from '@mui/material';
-import { Message } from 'spaik-sdk-react';
-import { MessageCard } from '../Message/MessageCard';
-import { TypingIndicator } from './TypingIndicator';
+import { Attachment, Message, messageText } from 'spaik-sdk-react';
+import { MessageCard } from '../Message/MessageCard.js';
+import { TypingIndicator } from './TypingIndicator.js';
 
 interface Props {
     messages: Message[] | undefined;
+    messageMetadata?: Record<string, { timestamp?: number; attachments?: Attachment[] }>;
+    renderMessage?: (message: Message, messages: Message[]) => ReactNode;
     isLoading?: boolean;
     filesBaseUrl?: string;
     showTypingIndicator?: boolean;
@@ -13,7 +15,7 @@ interface Props {
     enableCopy?: boolean;
 }
 
-export function MessageList({ messages, isLoading, filesBaseUrl, showTypingIndicator, enableTTS = false, enableCopy = true }: Props) {
+export function MessageList({ messages, messageMetadata, renderMessage, isLoading, filesBaseUrl, showTypingIndicator, enableTTS = false, enableCopy = true }: Props) {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -37,7 +39,7 @@ export function MessageList({ messages, isLoading, filesBaseUrl, showTypingIndic
 
     // Also scroll when last message content changes (streaming)
     const lastMessage = messages?.[messages.length - 1];
-    const lastBlockContent = lastMessage?.blocks?.[lastMessage.blocks.length - 1]?.content;
+    const lastBlockContent = lastMessage ? messageText(lastMessage) : '';
     useEffect(() => {
         if (lastBlockContent) {
             scrollToBottom();
@@ -84,10 +86,13 @@ export function MessageList({ messages, isLoading, filesBaseUrl, showTypingIndic
                 p: 3,
             }}
         >
-            {messages.map((message) => (
+            {messages.filter(message => message.role !== "tool" || !messages.some(m => m.role === "assistant" && m.toolCalls?.some(call => call.id === message.toolCallId))).map((message) => (
+                renderMessage ? <Box key={message.id}>{renderMessage(message, messages)}</Box> :
                 <MessageCard
                     key={message.id}
                     message={message}
+                    messages={messages}
+                    metadata={messageMetadata?.[message.id]}
                     filesBaseUrl={filesBaseUrl}
                     enableTTS={enableTTS}
                     enableCopy={enableCopy}

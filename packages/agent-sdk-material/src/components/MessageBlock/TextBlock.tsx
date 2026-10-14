@@ -1,4 +1,4 @@
-import { MarkdownRenderer } from '../../markdown/MarkdownRenderer';
+import { MarkdownRenderer } from '../../markdown/MarkdownRenderer.js';
 
 interface Props {
     content: string;

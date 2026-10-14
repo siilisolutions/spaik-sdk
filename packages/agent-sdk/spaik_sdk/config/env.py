@@ -17,7 +17,12 @@ class EnvConfig:
         return value
 
     def get_default_model(self) -> LLMModel:
-        return ModelRegistry.from_name(self.get_key("DEFAULT_MODEL"))
+        name = self.get_key("DEFAULT_MODEL")
+        try:
+            return ModelRegistry.from_name(name)
+        except ValueError:
+            provider = self.get_key("MODEL_PROVIDER")
+            return LLMModel(family=provider, name=name, reasoning=False)
 
     def get_provider_type(self) -> ProviderType:
         provider_type_name = self.get_key("MODEL_PROVIDER", required=False)

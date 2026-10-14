@@ -245,4 +245,9 @@ uv.lock
 
 # Package manager locks (keep in specific cases)
 # package-lock.json
-# yarn.lock 
+# yarn.lock
+# Local AG-UI migration data and browser reports
+data-v1/
+data/
+test-results/
+playwright-report/

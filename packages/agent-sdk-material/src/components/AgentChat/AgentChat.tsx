@@ -1,147 +1,52 @@
-import { useEffect, useMemo, useState, ReactNode } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { Box, Drawer, useMediaQuery, useTheme } from '@mui/material';
-import {
-    AgentSdkClientProvider,
-    AgentSdkClient,
-    createThreadsApiClient,
-    useThreadListActions,
-    useThreadSelection,
-} from 'spaik-sdk-react';
-import { ThreadSidebar } from '../ThreadSidebar/ThreadSidebar';
-import { ChatPanel } from '../ChatPanel/ChatPanel';
-import { MarkdownProvider, CustomComponentRegistry } from '../../markdown';
-
-interface AgentChatContentProps {
-    baseUrl: string;
-    sidebarWidth?: number;
-    sidebarHeader?: ReactNode;
-    sidebarTitle?: string;
-    enableTTS?: boolean;
-    enableSTT?: boolean;
-    enableCopy?: boolean;
-    sttLanguage?: string;
-}
-
-function AgentChatContent({ baseUrl, sidebarWidth = 300, sidebarHeader, sidebarTitle, enableTTS, enableSTT, enableCopy, sttLanguage }: AgentChatContentProps) {
-    const { refresh } = useThreadListActions();
-    const { selectedThreadId } = useThreadSelection();
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const [mobileOpen, setMobileOpen] = useState(false);
-
-    useEffect(() => {
-        refresh();
-    }, [refresh]);
-
-    // Close drawer when thread is selected on mobile
-    useEffect(() => {
-        if (isMobile && selectedThreadId) {
-            setMobileOpen(false);
-        }
-    }, [selectedThreadId, isMobile]);
-
-    const handleDrawerToggle = () => {
-        setMobileOpen(!mobileOpen);
-    };
-
-    const sidebar = <ThreadSidebar width={sidebarWidth} header={sidebarHeader} title={sidebarTitle} />;
-
-    return (
-        <Box
-            sx={{
-                display: 'flex',
-                height: '100%',
-                width: '100%',
-                overflow: 'hidden',
-            }}
-        >
-            {/* Mobile drawer */}
-            {isMobile ? (
-                <Drawer
-                    variant="temporary"
-                    open={mobileOpen}
-                    onClose={handleDrawerToggle}
-                    ModalProps={{ keepMounted: true }}
-                    sx={{
-                        '& .MuiDrawer-paper': {
-                            width: sidebarWidth,
-                            boxSizing: 'border-box',
-                        },
-                    }}
-                >
-                    {sidebar}
-                </Drawer>
-            ) : (
-                sidebar
-            )}
-            <ChatPanel 
-                filesBaseUrl={baseUrl} 
-                onMenuClick={isMobile ? handleDrawerToggle : undefined}
-                showMenuButton={isMobile}
-                enableTTS={enableTTS}
-                enableSTT={enableSTT}
-                enableCopy={enableCopy}
-                sttLanguage={sttLanguage}
-            />
-        </Box>
-    );
-}
+import { AbstractAgent, AgentSdkClientProvider, AgentSdkClient, createThreadsApiClient, Message, ThreadRepository, useAgentSdkClient } from 'spaik-sdk-react';
+import { ThreadSidebar } from '../ThreadSidebar/ThreadSidebar.js';
+import { ChatPanel } from '../ChatPanel/ChatPanel.js';
+import { MarkdownProvider, CustomComponentRegistry } from '../../markdown/index.js';
 
 export interface AgentChatProps {
-    /** Base URL for the agent API (e.g., "http://localhost:8000") */
-    baseUrl: string;
-    /** Width of the sidebar in pixels */
+    baseUrl?: string;
+    agent?: AbstractAgent;
+    threadRepository?: ThreadRepository;
+    createAgent?: (threadId: string) => AbstractAgent;
+    headers?: Record<string, string>;
     sidebarWidth?: number;
-    /** Optional custom header/logo for the sidebar */
     sidebarHeader?: ReactNode;
-    /** Title shown in default sidebar header. Defaults to "Agent Chat" */
     sidebarTitle?: string;
-    /** 
-     * Custom components for markdown rendering.
-     * Keys are component names (e.g., "MyCard"), values are React components.
-     * Use in AI responses as: <MyCard prop="value" />
-     */
     customComponents?: CustomComponentRegistry;
-    /** Enable text-to-speech (listen button) on AI messages. Requires /audio/speech endpoint. */
+    renderMessage?: (message: Message, messages: Message[]) => ReactNode;
+    renderState?: (state: unknown) => ReactNode;
     enableTTS?: boolean;
-    /** Enable speech-to-text (push-to-talk button) in message input. Requires /audio/transcribe endpoint. */
     enableSTT?: boolean;
-    /** Enable copy button on AI messages (default: true) */
     enableCopy?: boolean;
-    /** Language code for STT (e.g., 'en', 'fi'). Defaults to 'en' to prevent auto-detect confusion. */
     sttLanguage?: string;
 }
 
-export function AgentChat({ 
-    baseUrl, 
-    sidebarWidth, 
-    sidebarHeader, 
-    sidebarTitle,
-    customComponents = {},
-    enableTTS = false,
-    enableSTT = false,
-    enableCopy = true,
-    sttLanguage = 'en',
-}: AgentChatProps) {
-    const apiClient = useMemo(() => {
-        const threadsApi = createThreadsApiClient({ baseUrl });
-        return new AgentSdkClient(threadsApi);
-    }, [baseUrl]);
+function AgentChatContent(props: AgentChatProps) {
+    const client = useAgentSdkClient();
+    const theme = useTheme();
+    const mobile = useMediaQuery(theme.breakpoints.down('md'));
+    const [open, setOpen] = useState(false);
+    const hasSidebar = Boolean(client.threadRepository);
+    const sidebar = <ThreadSidebar width={props.sidebarWidth ?? 300} header={props.sidebarHeader} title={props.sidebarTitle} />;
+    return <Box sx={{ display: 'flex', height: '100%', width: '100%', overflow: 'hidden' }}>
+        {hasSidebar ? mobile ? <Drawer open={open} onClose={() => setOpen(false)}>{sidebar}</Drawer> : sidebar : null}
+        <ChatPanel filesBaseUrl={props.baseUrl} showMenuButton={hasSidebar && mobile} onMenuClick={() => setOpen(value => !value)}
+            enableTTS={props.enableTTS} enableSTT={props.enableSTT} enableCopy={props.enableCopy} sttLanguage={props.sttLanguage}
+            renderMessage={props.renderMessage} renderState={props.renderState} />
+    </Box>;
+}
 
-    return (
-        <AgentSdkClientProvider apiClient={apiClient}>
-            <MarkdownProvider customComponents={customComponents} filesBaseUrl={baseUrl}>
-                <AgentChatContent 
-                    baseUrl={baseUrl} 
-                    sidebarWidth={sidebarWidth}
-                    sidebarHeader={sidebarHeader}
-                    sidebarTitle={sidebarTitle}
-                    enableTTS={enableTTS}
-                    enableSTT={enableSTT}
-                    enableCopy={enableCopy}
-                    sttLanguage={sttLanguage}
-                />
-            </MarkdownProvider>
-        </AgentSdkClientProvider>
-    );
+export function AgentChat(props: AgentChatProps) {
+    const client = useMemo(() => {
+        if (props.agent || props.threadRepository) return new AgentSdkClient({ agent: props.agent, threadRepository: props.threadRepository, createAgent: props.createAgent });
+        if (props.baseUrl) return new AgentSdkClient(createThreadsApiClient({ baseUrl: props.baseUrl, headers: props.headers }));
+        throw new Error('AgentChat requires an AG-UI agent or Spaik baseUrl');
+    }, [props.agent, props.threadRepository, props.createAgent, props.baseUrl, props.headers]);
+    return <AgentSdkClientProvider key={props.agent?.threadId ?? props.baseUrl} apiClient={client}>
+        <MarkdownProvider customComponents={props.customComponents} filesBaseUrl={props.baseUrl}>
+            <AgentChatContent {...props} />
+        </MarkdownProvider>
+    </AgentSdkClientProvider>;
 }

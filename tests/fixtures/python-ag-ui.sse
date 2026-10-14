@@ -1,0 +1,38 @@
+data: {"type":"RUN_STARTED","threadId":"00000000-0000-0000-0000-000000000003","runId":"contract-run"}
+
+data: {"type":"MESSAGES_SNAPSHOT","messages":[{"id":"contract-user","role":"user","metadata":{"spaik":{"timestamp":1791849600000,"author_name":"user","author_id":"user","attachments":[]}},"content":"weather"}]}
+
+data: {"type":"STATE_SNAPSHOT","snapshot":{}}
+
+data: {"type":"REASONING_START","messageId":"00000000-0000-0000-0000-000000000007"}
+
+data: {"type":"REASONING_MESSAGE_START","messageId":"00000000-0000-0000-0000-000000000007","role":"reasoning"}
+
+data: {"type":"REASONING_MESSAGE_CONTENT","messageId":"00000000-0000-0000-0000-000000000007","delta":"A public summary"}
+
+data: {"type":"TEXT_MESSAGE_START","messageId":"00000000-0000-0000-0000-000000000006","role":"assistant"}
+
+data: {"type":"TOOL_CALL_START","toolCallId":"weather-call","toolCallName":"weather","parentMessageId":"00000000-0000-0000-0000-000000000006"}
+
+data: {"type":"TOOL_CALL_ARGS","toolCallId":"weather-call","delta":"{\"city\": \"Helsinki\"}"}
+
+data: {"type":"TOOL_CALL_END","toolCallId":"weather-call"}
+
+data: {"type":"REASONING_MESSAGE_END","messageId":"00000000-0000-0000-0000-000000000007"}
+
+data: {"type":"REASONING_END","messageId":"00000000-0000-0000-0000-000000000007"}
+
+data: {"type":"TEXT_MESSAGE_END","messageId":"00000000-0000-0000-0000-000000000006"}
+
+data: {"type":"TOOL_CALL_RESULT","messageId":"00000000-0000-0000-0000-000000000008","toolCallId":"weather-call","content":"Helsinki: sunny","role":"tool"}
+
+data: {"type":"TEXT_MESSAGE_START","messageId":"00000000-0000-0000-0000-00000000000a","role":"assistant"}
+
+data: {"type":"TEXT_MESSAGE_CONTENT","messageId":"00000000-0000-0000-0000-00000000000a","delta":"Hyvää päivää!"}
+
+data: {"type":"TEXT_MESSAGE_END","messageId":"00000000-0000-0000-0000-00000000000a"}
+
+data: {"type":"MESSAGES_SNAPSHOT","messages":[{"id":"contract-user","role":"user","metadata":{"spaik":{"timestamp":1791849600000,"author_name":"user","author_id":"user","attachments":[]}},"content":"weather"},{"id":"00000000-0000-0000-0000-000000000007","role":"reasoning","content":"A public summary","metadata":{"spaik":{"timestamp":1791849600000,"author_name":"reasoning"}}},{"id":"00000000-0000-0000-0000-000000000006","role":"assistant","metadata":{"spaik":{"timestamp":1791849600000,"author_name":"assistant"}},"content":"","toolCalls":[{"id":"weather-call","type":"function","function":{"name":"weather","arguments":"{\"city\": \"Helsinki\"}"}}]},{"id":"00000000-0000-0000-0000-000000000008","role":"tool","content":"Helsinki: sunny","toolCallId":"weather-call","metadata":{"spaik":{"timestamp":1791849600000,"author_name":"tool"}}},{"id":"00000000-0000-0000-0000-00000000000a","role":"assistant","metadata":{"spaik":{"timestamp":1791849600000,"author_name":"assistant"}},"content":"Hyvää päivää!","toolCalls":[]}]}
+
+data: {"type":"RUN_FINISHED","threadId":"00000000-0000-0000-0000-000000000003","runId":"contract-run"}
+
