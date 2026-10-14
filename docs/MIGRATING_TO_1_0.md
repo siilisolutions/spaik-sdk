@@ -41,7 +41,7 @@ The built-in runner coordinates one server process: use one worker per repositor
 
 ## Storage and integrations
 
-Local storage writes versioned JSON to `data-v1`, separate from legacy pickle files. Never point a new install at an old store expecting automatic unpickling. Export under SDK 0.11.x, then import into a new directory under 1.0. Back up original data before switching applications.
+Spaik 1.0 stores threads as versioned JSON (`ThreadContainer.to_dict()`, with `schema_version`). 1.0 cannot read pickles. For threads in your own database, see [Threads in your own database](#threads-in-your-own-database); for the built-in local file store, see [Local file store](#local-file-store). Back up original data before switching applications.
 
 Tavily's bundled search helper, Azure Functions queue helpers and SignalR streaming negotiation have been removed. Supply application-owned tools through ToolProvider, and use AG-UI HTTP streaming. MCP, provider SDKs, server and audio are optional extras.
 
@@ -51,7 +51,25 @@ Coding-agent wrappers (`spaik-coding-agents`, final 0.2.3) and YAML workflows (`
 
 The conversation model is AG-UI `Message`. Use `AgentChat agent={new HttpAgent(...)}` for another AG-UI backend or `AgentChat baseUrl="..."` for Spaik's managed threads. A custom `ThreadRepository` plus `createAgent(threadId)` integrates other persistence backends. Sidebar requires a repository. The official AG-UI client owns message and run state; hooks subscribe to it. Use `renderMessage` and `renderState` for custom presentation.
 
-### Legacy export/import commands
+## Threads in your own database
+
+Applications that store threads in SQL, Cosmos DB or similar keep their data where it is. Spaik 1.0 converts legacy threads when it reads them, so no batch job or downtime is needed:
+
+1. **Read both formats.** In your `BaseThreadRepository.load_thread`, pass the stored JSON to `load_thread_data`:
+
+   ```python
+   from spaik_sdk.thread.migration import load_thread_data
+
+   thread = load_thread_data(row_json, fallback_owner=row.user_id)
+   ```
+
+   Data with `schema_version` loads as 1.0. Legacy data, `{"id", "messages": [ThreadMessage.to_dict(), ...], "system_prompt", "last_activity_time"}`, is converted in memory. If you stored message rows separately, build this dict from them. The owner is the first user message's author; `fallback_owner` applies to threads without one.
+2. **Write 1.0 data to a new column or container**, for example `data_v1`, and read `data_v1` first, falling back to the legacy column. Legacy rows are never overwritten, so you can roll back to 0.11 at any time. Drop the legacy column once you no longer need rollback.
+3. **Optionally convert everything up front** from your existing migration pipeline, by calling the same function on each row and writing `thread.to_dict()` to the new column. It is safe to re-run: rows with `schema_version` are already done.
+
+If you stored pickled `ThreadContainer` objects, 1.0 cannot read them. Run a job in an environment with `spaik-sdk==0.11.1` that unpickles each row and calls `export_thread` from [scripts/export_legacy_threads.py](../scripts/export_legacy_threads.py); store its JSON output and continue from step 1.
+
+## Local file store
 
 In a separate environment containing `spaik-sdk==0.11.1`, run:
 

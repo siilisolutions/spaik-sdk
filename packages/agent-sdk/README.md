@@ -37,7 +37,7 @@ Subclass `ToolProvider.get_tools()` to supply LangChain `BaseTool` objects or pa
 
 Install extras as needed: `[server]`, `[openai]`, `[anthropic]`, `[google]`, `[azure]`, `[ollama]`, `[deepseek]`, `[mistral]`, `[cohere]`, `[xai]`, `[audio]`, `[mcp]`, `[dev]`. Audio helpers use HTTP directly. Core does not import optional model integrations eagerly.
 
-Local persistence uses JSON at `data-v1/threads`. Legacy pickle export must run in the old SDK environment; import with `python -m spaik_sdk.thread.migration export.json new-data-dir`. Originals are preserved and existing destination IDs are rejected. See the migration guide for complete commands.
+Local persistence uses JSON at `data-v1/threads`. Application repositories read stored threads with `spaik_sdk.thread.migration.load_thread_data`, which also converts legacy 0.x JSON in memory. Legacy local pickle stores are exported in the old SDK environment and imported with `python -m spaik_sdk.thread.migration export.json new-data-dir`. See the [migration guide](../../docs/MIGRATING_TO_1_0.md) for both.
 
 ## Provider-reported costs
 

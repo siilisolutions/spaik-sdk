@@ -1,4 +1,4 @@
-"""Import a legacy export into a new JSON store; never overwrite existing IDs."""
+"""Read legacy 0.x thread data: load it from any store, or import an export into a new JSON store."""
 
 import argparse
 import asyncio
@@ -7,14 +7,24 @@ from pathlib import Path
 
 from ag_ui.core import AssistantMessage, FunctionCall, ReasoningMessage, ToolCall, ToolMessage, UserMessage
 
+from spaik_sdk.thread.models import Invocation
 from spaik_sdk.thread.thread_container import ThreadContainer
 
 
-def convert_legacy_thread(data: dict, empty_owner: str | None = None) -> ThreadContainer:
+def is_legacy_thread(data: dict) -> bool:
+    return "schema_version" not in data
+
+
+def load_thread_data(data: dict, fallback_owner: str | None = None) -> ThreadContainer:
+    """Load a stored thread in either format. Legacy data is converted in memory, never written back."""
+    return convert_legacy_thread(data, fallback_owner) if is_legacy_thread(data) else ThreadContainer.from_dict(data)
+
+
+def convert_legacy_thread(data: dict, fallback_owner: str | None = None) -> ThreadContainer:
     messages = data["messages"]
-    owner = next((m["author_id"] for m in messages if not m["ai"]), empty_owner)
+    owner = next((m["author_id"] for m in messages if not m["ai"]), fallback_owner)
     if not owner:
-        raise ValueError(f"Thread {data['id']} has no owner; supply --empty-owner")
+        raise ValueError(f"Thread {data['id']} has no user message; supply a fallback owner")
     thread = ThreadContainer(system_prompt=data.get("system_prompt"), thread_id=data["id"], owner_id=owner)
     for old in messages:
         blocks = old["blocks"]
@@ -56,8 +66,6 @@ def convert_legacy_thread(data: dict, empty_owner: str | None = None) -> ThreadC
         # Legacy records contain token counts, not trustworthy provider-reported charges.
         usage = old.get("consumption_metadata")
         if usage:
-            from spaik_sdk.thread.models import Invocation
-
             thread.add_invocation(
                 Invocation(id=f"legacy:{old['id']}", message_id=old["id"], provider="legacy", model="unknown", usage=usage)
             )
@@ -67,13 +75,13 @@ def convert_legacy_thread(data: dict, empty_owner: str | None = None) -> ThreadC
     return thread
 
 
-async def import_threads(source: Path, destination: Path, empty_owner: str | None = None) -> int:
+async def import_threads(source: Path, destination: Path, fallback_owner: str | None = None) -> int:
     from spaik_sdk.server.storage.impl.local_file_thread_repository import LocalFileThreadRepository
 
     archive = json.loads(source.read_text(encoding="utf-8"))
     if archive.get("format") != "spaik-legacy-export-v1":
         raise ValueError("Unsupported legacy export format")
-    threads = [convert_legacy_thread(data, empty_owner) for data in archive["threads"]]
+    threads = [convert_legacy_thread(data, fallback_owner) for data in archive["threads"]]
     if len({t.thread_id for t in threads}) != len(threads):
         raise ValueError("Duplicate thread IDs in export")
     repository = LocalFileThreadRepository(str(destination))

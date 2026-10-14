@@ -209,6 +209,8 @@ class ThreadContainer:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ThreadContainer":
+        if "schema_version" not in data:
+            raise ValueError("Legacy 0.x thread data; load it with spaik_sdk.thread.migration.load_thread_data")
         envelope = ThreadEnvelope.model_validate(data)
         if envelope.schema_version != 1:
             raise ValueError(f"Unsupported thread schema: {envelope.schema_version}")
