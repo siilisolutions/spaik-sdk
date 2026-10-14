@@ -17,19 +17,19 @@ All paths are under `packages/agent-sdk/`.
 | --- | --- |
 | `spaik_sdk/models/model_registry.py` | `LLMModel` preset constants, and the bare aliases in `from_name` (`sonnet`, `opus`, `haiku`, `fable`, `claude`, `gpt`, `gemini flash`) |
 | `spaik_sdk/models/llm_model.py` | `LLMModel` fields: `family`, `name` (exact API ID), `reasoning`, `reasoning_min_effort`, `prompt_caching` |
-| `spaik_sdk/models/family_settings.py` | Translates an `LLMModel`'s fields into its family's provider arguments; holds no per-model facts |
+| `spaik_sdk/models/family_settings.py` | Translates an `LLMModel`'s fields into its family's current request shape; never checks model names |
 | `spaik_sdk/models/llm_families.py` | Family constants (new provider families only) |
 | `spaik_sdk/models/providers/provider_type.py` | `ProviderType`, `from_model_name` prefixes and `from_family` (new providers only) |
 | `tests/unit/spaik_sdk/models/test_model_registry.py`, `test_family_settings.py` | Alias resolution and family settings |
 
 How `family_settings.py` applies reasoning (only when `model.reasoning` is true; Anthropic always gets `max_tokens`):
 
-- **Anthropic 5.x and later** (matched by name prefix): adaptive thinking with `output_config.effort` and summarized display when reasoning is on. With reasoning off, and for structured responses unless `structured_reasoning_effort` or the per-call `reasoning_effort` is set, the model's `reasoning_min_effort` applies: `"none"` disables thinking, `"between_tools"` thinks only between tool calls, and an effort level such as `"low"` (for models that cannot disable thinking, such as Opus 5.5 and Fable 5.1) keeps adaptive thinking at that effort. Older reasoning models use `thinking.type: "enabled"` with `reasoning_budget_tokens`.
+- **Anthropic**: adaptive thinking with `output_config.effort` and summarized display when reasoning is on. With reasoning off, and for structured responses unless `structured_reasoning_effort` or the per-call `reasoning_effort` is set, the model's `reasoning_min_effort` applies: `"none"` disables thinking, `"between_tools"` thinks only between tool calls, and an effort level such as `"low"` (for models that cannot disable thinking, such as Opus 5.5 and Fable 5.1) keeps adaptive thinking at that effort.
 - **OpenAI reasoning models**: Responses API with `reasoning.effort`. With reasoning off, it uses the model's `reasoning_min_effort`. Set this to the lowest effort the model accepts, for example `"low"` for GPT-6.1 Sol and GPT-6 Astra.
-- **Google**: Gemini 3.x uses `thinking_level`: `high` with reasoning, otherwise the model's `reasoning_min_effort`, or `minimal` when unset (set `"low"` for models without minimal thinking, such as Pro). Older models use `thinking_budget` and `include_thoughts`.
+- **Google**: `thinking_level`: `high` with reasoning, otherwise the model's `reasoning_min_effort`, or `minimal` when unset (set `"low"` for models without minimal thinking, such as Pro).
 - **Ollama**: passes the `reasoning` flag.
 
-Record a model's own limits on its preset, usually `reasoning_min_effort`; never add model names to `family_settings.py`. Change a family function only when a new API generation changes the request shape, and add a test.
+Record a model's own limits on its preset, usually `reasoning_min_effort`; never add model names to `family_settings.py`. A family is a request shape, not a vendor: when a generation's reasoning API differs meaningfully, give it its own family (a constant in `llm_families.py`, its provider in `ProviderType.from_family`, and a function in `family_settings.py`) with a test. Older generations otherwise configure reasoning through `provider_kwargs`.
 
 ## 2. Official sources
 

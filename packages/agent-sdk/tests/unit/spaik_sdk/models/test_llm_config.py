@@ -48,6 +48,14 @@ def test_temperature_is_sent_only_when_set():
     assert settings(LLMConfig(model=ModelRegistry.GPT_4_1, temperature=0.9))["temperature"] == 0.9
 
 
+def test_older_model_generation_is_configured_through_provider_kwargs():
+    budget = {"type": "enabled", "budget_tokens": 2048}
+    older = LLMModel(family="anthropic", name="claude-sonnet-4-5")
+    built = settings(LLMConfig(model=older, provider_kwargs={"thinking": budget, "model_kwargs": {}}))
+    assert built["thinking"] == budget
+    assert built["model_kwargs"] == {}
+
+
 def test_streaming_off_disables_streaming():
     assert settings(LLMConfig(model=ModelRegistry.GPT_4_1, streaming=False))["disable_streaming"] is True
 

@@ -21,22 +21,10 @@ def test_gemini_3_minimum_follows_model_setting():
     assert kwargs_for(pro) == {"thinking_level": "high"}
 
 
-def test_older_gemini_uses_thinking_budget():
-    assert kwargs_for(LLMModel(family="google", name="gemini-2.5-flash"), reasoning=False) == {
-        "thinking_budget": 0,
-        "include_thoughts": False,
-    }
-
-
 def test_new_claude_generation_gets_adaptive_thinking_with_visible_summary():
     model = LLMModel(family="anthropic", name="claude-opus-6-0")
     assert kwargs_for(model)["thinking"] == {"type": "adaptive", "display": "summarized"}
     assert kwargs_for(model, reasoning_summary=None)["thinking"] == {"type": "adaptive"}
-
-
-def test_older_claude_reasoning_uses_budget():
-    result = kwargs_for(LLMModel(family="anthropic", name="claude-sonnet-4-5"), reasoning_budget_tokens=2048)
-    assert result["thinking"] == {"type": "enabled", "budget_tokens": 2048}
 
 
 def test_claude_reasoning_off_uses_the_model_minimum():
@@ -68,12 +56,6 @@ def test_structured_gemini_uses_minimum_or_requested_level():
     gemini = LLMModel(family="google", name="gemini-3.8-flash")
     assert kwargs_for(gemini, structured_response=True) == {"thinking_level": "minimal"}
     assert kwargs_for(gemini, structured_response=True, structured_reasoning_effort="medium") == {"thinking_level": "medium"}
-
-
-def test_structured_older_claude_thinks_only_when_requested():
-    claude = LLMModel(family="anthropic", name="claude-sonnet-4-5")
-    assert "thinking" not in kwargs_for(claude, structured_response=True)
-    assert kwargs_for(claude, structured_response=True, structured_reasoning_effort="high")["thinking"]["type"] == "enabled"
 
 
 def test_structured_effort_applies_even_with_reasoning_off():

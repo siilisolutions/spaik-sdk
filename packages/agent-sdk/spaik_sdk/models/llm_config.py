@@ -36,7 +36,6 @@ class LLMConfig:
     reasoning_summary: str | None = "detailed"
     reasoning_effort: str = "medium"
     max_output_tokens: int | None = None
-    reasoning_budget_tokens: int = 4096
     max_agent_steps: int = 100
     temperature: float | None = None
     structured_response: bool = False
