@@ -1,6 +1,6 @@
 # Spaik 1.0 candidate validation
 
-Validated locally on 2026-10-13. Candidate metadata: SDK `1.0.0rc1`, React/Material `1.0.0-rc.1`. The workflows package is deprecated with coding agents; its planned `0.4.0rc1` is cancelled. These packages have not been published. The legacy preparatory branch remains separately reviewable; `main` is unchanged.
+Validated locally on 2026-10-13. Candidate metadata: SDK `1.0.0rc1`, React/Material `1.0.0-rc.1`. The workflows package is deprecated with coding agents; its planned `0.4.0rc1` is cancelled. The 1.0 packages have not been published. The legacy preparatory change merged to main as #78 and its releases are published.
 
 ## Results
 
@@ -21,6 +21,7 @@ Validated locally on 2026-10-13. Candidate metadata: SDK `1.0.0rc1`, React/Mater
 | Actual released-SDK pickle export and candidate JSON import | IDs/order/owner/timestamps/tool history/usage and copied attachment bytes preserved; original untouched |
 | Live OpenAI GPT-6 Luna / Anthropic Sonnet 5.5 | Minimal inference checks passed |
 | Live Google / Azure | Pending credentials |
+| Published legacy SDK 0.11.2, coding agents 0.2.3, workflows 0.3.2 from PyPI, Python 3.11 | Resolver selects SDK 0.11.1 for both final packages; imports, deprecation warnings and workflow CLI listing passed |
 | Published RC installation / staging / stable publication | Pending |
 
 The SDK tests cover arbitrary model IDs and injection, explicit Azure deployments, proxy routing, authoritative history and owner access, tool error recovery and history suppression, signed provider replay, multimodal inputs, structured recording, partial persistence on disconnect, overlapping runs, and cancellation. Costs cover response-reported charges, real zero, missing/failed lookup, lookup coalescing/caching, deduplicated messages and incomplete multi-currency totals.
@@ -74,8 +75,8 @@ The unified release workflow repeats these checks, validates installed npm tarba
 
 ## Remaining release gates
 
-1. Merge `chore/pre-1-model-refresh` to main and publish in order: the catalog patch (the legacy SDK patch workflow increments 0.11.1 to 0.11.2), final coding agents 0.2.3, then final workflows 0.3.2. Preserve existing legacy artifacts/tags, then yank coding agents 0.2.0-0.2.2 and workflows 0.3.1 and earlier. The 1.0 line already removes both packages and must not merge before these releases exist.
-2. Merge the complete migration after review/hosted CI. GitHub CLI credentials are unavailable locally; the GitHub connector is disabled by the administrator. PyPI publication credentials are unavailable; npm account verification returns HTTP 401. No remote merge/tag/deployment/publication occurred.
+1. Done: #78 merged to main; SDK 0.11.2, coding agents 0.2.3 and workflows 0.3.2 are published and tagged (`spaik-sdk-v0.11.2`, `spaik-coding-agents-v0.2.3`, `spaik-agent-workflows-v0.3.2`). Coding agents 0.2.1-0.2.2 and workflows 0.3.0-0.3.1 are yanked.
+2. Merge the complete migration after review/hosted CI.
 3. Run configured Google/Azure live smoke tests and publish aligned RC packages (`next` on npm). Install the published RCs in staging and validate application-specific authorization and provider replay, including real reasoning signatures/tool combinations.
 4. Publish stable 1.0 from the validated source, align stable peers/templates, and publish the compatibility matrix below.
 

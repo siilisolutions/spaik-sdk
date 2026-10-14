@@ -14,7 +14,7 @@ Spaik's core is thread management and a reusable React/Material UI kit. Canonica
 - `server/api/routers/`: authorized thread CRUD, `/threads/{id}/runs` SSE, cancellation/files/audio.
 - `packages/agent-sdk-hooks`: official AG-UI client state plus optional ThreadRepository, selection/uploads/audio.
 - `packages/agent-sdk-material`: shared themed UI; examples/templates consume it.
-- Deprecated and removed from 1.0: `spaik-coding-agents` (final 0.2.3) and `spaik-agent-workflows` (final 0.3.2), both pinned to SDK 0.11.1 and published from main. Do not merge 1.0 to main before both final releases are published and tagged.
+- Deprecated and removed from 1.0: `spaik-coding-agents` (final 0.2.3) and `spaik-agent-workflows` (final 0.3.2), both pinned to SDK 0.11.1, published and tagged from main; earlier unpinned releases are yanked.
 
 ## Commands
 

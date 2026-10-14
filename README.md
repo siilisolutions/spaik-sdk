@@ -2,7 +2,7 @@
 
 Thread management, agent convenience, and a reusable React/Material chat UI built on [AG-UI](https://docs.ag-ui.com).
 
-**This branch prepares 1.0.** Stable publication is gated by the [implementation plan](docs/SPAIK_1_0_PLAN.md). The catalog/deprecation work is isolated on `chore/pre-1-model-refresh`; breaking changes are on `feat/spaik-1-ag-ui`.
+**This branch prepares 1.0.** Stable publication is gated by the [implementation plan](docs/SPAIK_1_0_PLAN.md). The final 0.x catalog and legacy-package releases are published from main; breaking changes are on `feat/spaik-1-ag-ui`.
 
 ## Python agent
 

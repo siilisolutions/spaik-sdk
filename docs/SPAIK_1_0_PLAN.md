@@ -38,7 +38,7 @@ Commit each validated implementation chunk with its docs. Do not merge or publis
 
 - [x] Clean baseline confirmed; implementation branch created.
 - [x] Current catalog verified against official provider documentation; legacy coding-agent wheel imports against released SDK 0.11.1.
-- [ ] Final legacy patches (coding agents 0.2.3, workflows 0.3.2) prepared and wheel-tested against PyPI SDK 0.11.1; publication/tagging blocked by absent credentials. Both packages are removed from the 1.0 line, which must not merge before that gate.
+- [x] Final legacy patches published from main (#78): SDK 0.11.2, coding agents 0.2.3, workflows 0.3.2, tagged and smoke-tested from PyPI; unpinned coding agents 0.2.1-0.2.2 and workflows 0.3.0-0.3.1 yanked. Both packages are removed from the 1.0 line.
 - [x] Unrestricted model construction and reported cost resolver implemented; initial deterministic tests pass.
 - [x] Canonical AG-UI backend, JSON migration, owner/history/replay/checkpoint/cancellation validation.
 - [x] Independent AG-UI React/Material integration, Python-to-TypeScript contract and browser coverage.
@@ -53,8 +53,7 @@ Runtime decision: Python 3.11+ is required for reliable upstream async callback 
 
 ## Remaining release work
 
-- Merge the independently validated preparatory branch to main and publish in order: SDK 0.11.2 catalog patch, coding agents 0.2.3, workflows 0.3.2 (its release installs 0.2.3 from PyPI). Then yank coding agents 0.2.0-0.2.2 and workflows 0.3.1 and earlier, whose unbounded SDK requirement would accept 1.0. Only then merge the 1.0 line, which already removes both packages and their release workflows.
-- GitHub CLI, local PyPI and npm authentication were absent when checked. No package or remote tag has been published from this session.
+- Legacy releases are complete (see Progress); main is merged into this branch, whose SDK metadata `1.0.0rc1` supersedes 0.11.2.
 - Local candidate metadata is SDK `1.0.0rc1` and React/Material `1.0.0-rc.1`. These are not stable releases. The previously planned workflows `0.4.0rc1` is cancelled.
 - OpenAI GPT-6 Luna and Anthropic Sonnet 5.5 minimal live checks passed. Google/Azure live checks require appropriate configured credentials. Sonnet 5.5 minimum thinking is `between_tools`; GPT-6.1 Sol/Astra minimum effort is `low`.
 - Local installed-artifact results are recorded in `1_0_VALIDATION.md`; run the unified main-only release workflow for RC publication.
