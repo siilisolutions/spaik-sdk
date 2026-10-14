@@ -13,6 +13,8 @@ Spaik 1.0 replaces the custom block protocol with official AG-UI messages and ev
 
 Spaik 1.0 requires Python 3.11 or later. Python 3.10 fails to propagate nested async model callbacks in the upstream agent execution path, which can produce an empty streamed transcript. The previous event-loop workaround is removed. See [LangGraph async streaming requirements](https://github.com/langchain-ai/docs/blob/main/src/oss/langgraph/streaming.mdx).
 
+0.x installed every provider SDK and several development tools, including `pytest` and `pandas-stubs`, as runtime dependencies. 1.0 installs only the core and the extras you name, such as `spaik-sdk[azure,server]`. Declare anything your application or tests used through Spaik as your own dependency.
+
 ## Models
 
 `ModelRegistry` presets and `LLMModel` work as before, and the registry no longer limits which models you can use. Choose a model in one of these ways, in order of preference:
@@ -21,17 +23,34 @@ Spaik 1.0 requires Python 3.11 or later. Python 3.10 fails to propagate nested a
 2. A model without a preset: `llm_model=LLMModel(family="anthropic", name="claude-new-model", reasoning=True)`. Its family's reasoning and token settings apply whichever provider hosts it.
 3. A plain string ID with an explicit provider: `llm_model="your-model-id", provider="openai"`. An ID that matches a preset uses that preset's settings; any other ID uses provider defaults.
 
-`provider_kwargs` override every setting. Spaik providers build all models for the providers they know; other provider names go through LangChain's `init_chat_model`. As a last resort, `chat_model=` accepts a fully configured LangChain model, which bypasses environment defaults and Spaik's model settings; do not combine it with `llm_model` or `llm_config`. Install only the provider extra you use, such as `spaik-sdk[openai,server]`.
+`provider_kwargs` override every setting except the model ID. Spaik providers build all models for the providers they know; other provider names go through LangChain's `init_chat_model`. As a last resort, `chat_model=` accepts a fully configured LangChain model, which bypasses environment defaults and Spaik's model settings; do not combine it with `llm_model` or `llm_config`. Install only the provider extra you use, such as `spaik-sdk[openai,server]`.
 
 `LLMConfig.temperature` now defaults to the provider's own default and is sent only when you set it; 0.x sent 0.1 to models without reasoning. Remove `temperature` for reasoning models, which reject it. `LLMConfig.tool_usage` is removed. `streaming=False` disables model streaming for every provider. Structured responses use each model's minimum reasoning by default; pass `reasoning_effort` to `get_structured_response()` or set `LLMConfig.structured_reasoning_effort` to raise it.
 
-Azure deployment names are supplied as model IDs or provider kwargs; per-model deployment environment variables have been removed. Existing proxy authentication remains available.
+Azure deployment names are the model ID; per-model deployment environment variables such as `AZURE_GPT_5_6_TERRA_DEPLOYMENT` are no longer read. To keep a preset's settings under a deployment name, use `dataclasses.replace(ModelRegistry.GPT_5_6_TERRA, name="your-deployment")`. Existing proxy authentication remains available.
+
+Client options such as timeouts and retries go in `provider_kwargs`, for example `{"request_timeout": (15, 600), "max_retries": 5}`; a provider subclass is no longer needed for them. `BaseAgent.create_llm_config` is called with `(llm_model, reasoning, provider, provider_kwargs)`, so subclasses that override it must accept all four.
 
 ## Messages and runs
 
 `get_response()`/`get_response_async()` now return official AG-UI assistant messages; use `.content` or `message_text(message)` instead of `.blocks` or `.get_text_content()`. Streaming methods yield official AG-UI events. Replace `/messages/stream` with `/threads/{id}/runs`, `RunAgentInput`, and an official `HttpAgent`. Legacy block/event schemas and custom stream framing are removed.
 
 The backend owns history. Clients may submit existing unchanged messages and new user messages. IDs deduplicate unchanged input; conflicting IDs, changed history, reused run IDs and overlapping runs are rejected. Thread ownership exists at creation, including empty threads. Private system prompts/provider replay data are omitted from GET responses. Server-owned display metadata lives in `message.metadata.spaik` so snapshots carry timestamps, authors, and attachments; preserve message metadata verbatim when submitting history.
+
+`ThreadMessage`, `MessageBlock`, `MessageBlockType` and `ToolCallResponse` are removed. A thread holds AG-UI messages:
+
+| 0.x | 1.0 |
+| --- | --- |
+| `message.ai`, `author_id`, `author_name`, `timestamp` | `message.role`; author and timestamp in `thread.envelope.message_metadata[message.id]`, set by `add_message(message, metadata)` |
+| Plain block | `content` of a user or assistant message |
+| Reasoning block | `ReasoningMessage` before the assistant message |
+| Tool-use block and its response | `AssistantMessage.tool_calls`, answered by a `ToolMessage` with the same `tool_call_id`; add one to answer a call |
+| Error block | Not stored: runs end with `RunErrorEvent`. Store an `ActivityMessage` if your UI shows errors |
+| `thread_container.subscribe()` | Removed. Iterate `get_event_stream()` and save on `TextMessageEndEvent` and `ToolCallResultEvent` |
+
+`ActivityMessage` suits application notes such as "resumed automatically": it stays in the transcript and never reaches the model. Create threads with `ThreadContainer(owner_id=user_id)`; `owner_id` replaces the first message's author as the owner, and the ID is read-only after construction (`ThreadContainer(thread_id=...)`).
+
+`ResponseGenerator` and `ApiBuilder.stateful(response_generator=...)` are removed. A `/threads/{id}/runs` run ends when its client disconnects. For runs that must outlive the request, start a task that iterates `agent.get_event_stream()` after adding the user message, save the thread on `TextMessageEndEvent` and `ToolCallResultEvent`, and stop it with your own `CancellationHandle`. Build `ApiBuilder.stateful` without an agent to keep the thread endpoints while `/runs` answers 501.
 
 The built-in runner coordinates one server process: use one worker per repository. Application integrations must supply distributed run coordination if using multiple workers. Client-side tool execution and interrupt resume are not implemented by this convenience runner; other AG-UI backends may implement them.
 
@@ -49,7 +68,7 @@ Coding-agent wrappers (`spaik-coding-agents`, final 0.2.3) and YAML workflows (`
 
 ## React and Material
 
-The conversation model is AG-UI `Message`. Use `AgentChat agent={new HttpAgent(...)}` for another AG-UI backend or `AgentChat baseUrl="..."` for Spaik's managed threads. A custom `ThreadRepository` plus `createAgent(threadId)` integrates other persistence backends. Sidebar requires a repository. The official AG-UI client owns message and run state; hooks subscribe to it. Use `renderMessage` and `renderState` for custom presentation.
+The conversation model is AG-UI `Message`. Use `AgentChat agent={new HttpAgent(...)}` for another AG-UI backend or `AgentChat baseUrl="..."` for Spaik's managed threads. A custom `ThreadRepository` plus `createAgent(threadId)` integrates other persistence backends. Sidebar requires a repository. `AgentSdkClient.getThread` caches the first response; to poll a thread that runs in the background, call `ThreadsApiClient.getThread`. The `MessageBlock` type is removed: use `message.role`, `toolCalls` and `toolCallId`, and read timestamps and authors from `thread.message_metadata`. The official AG-UI client owns message and run state; hooks subscribe to it. Use `renderMessage` and `renderState` for custom presentation.
 
 ## Threads in your own database
 
@@ -67,7 +86,9 @@ Applications that store threads in SQL, Cosmos DB or similar keep their data whe
 2. **Write 1.0 data to a new column or container**, for example `data_v1`, and read `data_v1` first, falling back to the legacy column. Legacy rows are never overwritten, so you can roll back to 0.11 at any time. Drop the legacy column once you no longer need rollback.
 3. **Optionally convert everything up front** from your existing migration pipeline, by calling the same function on each row and writing `thread.to_dict()` to the new column. It is safe to re-run: rows with `schema_version` are already done.
 
-If you stored pickled `ThreadContainer` objects, 1.0 cannot read them. Run a job in an environment with `spaik-sdk==0.11.1` that unpickles each row and calls `export_thread` from [scripts/export_legacy_threads.py](../scripts/export_legacy_threads.py); store its JSON output and continue from step 1.
+If you stored pickled `ThreadContainer` objects, 1.0 cannot read them. Copy [scripts/export_legacy_threads.py](../scripts/export_legacy_threads.py) into your project; it imports nothing from Spaik. In an environment with `spaik-sdk==0.11.1`, such as `uv run --no-project --python 3.11 --with spaik-sdk==0.11.1`, run a job that unpickles each row, calls `export_thread` and stores the JSON. Then continue from step 1. If your schema tool cannot add a column, store the JSON in a new table keyed by thread ID; `metadata.create_all` creates new tables but never alters existing ones.
+
+Links your application stored to a legacy tool-use block, such as a subagent thread's parent block, still resolve: the call's `ToolMessage` ID is `<block id>:result`, and each converted message lists its block IDs in `message_metadata[id]["legacy_block_ids"]`. New links can use the tool call ID. Legacy error blocks become assistant text.
 
 ## Local file store
 

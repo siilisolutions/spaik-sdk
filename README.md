@@ -26,7 +26,7 @@ agent = BaseAgent(
 )
 ```
 
-A plain string ID with an explicit `provider` also works; it uses the preset's settings when the ID matches one and provider defaults otherwise. `provider_kwargs` override everything. Configure an Azure deployment by its actual deployment ID and Azure provider kwargs, rather than per-model environment variables.
+A plain string ID with an explicit `provider` also works; it uses the preset's settings when the ID matches one and provider defaults otherwise. `provider_kwargs` override everything except the model ID. An Azure deployment name is the model ID; `dataclasses.replace(preset, name="deployment")` keeps a preset's settings under it.
 
 The SDK retains ToolProvider/LangChain tools, structured responses, cancellation, attachments, audio, recording, tracing, isolated `spawn()`, and the optional code-first orchestrator. `get_response()` returns an AG-UI assistant message; streaming methods yield official AG-UI events.
 
