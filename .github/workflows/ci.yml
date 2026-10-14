@@ -51,14 +51,3 @@ jobs:
       - name: Installed npm artifacts
         if: matrix.python == '3.13'
         run: python scripts/validate_npm_artifacts.py --dist /tmp/spaik-npm-dist
-      - name: Legacy coding-agent compatibility (released SDK, no workspace source)
-        working-directory: packages/coding-agents
-        run: |
-          uv sync --no-sources --all-extras
-          uv run --no-sync python -c 'from spaik_coding_agents import ClaudeAgent, CursorAgent'
-      - name: Optional workflow compatibility
-        working-directory: packages/agent-workflows
-        run: |
-          uv sync --extra dev
-          uv run ruff check --no-fix agent_workflows
-          uv run ty check agent_workflows

@@ -30,7 +30,7 @@ Local storage writes versioned JSON to `data-v1`, separate from legacy pickle fi
 
 Tavily's bundled search helper, Azure Functions queue helpers and SignalR streaming negotiation have been removed. Supply application-owned tools through ToolProvider, and use AG-UI HTTP streaming. MCP, provider SDKs, server and audio are optional extras.
 
-Coding-agent wrappers are deprecated and require their pinned legacy SDK. See [the legacy release notes](MODEL_REFRESH_2026_10.md); they cannot be installed in the same environment as Spaik 1.0. Published artifacts and legacy source must remain available.
+Coding-agent wrappers (`spaik-coding-agents`, final 0.2.3) and YAML workflows (`spaik-agent-workflows`, final 0.3.2) are deprecated and removed from 1.0. Both require `spaik-sdk==0.11.1` and cannot be installed in the same environment as Spaik 1.0; keep existing usage in a separate legacy environment. There is no 1.0 replacement package: orchestrate steps in application code with `BaseAgent` and `ToolProvider`. See [the legacy release notes](MODEL_REFRESH_2026_10.md). Published artifacts and tagged legacy source remain available.
 
 ## React and Material
 

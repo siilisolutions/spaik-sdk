@@ -9,7 +9,7 @@ Spaik supplies convenient thread management, a reusable React/Material UI kit, a
 ## Ordered milestones
 
 1. **Legacy baseline:** main is `9806939`, SDK 0.11.1. Model refresh #76 is already merged. Verify current public provider IDs and defaults before migration. Capture baseline behavior and dependencies. Publish any further catalog correction separately from breaking changes.
-2. **Legacy deprecation:** prepare a final `spaik-coding-agents` patch with an exact tested pre-1.0 SDK pin, deprecation warning, and installation instructions. Test installed wheels without workspace overrides. Publish and tag from a legacy branch merged to main before removing its source from the 1.0 line. Preserve existing published artifacts.
+2. **Legacy deprecation:** prepare final `spaik-coding-agents` 0.2.3 and `spaik-agent-workflows` 0.3.2 patches with exact tested pre-1.0 pins, deprecation warnings, and installation instructions. Test installed wheels without workspace overrides. Publish and tag from a legacy branch merged to main; the 1.0 line removes both packages and must not merge before those releases exist. Preserve existing published artifacts, then yank unpinned legacy releases.
 3. **Models and costs:** accept arbitrary provider/model IDs, provider kwargs, and injected LangChain models. Keep optional nondeprecated presets; remove eligibility lists and per-model Azure maps. Replace price tables with automatic provider-reported costs. Metadata first, one cached request-level lookup where supported, no polling or account-total allocation. Missing cost is `None` with a deduplicated console message; genuine zero remains zero. Aggregate per invocation, preserve currencies, and mark partial totals incomplete.
 4. **AG-UI vertical slice:** BaseAgent -> authorized persisted thread -> official AG-UI HTTP client -> Material UI. Store AG-UI messages in a versioned envelope with ownership, timestamps, attachment, usage/cost and private provider replay metadata. Preserve signed reasoning and tool-provider history controls. Use `/threads/{id}/runs` with `RunAgentInput` and SSE. Stored history is authoritative; deduplicate IDs, reject edits and overlapping runs. Save partial output and cancel execution on disconnect.
 5. **Cleanup and docs:** remove old protocol, duplicate renderers, Tavily helper, Azure Functions/SignalR helpers, unused dependencies and runtime test dependencies. Keep cheap peripheral features optional. Update all READMEs, examples, templates, agent guidance, compatibility matrix and migration instructions. JSON storage replaces pickle; legacy export runs under the old SDK, import writes a new location without altering originals.
@@ -38,7 +38,7 @@ Commit each validated implementation chunk with its docs. Do not merge or publis
 
 - [x] Clean baseline confirmed; implementation branch created.
 - [x] Current catalog verified against official provider documentation; legacy coding-agent wheel imports against released SDK 0.11.1.
-- [ ] Final legacy patch 0.2.3 prepared and wheel-tested; publication/tagging blocked by absent credentials. Source removal waits for that gate.
+- [ ] Final legacy patches (coding agents 0.2.3, workflows 0.3.2) prepared and wheel-tested against PyPI SDK 0.11.1; publication/tagging blocked by absent credentials. Both packages are removed from the 1.0 line, which must not merge before that gate.
 - [x] Unrestricted model construction and reported cost resolver implemented; initial deterministic tests pass.
 - [x] Canonical AG-UI backend, JSON migration, owner/history/replay/checkpoint/cancellation validation.
 - [x] Independent AG-UI React/Material integration, Python-to-TypeScript contract and browser coverage.
@@ -47,15 +47,15 @@ Commit each validated implementation chunk with its docs. Do not merge or publis
 - [ ] Published release candidates and staging validation.
 - [ ] Stable 1.0 publication.
 
-Measured production source across SDK, hooks, Material, frontend examples/templates, workflows and coding agents: 20,552 -> 13,526 lines, a net reduction of 7,026. Mandatory Python SDK dependencies: 33 -> 8. See [the measurement and validation report](1_0_VALIDATION.md). The legacy coding source is still present until its publication gate passes.
+Measured production source across SDK, hooks, Material, frontend examples/templates, workflows and coding agents: 20,552 -> 10,157 lines, a net reduction of 10,395, including removal of both deprecated legacy packages. Mandatory Python SDK dependencies: 33 -> 8. See [the measurement and validation report](1_0_VALIDATION.md).
 
 Runtime decision: Python 3.11+ is required for reliable upstream async callback propagation; the Python 3.10 compatibility workaround is removed. CI validates 3.11 and 3.13.
 
 ## Remaining release work
 
-- Merge and publish the independently validated preparatory branch from main; keep coding-agent 0.2.3 pinned to 0.11.1. Then remove legacy coding source and its release workflow from the 1.0 line.
+- Merge the independently validated preparatory branch to main and publish in order: SDK 0.11.2 catalog patch, coding agents 0.2.3, workflows 0.3.2 (its release installs 0.2.3 from PyPI). Then yank coding agents 0.2.0-0.2.2 and workflows 0.3.1 and earlier, whose unbounded SDK requirement would accept 1.0. Only then merge the 1.0 line, which already removes both packages and their release workflows.
 - GitHub CLI, local PyPI and npm authentication were absent when checked. No package or remote tag has been published from this session.
-- Local candidate metadata is SDK `1.0.0rc1`, React/Material `1.0.0-rc.1`, workflow convenience `0.4.0rc1`. These are not stable releases.
+- Local candidate metadata is SDK `1.0.0rc1` and React/Material `1.0.0-rc.1`. These are not stable releases. The previously planned workflows `0.4.0rc1` is cancelled.
 - OpenAI GPT-6 Luna and Anthropic Sonnet 5.5 minimal live checks passed. Google/Azure live checks require appropriate configured credentials. Sonnet 5.5 minimum thinking is `between_tools`; GPT-6.1 Sol/Astra minimum effort is `low`.
 - Local installed-artifact results are recorded in `1_0_VALIDATION.md`; run the unified main-only release workflow for RC publication.
 - Validate published RC installations in staging before committing stable versions. PyPI/npm version metadata requires rebuilding stable artifacts from the same validated source; RC binaries cannot be relabeled as stable.

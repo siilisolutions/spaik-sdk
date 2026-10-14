@@ -1,6 +1,6 @@
 # Spaik 1.0 candidate validation
 
-Validated locally on 2026-10-13. Candidate metadata: SDK `1.0.0rc1`, React/Material `1.0.0-rc.1`, optional workflows `0.4.0rc1`. These packages have not been published. The legacy preparatory branch remains separately reviewable; `main` is unchanged.
+Validated locally on 2026-10-13. Candidate metadata: SDK `1.0.0rc1`, React/Material `1.0.0-rc.1`. The workflows package is deprecated with coding agents; its planned `0.4.0rc1` is cancelled. These packages have not been published. The legacy preparatory branch remains separately reviewable; `main` is unchanged.
 
 ## Results
 
@@ -12,12 +12,11 @@ Validated locally on 2026-10-13. Candidate metadata: SDK `1.0.0rc1`, React/Mater
 | Chromium acceptance tests | 3 passed |
 | SDK Ruff and type checks | Passed |
 | Hooks/Material builds, types and lint; example production build | Passed |
-| Optional workflow lint and types with minimal dev installation | Passed |
 | Fresh minimal SDK wheel installation, Python 3.14 | Passed; optional FastAPI/provider packages absent |
 | Installed server wheel plus OpenAI/Anthropic constructors and MCP import | Passed |
 | Installed React/Material tarballs in a fresh npm/Vite app | Types and production build passed |
-| Optional workflow wheel installation and CLI discovery | Passed; no coding-agent dependency |
 | Legacy coding-agent 0.2.3 wheel against released SDK 0.11.1 | Imports, exact pin and deprecation warning passed |
+| Legacy workflows 0.3.2 wheel with coding-agent 0.2.3 wheel, PyPI SDK 0.11.1, Python 3.11 | Resolver selects SDK 0.11.1; 38 tests, Ruff, CLI listing, plugin imports and deprecation warning passed |
 | Preparatory catalog/factory tests | 164 passed |
 | Actual released-SDK pickle export and candidate JSON import | IDs/order/owner/timestamps/tool history/usage and copied attachment bytes preserved; original untouched |
 | Live OpenAI GPT-6 Luna / Anthropic Sonnet 5.5 | Minimal inference checks passed |
@@ -45,13 +44,13 @@ Counts compare baseline `9806939` with the candidate's tracked `.py`, `.ts` and 
 | Material kit | 3,005 | 2,889 | 116 |
 | Example frontend | 1,236 | 17 | 1,219 |
 | Frontend template | 932 | 17 | 915 |
-| Optional workflows | 2,443 | 2,330 | 113 |
-| Legacy coding agents, retained until final publication | 1,033 | 1,039 | -6 |
-| **Total** | **20,552** | **13,526** | **7,026** |
+| Deprecated workflows, removed | 2,443 | 0 | 2,443 |
+| Deprecated coding agents, removed | 1,033 | 0 | 1,033 |
+| **Total** | **20,552** | **10,157** | **10,395** |
 
 Mandatory direct SDK dependencies fall from 33 to 8. Provider/server/MCP SDKs and test tools become optional. The console and HTTP audio helpers need no extra runtime dependency. Cryptography/JWT/Azure storage can still appear transitively when an application chooses MCP or Azure extras; Spaik no longer requires or imports them directly.
 
-Deleted maintenance includes built-in price tables and estimates, exhaustive eligibility/factories/deployment maps, old custom stream/block/event machinery, duplicated example/template renderers, Tavily integration, Azure Functions queue helpers, SignalR/negotiation, and an obsolete package backup. Retained compatibility is the standalone legacy exporter/importer, ToolProvider history-hook names with the new `ToolCallHistory` argument, and legacy coding source awaiting publication. There is no legacy wire-protocol adapter in 1.0.
+Deleted maintenance includes built-in price tables and estimates, exhaustive eligibility/factories/deployment maps, old custom stream/block/event machinery, duplicated example/template renderers, Tavily integration, Azure Functions queue helpers, SignalR/negotiation, and an obsolete package backup. Retained compatibility is the standalone legacy exporter/importer and ToolProvider history-hook names with the new `ToolCallHistory` argument. Deprecated coding-agent and workflow sources are removed; final pinned releases are published from main. There is no legacy wire-protocol adapter in 1.0.
 
 ## Reproduce
 
@@ -75,17 +74,17 @@ The unified release workflow repeats these checks, validates installed npm tarba
 
 ## Remaining release gates
 
-1. Merge `chore/pre-1-model-refresh` to main and publish the catalog patch (the legacy SDK patch workflow increments 0.11.1 to 0.11.2) and final coding-agent 0.2.3. Preserve existing legacy artifacts/tags. Only then delete coding-agent implementation and its release workflow from the 1.0 line.
+1. Merge `chore/pre-1-model-refresh` to main and publish in order: the catalog patch (the legacy SDK patch workflow increments 0.11.1 to 0.11.2), final coding agents 0.2.3, then final workflows 0.3.2. Preserve existing legacy artifacts/tags, then yank coding agents 0.2.0-0.2.2 and workflows 0.3.1 and earlier. The 1.0 line already removes both packages and must not merge before these releases exist.
 2. Merge the complete migration after review/hosted CI. GitHub CLI credentials are unavailable locally; the GitHub connector is disabled by the administrator. PyPI publication credentials are unavailable; npm account verification returns HTTP 401. No remote merge/tag/deployment/publication occurred.
 3. Run configured Google/Azure live smoke tests and publish aligned RC packages (`next` on npm). Install the published RCs in staging and validate application-specific authorization and provider replay, including real reasoning signatures/tool combinations.
-4. Publish stable 1.0 from the validated source, align stable peers/templates, and publish the compatibility matrix below. Publish the optional workflow package only after its compatible SDK exists in the registry.
+4. Publish stable 1.0 from the validated source, align stable peers/templates, and publish the compatibility matrix below.
 
 ## Compatibility matrix
 
 | Python SDK | React / Material | AG-UI Python / JS | Workflows | Coding agents |
 | --- | --- | --- | --- | --- |
-| 0.11.1 legacy | Legacy package line | Legacy Spaik protocol | Legacy package line | Final 0.2.3, exact SDK 0.11.1 pin |
-| 1.0.0rc1, Python 3.11+ | Both 1.0.0-rc.1 | All pinned to 1.0.0 | 0.4.0rc1 | Incompatible; separate legacy environment |
-| Stable 1.0 | Pending validated publication | Keep validated compatible pins | Pending publication | No 1.0 support |
+| 0.11.1 legacy | Legacy package line | Legacy Spaik protocol | Final 0.3.2, exact SDK 0.11.1 / coding agents 0.2.3 pins | Final 0.2.3, exact SDK 0.11.1 pin |
+| 1.0.0rc1, Python 3.11+ | Both 1.0.0-rc.1 | All pinned to 1.0.0 | Deprecated; separate legacy environment | Deprecated; separate legacy environment |
+| Stable 1.0 | Pending validated publication | Keep validated compatible pins | No 1.0 support | No 1.0 support |
 
 Application-owned distributed run coordination is required for multiple backend workers. The built-in runner supports a single process; client tools/interrupt resume remain outside its convenience contract. New features stay deferred to the separate 1.1 proposal.

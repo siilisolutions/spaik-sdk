@@ -67,8 +67,8 @@ Token usage comes from provider responses. Charges come from provider-reported m
 - [`spaik-sdk`](packages/agent-sdk/README.md): Python threads, agents, server and optional integrations.
 - [`spaik-sdk-react`](packages/agent-sdk-hooks/README.md): AG-UI hooks and optional thread management.
 - [`spaik-sdk-material`](packages/agent-sdk-material/README.md): themeable chat components.
-- [`spaik-agent-workflows`](packages/agent-workflows/README.md): optional YAML workflow convenience.
-- [`spaik-coding-agents`](packages/coding-agents/README.md): deprecated legacy integration, pinned to SDK 0.11.1; no 1.0 compatibility.
+
+Deprecated legacy packages, removed from the 1.0 line: `spaik-coding-agents` (final 0.2.3) and `spaik-agent-workflows` (final 0.3.2). Both pin `spaik-sdk==0.11.1`, have no 1.0 compatibility and must be installed in a separate environment. Their source remains in the legacy release tags.
 
 ```sh
 bun install
