@@ -81,9 +81,10 @@ jobs:
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Bumping version from $CURRENT to $NEW_VERSION"
 
-      - name: Update version in pyproject.toml
+      - name: Update version in pyproject.toml and uv.lock
         run: |
           sed -i 's/^version = ".*"/version = "${{ steps.new_version.outputs.version }}"/' pyproject.toml
+          uv lock
 
       - name: Run checks
         run: |
@@ -103,7 +104,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add pyproject.toml
+          git add pyproject.toml uv.lock
           git commit -m "chore: bump spaik-sdk version to ${{ steps.new_version.outputs.version }}"
           git tag "spaik-sdk-v${{ steps.new_version.outputs.version }}"
           git push origin HEAD --tags
