@@ -20,4 +20,4 @@ The UI also connects directly to independent AG-UI backends. Thread listing/stor
 
 The local runner coordinates one server process per repository. Applications supply distributed storage/run coordination for multi-worker deployments. File uploads and speech are separate optional routes. Provider SDKs are optional; the preset catalog is never an eligibility requirement. No price table or organization-billing allocation is maintained.
 
-See [migration guidance](../MIGRATING_TO_1_0.md) and [release gates](../SPAIK_1_0_PLAN.md).
+See [migration guidance](../MIGRATING_TO_1_0.md).

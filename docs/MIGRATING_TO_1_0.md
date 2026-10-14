@@ -1,6 +1,13 @@
 # Migrating to Spaik 1.0
 
-This branch is an unreleased migration. The release gates in [the implementation plan](SPAIK_1_0_PLAN.md) must pass before publishing stable packages.
+Spaik 1.0 replaces the custom block protocol with official AG-UI messages and events. This guide covers the breaking changes and how to move existing applications and stored threads.
+
+| | 0.11.x (legacy) | 1.0 |
+| --- | --- | --- |
+| Python | 3.10+ | 3.11+ |
+| `spaik-sdk-react` / `spaik-sdk-material` | 0.x, legacy Spaik protocol | 1.0, AG-UI |
+| `spaik-coding-agents` | Final 0.2.3, pins `spaik-sdk==0.11.1` | Not supported |
+| `spaik-agent-workflows` | Final 0.3.2, pins `spaik-sdk==0.11.1` | Not supported |
 
 ## Runtime
 
@@ -30,7 +37,7 @@ Local storage writes versioned JSON to `data-v1`, separate from legacy pickle fi
 
 Tavily's bundled search helper, Azure Functions queue helpers and SignalR streaming negotiation have been removed. Supply application-owned tools through ToolProvider, and use AG-UI HTTP streaming. MCP, provider SDKs, server and audio are optional extras.
 
-Coding-agent wrappers (`spaik-coding-agents`, final 0.2.3) and YAML workflows (`spaik-agent-workflows`, final 0.3.2) are deprecated and removed from 1.0. Both require `spaik-sdk==0.11.1` and cannot be installed in the same environment as Spaik 1.0; keep existing usage in a separate legacy environment. There is no 1.0 replacement package: orchestrate steps in application code with `BaseAgent` and `ToolProvider`. See [the legacy release notes](MODEL_REFRESH_2026_10.md). Published artifacts and tagged legacy source remain available.
+Coding-agent wrappers (`spaik-coding-agents`, final 0.2.3) and YAML workflows (`spaik-agent-workflows`, final 0.3.2) are deprecated and removed from 1.0. Both require `spaik-sdk==0.11.1` and cannot be installed in the same environment as Spaik 1.0; keep existing usage in a separate legacy environment. There is no 1.0 replacement package: orchestrate steps in application code with `BaseAgent` and `ToolProvider`. Published artifacts and the `spaik-coding-agents-v0.2.3` and `spaik-agent-workflows-v0.3.2` source tags remain available.
 
 ## React and Material
 

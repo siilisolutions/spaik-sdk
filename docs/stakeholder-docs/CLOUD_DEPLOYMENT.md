@@ -6,4 +6,4 @@ Use one backend process per repository with the built-in runner. Local JSON stor
 
 Azure OpenAI and Foundry model endpoints remain supported through optional model integrations. Cloud choice does not dictate model choice. Applications own identity/authorization hooks, secrets, durable storage and deployment infrastructure.
 
-Validate thread ownership, cancellation/disconnect persistence, proxy streaming and installed-package compatibility in staging before release. Preserve the old storage and legacy application tag for rollback. See [the release plan](../SPAIK_1_0_PLAN.md).
+Validate thread ownership, cancellation/disconnect persistence, proxy streaming and installed-package compatibility in staging before release. Preserve the old storage and legacy application tag for rollback.

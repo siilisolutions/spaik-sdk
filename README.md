@@ -2,7 +2,7 @@
 
 Thread management, agent convenience, and a reusable React/Material chat UI built on [AG-UI](https://docs.ag-ui.com).
 
-**This branch prepares 1.0.** Stable publication is gated by the [implementation plan](docs/SPAIK_1_0_PLAN.md). The final 0.x catalog and legacy-package releases are published from main; breaking changes are on `feat/spaik-1-ag-ui`.
+Upgrading from 0.x? See the [migration guide](docs/MIGRATING_TO_1_0.md).
 
 ## Python agent
 
@@ -83,7 +83,5 @@ make typecheck
 ```
 
 Use `bun run dev:backend` and `bun run dev:frontend` for the example application. Supply `DEFAULT_MODEL` and `MODEL_PROVIDER` for environment-selected models. Direct mode uses the relevant provider key; proxy mode retains `LLM_AUTH_MODE=proxy`, `LLM_PROXY_BASE_URL`, `LLM_PROXY_API_KEY`, and `LLM_PROXY_HEADERS`.
-
-See the [migration guide](docs/MIGRATING_TO_1_0.md), [catalog verification](docs/MODEL_REFRESH_2026_10.md), and [release plan](docs/SPAIK_1_0_PLAN.md), and [validation results](docs/1_0_VALIDATION.md).
 
 MIT — Copyright (c) 2026 Siili Solutions Oyj. An open-source project by Siili engineers, not an official Siili product.

@@ -1,6 +1,6 @@
 # spaik-sdk-material
 
-Themeable Material UI chat components backed by AG-UI. This branch is preparing 1.0; see [release gates](../../docs/SPAIK_1_0_PLAN.md).
+Themeable Material UI chat components backed by AG-UI. Upgrading from 0.x? See the [migration guide](../../docs/MIGRATING_TO_1_0.md).
 
 ```tsx
 import { HttpAgent } from 'spaik-sdk-react';

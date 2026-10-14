@@ -14,7 +14,7 @@ Spaik's core is thread management and a reusable React/Material UI kit. Canonica
 - `server/api/routers/`: authorized thread CRUD, `/threads/{id}/runs` SSE, cancellation/files/audio.
 - `packages/agent-sdk-hooks`: official AG-UI client state plus optional ThreadRepository, selection/uploads/audio.
 - `packages/agent-sdk-material`: shared themed UI; examples/templates consume it.
-- Deprecated and removed from 1.0: `spaik-coding-agents` (final 0.2.3) and `spaik-agent-workflows` (final 0.3.2), both pinned to SDK 0.11.1, published and tagged from main; earlier unpinned releases are yanked.
+- Deprecated and removed in 1.0: `spaik-coding-agents` (final 0.2.3) and `spaik-agent-workflows` (final 0.3.2), both pinned to SDK 0.11.1.
 
 ## Commands
 
@@ -35,10 +35,23 @@ AG-UI assistant messages expose `.content`; use `message_text(message)` to extra
 
 Keep ownership authoritative from thread creation. Reject overwriting stored messages, conflicting IDs and overlapping runs; save tool/model checkpoints and partial output on cancellation/disconnect. Never expose private replay/system prompts through thread APIs. Built-in coordination is single-process; applications own distributed integrations.
 
+## Package-specific instructions
+
+Nested `AGENTS.md` files hold the rules for each area. Before editing files in one of these directories, read its file, even if your tool only loads this root file:
+
+- [packages/agent-sdk/AGENTS.md](packages/agent-sdk/AGENTS.md): Python style, logging, tests.
+- [packages/agent-sdk-hooks/AGENTS.md](packages/agent-sdk-hooks/AGENTS.md): React/TypeScript conventions for the hooks package.
+- [examples/frontend/AGENTS.md](examples/frontend/AGENTS.md): example app conventions.
+- `templates/{agent,server,frontend}/AGENTS.md`: instructions shipped to projects created from the templates. Keep them in sync with public API changes.
+
+Skills live in `.agents/skills` (`.claude/skills` links to it). To add or change model presets, follow [model-update](.agents/skills/model-update/SKILL.md).
+
 ## Work and release discipline
 
-Work on branches and commit each validated chunk with docs. Keep [the implementation/release plan](docs/SPAIK_1_0_PLAN.md) current. For a deployment between milestones, merge the independently validated preparatory change to main before publishing; do not publish partially migrated 1.0 as stable. Retain original storage and legacy tags for rollback. Update READMEs/templates/examples with public API changes. Follow [migration documentation](docs/MIGRATING_TO_1_0.md).
+Work on branches and commit each validated chunk with its docs. Update READMEs/templates/examples with public API changes and record breaking changes in [the migration guide](docs/MIGRATING_TO_1_0.md).
 
-Tests must cover AG-UI Python/TypeScript contracts, independent backends, browser thread lifecycle, replay/migration, arbitrary models, cost unknown/zero/partial handling and minimal/extra installed packages. No new feature is required for 1.0; additions belong in a separate 1.1 proposal.
+Release with the manual `release-1.yml` workflow from main. It checks the committed versions, validates the installed wheel and npm tarballs, then publishes. Release candidates go to npm under `next`. Stable versions are rebuilt from validated source; RC artifacts are never relabelled. Keep legacy tags for rollback.
+
+Tests must cover AG-UI Python/TypeScript contracts, independent backends, browser thread lifecycle, replay/migration, arbitrary models, cost unknown/zero/partial handling and minimal/extra installed packages.
 
 MIT — Copyright (c) 2026 Siili Solutions Oyj.
