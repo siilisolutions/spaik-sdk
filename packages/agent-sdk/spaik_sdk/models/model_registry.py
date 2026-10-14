@@ -8,9 +8,11 @@ from spaik_sdk.models.llm_model import LLMModel
 
 
 class ModelRegistry:
-    CLAUDE_FABLE_5_1 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-fable-5-1", prompt_caching=True)
-    CLAUDE_OPUS_5_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-5-5", prompt_caching=True)
-    CLAUDE_SONNET_5_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-sonnet-5-5", prompt_caching=True)
+    CLAUDE_FABLE_5_1 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-fable-5-1", reasoning_min_effort="low", prompt_caching=True)
+    CLAUDE_OPUS_5_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-opus-5-5", reasoning_min_effort="low", prompt_caching=True)
+    CLAUDE_SONNET_5_5 = LLMModel(
+        family=LLMFamilies.ANTHROPIC, name="claude-sonnet-5-5", reasoning_min_effort="between_tools", prompt_caching=True
+    )
     CLAUDE_HAIKU_5_5 = LLMModel(family=LLMFamilies.ANTHROPIC, name="claude-haiku-5-5", prompt_caching=True)
     GPT_6_ASTRA = LLMModel(family=LLMFamilies.OPENAI, name="gpt-6-astra", reasoning_min_effort="low", prompt_caching=True)
     GPT_6_1_SOL = LLMModel(family=LLMFamilies.OPENAI, name="gpt-6.1-sol", reasoning_min_effort="low", prompt_caching=True)

@@ -20,7 +20,7 @@ Spaik 1.0 requires Python 3.11 or later. Python 3.10 fails to propagate nested a
 `ModelRegistry` presets and `LLMModel` work as before, and the registry no longer limits which models you can use. Choose a model in one of these ways, in order of preference:
 
 1. A preset: `llm_model=ModelRegistry.CLAUDE_SONNET_5_5`, or an alias with `ModelRegistry.from_name("sonnet")`.
-2. A model without a preset: `llm_model=LLMModel(family="anthropic", name="claude-new-model", reasoning=True)`. Its family's reasoning and token settings apply whichever provider hosts it.
+2. A model without a preset: `llm_model=LLMModel(family="anthropic", name="claude-new-model", reasoning=True)`. Its family's reasoning and token settings apply whichever provider hosts it. If the model cannot fully disable reasoning, set `reasoning_min_effort` (for example `"low"`, or `"between_tools"` on Claude) so reasoning-off and structured calls stay valid.
 3. A plain string ID with an explicit provider: `llm_model="your-model-id", provider="openai"`. An ID that matches a preset uses that preset's settings; any other ID uses provider defaults.
 
 `provider_kwargs` override every setting except the model ID. Spaik providers build all models for the providers they know; other provider names go through LangChain's `init_chat_model`. As a last resort, `chat_model=` accepts a fully configured LangChain model, which bypasses environment defaults and Spaik's model settings; do not combine it with `llm_model` or `llm_config`. Install only the provider extra you use, such as `spaik-sdk[openai,server]`.

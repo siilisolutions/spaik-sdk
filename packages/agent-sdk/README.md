@@ -12,7 +12,7 @@ agent = BaseAgent(system_prompt="Be helpful.", llm_model=ModelRegistry.CLAUDE_SO
 print(agent.get_response_text("Hello"))
 ```
 
-Every model is an `LLMModel`: a family, the exact API ID and capability flags (`reasoning`, `reasoning_min_effort`, `prompt_caching`). Reasoning and token settings come from the model's family, whichever provider hosts it, so a preset, an `LLMModel` with the same name and the same string ID build the same model. A string that matches no preset uses provider defaults; opt into reasoning with `LLMModel(..., reasoning=True)`. `provider_kwargs` override everything except the model ID. `temperature` is sent only when set.
+Every model is an `LLMModel`: a family, the exact API ID and capability flags (`reasoning`, `reasoning_min_effort`, `prompt_caching`). Reasoning and token settings come from the model's family, whichever provider hosts it, and a string ID that matches a preset builds the preset. Per-model limits, such as a Claude model that cannot disable thinking, live on presets as `reasoning_min_effort`; set it yourself on an `LLMModel` without a preset. A string that matches no preset uses provider defaults; opt into reasoning with `LLMModel(..., reasoning=True)`. `provider_kwargs` override everything except the model ID. `temperature` is sent only when set.
 
 Spaik providers build every model for the providers they know, including credentials and proxy mode. Other provider names go through LangChain's `init_chat_model`, and `chat_model=` accepts a fully configured LangChain model as a last resort. Current aliases for `ModelRegistry.from_name` are `sonnet`, `opus`, `haiku`, `fable`, `gpt` and `gemini flash`.
 

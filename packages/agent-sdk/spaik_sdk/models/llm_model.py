@@ -8,7 +8,9 @@ class LLMModel:
     family: str
     name: str
     reasoning: bool = True
-    reasoning_min_effort: str = "none"  # Minimum reasoning effort accepted by the provider
+    # Least reasoning the model accepts, used when reasoning is off: an effort level, or "none".
+    # Anthropic also accepts "between_tools".
+    reasoning_min_effort: str = "none"
     prompt_caching: bool = False
 
     def __str__(self) -> str:

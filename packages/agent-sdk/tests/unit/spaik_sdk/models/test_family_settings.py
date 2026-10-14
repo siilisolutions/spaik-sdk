@@ -39,9 +39,15 @@ def test_older_claude_reasoning_uses_budget():
     assert result["thinking"] == {"type": "enabled", "budget_tokens": 2048}
 
 
-def test_model_requiring_thinking_rejects_reasoning_off():
-    with pytest.raises(ValueError, match="requires adaptive thinking"):
-        kwargs_for(LLMModel(family="anthropic", name="claude-opus-5-5"), reasoning=False)
+def test_claude_reasoning_off_uses_the_model_minimum():
+    def reasoning_off(**model) -> dict:
+        return kwargs_for(LLMModel(family="anthropic", name="claude-opus-6-0", **model), reasoning=False)
+
+    assert reasoning_off()["thinking"] == {"type": "disabled"}
+    assert reasoning_off(reasoning_min_effort="between_tools")["thinking"] == {"type": "between_tools"}
+    required = reasoning_off(reasoning_min_effort="low")
+    assert required["thinking"]["type"] == "adaptive"
+    assert required["model_kwargs"] == {"output_config": {"effort": "low"}}
 
 
 def test_openai_reasoning_off_uses_minimum_effort():

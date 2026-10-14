@@ -1,4 +1,8 @@
-"""Per-family model settings, applied to any LLMModel whatever provider hosts it."""
+"""Translate an LLMModel's generic fields into provider arguments for its family.
+
+Facts about individual models belong on their ModelRegistry presets. Name patterns here only
+pick a family's API generation for plain IDs; they never list individual models.
+"""
 
 import re
 from collections.abc import Callable
@@ -11,8 +15,7 @@ if TYPE_CHECKING:
     from spaik_sdk.models.llm_config import LLMConfig
 
 ADAPTIVE_THINKING = re.compile(r"^claude-(opus|fable|sonnet|haiku)-([5-9]|\d{2,})")
-REQUIRES_THINKING = {"claude-opus-5-5", "claude-fable-5-1"}
-BETWEEN_TOOLS_MINIMUM = {"claude-sonnet-5-5"}
+ANTHROPIC_THINKING_MODES = {"none": "disabled", "between_tools": "between_tools"}
 
 
 def call_effort(config: "LLMConfig") -> str | None:
@@ -31,13 +34,10 @@ def _anthropic(model: LLMModel, config: "LLMConfig") -> dict[str, Any]:
         return kwargs
     effort = call_effort(config)
     if ADAPTIVE_THINKING.match(model.name):
-        if effort is None and model.name in REQUIRES_THINKING:
-            if not config.structured_response:
-                raise ValueError(f"{model.name} requires adaptive thinking")
-            effort = "low"
-        if effort is None:
-            kwargs["thinking"] = {"type": "between_tools" if model.name in BETWEEN_TOOLS_MINIMUM else "disabled"}
+        if effort is None and model.reasoning_min_effort in ANTHROPIC_THINKING_MODES:
+            kwargs["thinking"] = {"type": ANTHROPIC_THINKING_MODES[model.reasoning_min_effort]}
         else:
+            effort = effort or model.reasoning_min_effort
             kwargs["thinking"] = {"type": "adaptive", **({"display": "summarized"} if config.reasoning_summary else {})}
             kwargs["model_kwargs"] = {"output_config": {"effort": effort}}
     elif effort is not None:

@@ -46,4 +46,6 @@ After touching several files, review what you wrote for clarity, separation of c
 make lint-fix && make typecheck && make test-unit
 ```
 
+Facts about individual models live on `ModelRegistry` presets (`reasoning`, `reasoning_min_effort`, `prompt_caching`). `family_settings.py` only translates those fields into provider arguments and may match a name pattern to pick a family's API generation; never add individual model names there.
+
 To add or change model presets, follow the [model-update skill](../../.agents/skills/model-update/SKILL.md).
