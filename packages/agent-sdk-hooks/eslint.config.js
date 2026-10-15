@@ -1,5 +1,5 @@
+import eslintReact from '@eslint-react/eslint-plugin';
 import js from '@eslint/js';
-import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig } from 'eslint/config';
 import globals from 'globals';
@@ -9,17 +9,18 @@ export default defineConfig(
     { ignores: ['dist'] },
     js.configs.recommended,
     tseslint.configs.recommended,
-    react.configs.flat.recommended,
-    react.configs.flat['jsx-runtime'],
+    eslintReact.configs['recommended-typescript'],
     reactHooks.configs.flat.recommended,
     {
         languageOptions: {
             globals: globals.browser,
         },
-        settings: {
-            react: {
-                version: 'detect',
-            },
+    },
+    {
+        // Both packages support React 18, which lacks <Context> providers and use()
+        rules: {
+            '@eslint-react/no-context-provider': 'off',
+            '@eslint-react/no-use-context': 'off',
         },
     },
 );

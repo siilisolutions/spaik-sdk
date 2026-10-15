@@ -9,8 +9,8 @@ interface ClientContext {
 const AgentContext = createContext<ClientContext | undefined>(undefined);
 
 export function AgentSdkClientProvider({ children, apiClient }: { children: ReactNode; apiClient: AgentSdkClient }) {
-    const [selectedThreadId, selectThread] = useState(apiClient.defaultThreadId);
-    const context = useMemo(() => ({ client: apiClient, selectedThreadId, selectThread }), [apiClient, selectedThreadId]);
+    const [selectedThreadId, setSelectedThreadId] = useState(apiClient.defaultThreadId);
+    const context = useMemo(() => ({ client: apiClient, selectedThreadId, selectThread: setSelectedThreadId }), [apiClient, selectedThreadId]);
     return <AgentContext.Provider value={context}>{children}</AgentContext.Provider>;
 }
 export function useAgentContext() {

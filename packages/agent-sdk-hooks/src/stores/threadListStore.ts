@@ -4,22 +4,22 @@ import { useAgentContext, useAgentSdkClient } from '../client/AgentSdkClientProv
 
 export function useThreadList() {
     const client = useAgentSdkClient();
-    const [threadSummaries, setThreads] = useState<ThreadSummary[]>([]);
+    const [threadSummaries, setThreadSummaries] = useState<ThreadSummary[]>([]);
     const [loading, setLoading] = useState(() => Boolean(client.threadRepository));
     const [error, setError] = useState<string>();
     const refresh = useCallback(async () => {
         if (!client.threadRepository) return;
         setLoading(true);
-        try { setThreads(await client.getThreads()); setError(undefined); }
+        try { setThreadSummaries(await client.getThreads()); setError(undefined); }
         catch (error) { setError(String(error)); }
         finally { setLoading(false); }
     }, [client]);
-    useEffect(() => client.subscribeThreadList(setThreads), [client]);
+    useEffect(() => client.subscribeThreadList(setThreadSummaries), [client]);
     useEffect(() => {
         if (!client.threadRepository) return;
         let active = true;
         client.getThreads().then(
-            threads => { if (active) { setThreads(threads); setError(undefined); setLoading(false); } },
+            threads => { if (active) { setThreadSummaries(threads); setError(undefined); setLoading(false); } },
             error => { if (active) { setError(String(error)); setLoading(false); } },
         );
         return () => { active = false; };
