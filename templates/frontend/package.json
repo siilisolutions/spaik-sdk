@@ -1,33 +1,34 @@
 {
-    "name": "spaik-agent-chat",
-    "private": true,
-    "version": "0.1.0",
-    "type": "module",
-    "scripts": {
-        "dev": "bun run vite",
-        "build": "bun run tsc && bun run vite build",
-        "lint": "bun run eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-        "preview": "bun run vite preview"
-    },
-    "dependencies": {
-        "@emotion/react": "^11.14.0",
-        "@emotion/styled": "^11.14.0",
-        "@mui/material": "^9.5.0",
-        "react": "^19.2.0",
-        "react-dom": "^19.2.0",
-        "spaik-sdk-material": "^1.0.0-rc.1",
-        "spaik-sdk-react": "^1.0.0-rc.1"
-    },
-    "devDependencies": {
-        "@types/react": "^19.2.0",
-        "@types/react-dom": "^19.2.0",
-        "@typescript-eslint/eslint-plugin": "^8.71.2",
-        "@typescript-eslint/parser": "^8.71.2",
-        "@vitejs/plugin-react": "^5.0.0",
-        "eslint": "^8.57.1",
-        "eslint-plugin-react-hooks": "^4.6.0",
-        "eslint-plugin-react-refresh": "^0.4.5",
-        "typescript": "^5.3.3",
-        "vite": "^6.4.3"
-    }
+  "name": "spaik-agent-chat",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run vite",
+    "build": "bun run tsc && bun run vite build",
+    "lint": "bun run eslint . --max-warnings 0",
+    "preview": "bun run vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^9.5.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "spaik-sdk-material": "^1.0.0-rc.1",
+    "spaik-sdk-react": "^1.0.0-rc.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.71.2",
+    "vite": "^6.4.3"
+  }
 }
