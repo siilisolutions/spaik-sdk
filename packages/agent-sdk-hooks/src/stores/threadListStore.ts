@@ -5,25 +5,27 @@ import { useAgentContext, useAgentSdkClient } from '../client/AgentSdkClientProv
 export function useThreadList() {
     const client = useAgentSdkClient();
     const [threadSummaries, setThreadSummaries] = useState<ThreadSummary[]>([]);
-    const [loading, setLoading] = useState(() => Boolean(client.threadRepository));
+    const [loadedClient, setLoadedClient] = useState<typeof client>();
+    const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string>();
     const refresh = useCallback(async () => {
         if (!client.threadRepository) return;
-        setLoading(true);
+        setRefreshing(true);
         try { setThreadSummaries(await client.getThreads()); setError(undefined); }
         catch (error) { setError(String(error)); }
-        finally { setLoading(false); }
+        finally { setRefreshing(false); }
     }, [client]);
     useEffect(() => client.subscribeThreadList(setThreadSummaries), [client]);
     useEffect(() => {
         if (!client.threadRepository) return;
         let active = true;
         client.getThreads().then(
-            threads => { if (active) { setThreadSummaries(threads); setError(undefined); setLoading(false); } },
-            error => { if (active) { setError(String(error)); setLoading(false); } },
+            threads => { if (active) { setThreadSummaries(threads); setError(undefined); setLoadedClient(client); } },
+            error => { if (active) { setError(String(error)); setLoadedClient(client); } },
         );
         return () => { active = false; };
     }, [client]);
+    const loading = refreshing || (Boolean(client.threadRepository) && loadedClient !== client);
     return { threadSummaries, loading, error, refresh };
 }
 export function useThreadSelection() {
