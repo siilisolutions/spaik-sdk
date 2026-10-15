@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, TypedDict, Union
+from typing import Any, Dict, List, Literal, Mapping, TypedDict, Union, cast
 
 from langchain_core.tools import BaseTool
 
@@ -24,7 +24,7 @@ McpServerConfig = Union[StdioServerConfig, HttpServerConfig]
 class McpToolProvider(ToolProvider):
     def __init__(
         self,
-        servers: Dict[str, McpServerConfig],
+        servers: Mapping[str, McpServerConfig],
         tools: List[BaseTool] | None = None,
     ):
         self._servers = servers
@@ -36,7 +36,8 @@ class McpToolProvider(ToolProvider):
 
         from langchain_mcp_adapters.client import MultiServerMCPClient
 
-        client = MultiServerMCPClient(self._servers)  # type: ignore[arg-type]
+        # The adapter accepts transport "http" at runtime but types only "streamable_http"
+        client = MultiServerMCPClient(cast(Any, dict(self._servers)))
         self._tools = await client.get_tools()
         return self._tools
 
@@ -48,7 +49,7 @@ class McpToolProvider(ToolProvider):
         return self._tools
 
     @classmethod
-    async def create(cls, servers: Dict[str, McpServerConfig]) -> "McpToolProvider":
+    async def create(cls, servers: Mapping[str, McpServerConfig]) -> "McpToolProvider":
         provider = cls(servers)
         await provider.load_tools()
         return provider

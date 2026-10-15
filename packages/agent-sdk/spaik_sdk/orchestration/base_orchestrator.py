@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 from abc import ABC, abstractmethod
 from typing import (
     Any,
@@ -109,7 +110,7 @@ class BaseOrchestrator(ABC, Generic[T_State, T_Result]):
             Callable[[T_State], Awaitable[T_State]],
         ],
         state: T_State,
-    ) -> AsyncIterator[OrchestratorEvent[T_State]]:
+    ) -> AsyncIterator[OrchestratorEvent[Any]]:
         """
         Execute a step with automatic status emission and checkpointing.
 
@@ -134,10 +135,7 @@ class BaseOrchestrator(ABC, Generic[T_State, T_Result]):
 
         try:
             result = fn(state)
-            if asyncio.iscoroutine(result):
-                new_state = await result
-            else:
-                new_state = result
+            new_state = await result if inspect.isawaitable(result) else result
 
             self._save_checkpoint(step_id, new_state)
             self._completed_steps.add(step_id)

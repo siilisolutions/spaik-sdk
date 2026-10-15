@@ -194,7 +194,7 @@ class LangChainService:
                                     yield ui.ToolCallArgsEvent(tool_call_id=tracked["id"], delta=args)
                         # Keep the partial transcript usable if execution is cancelled.
                         if state["started"]:
-                            assistant = next(m for m in self.thread.messages if m.id == state["id"])
+                            assistant = next(m for m in self.thread.messages if m.id == state["id"] and isinstance(m, ui.AssistantMessage))
                             assistant.tool_calls = [
                                 ui.ToolCall(id=c["id"], type="function", function=ui.FunctionCall(name=c["name"], arguments=c["args"]))
                                 for c in state["tools"].values()
@@ -202,7 +202,7 @@ class LangChainService:
                             ]
                         continue
                     state["ended"] = True
-                    assistant = next(m for m in self.thread.messages if m.id == state["id"])
+                    assistant = next(m for m in self.thread.messages if m.id == state["id"] and isinstance(m, ui.AssistantMessage))
                     final = (
                         chunk
                         if isinstance(chunk, AIMessage)
