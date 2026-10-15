@@ -33,4 +33,4 @@ async def test_structured_response_effort_reaches_the_model(effort, expected):
     assert result.city == "Helsinki"
     kwargs = provider.create_langchain_model.call_args.args[1]
     assert kwargs["thinking"] == expected
-    assert kwargs.get("model_kwargs", {}).get("output_config", {}).get("effort") == effort
+    assert kwargs.get("output_config", {}).get("effort") == effort

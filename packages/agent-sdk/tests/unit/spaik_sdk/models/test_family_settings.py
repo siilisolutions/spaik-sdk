@@ -35,7 +35,7 @@ def test_claude_reasoning_off_uses_the_model_minimum():
     assert reasoning_off(reasoning_min_effort="between_tools")["thinking"] == {"type": "between_tools"}
     required = reasoning_off(reasoning_min_effort="low")
     assert required["thinking"]["type"] == "adaptive"
-    assert required["model_kwargs"] == {"output_config": {"effort": "low"}}
+    assert required["output_config"] == {"effort": "low"}
 
 
 def test_openai_reasoning_off_uses_minimum_effort():

@@ -35,7 +35,7 @@ def _anthropic(model: LLMModel, config: "LLMConfig") -> dict[str, Any]:
         kwargs["thinking"] = {"type": ANTHROPIC_THINKING_MODES[model.reasoning_min_effort]}
         return kwargs
     kwargs["thinking"] = {"type": "adaptive", **({"display": "summarized"} if config.reasoning_summary else {})}
-    kwargs["model_kwargs"] = {"output_config": {"effort": effort or model.reasoning_min_effort}}
+    kwargs["output_config"] = {"effort": effort or model.reasoning_min_effort}
     return kwargs
 
 

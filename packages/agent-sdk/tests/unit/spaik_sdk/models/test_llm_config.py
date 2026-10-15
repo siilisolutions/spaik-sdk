@@ -11,7 +11,7 @@ from spaik_sdk.models.providers.base_provider import BaseProvider
 
 pytestmark = pytest.mark.unit
 
-SETTINGS = ("thinking", "model_kwargs", "max_tokens", "temperature", "reasoning", "use_responses_api", "disable_streaming")
+SETTINGS = ("thinking", "output_config", "max_tokens", "temperature", "reasoning", "use_responses_api", "disable_streaming")
 
 
 @pytest.fixture(autouse=True)
@@ -51,9 +51,9 @@ def test_temperature_is_sent_only_when_set():
 def test_older_model_generation_is_configured_through_provider_kwargs():
     budget = {"type": "enabled", "budget_tokens": 2048}
     older = LLMModel(family="anthropic", name="claude-sonnet-4-5")
-    built = settings(LLMConfig(model=older, provider_kwargs={"thinking": budget, "model_kwargs": {}}))
+    built = settings(LLMConfig(model=older, provider_kwargs={"thinking": budget, "output_config": None}))
     assert built["thinking"] == budget
-    assert built["model_kwargs"] == {}
+    assert built["output_config"] is None
 
 
 def test_streaming_off_disables_streaming():
@@ -65,7 +65,7 @@ def test_structured_response_defaults_to_minimum_reasoning():
     assert settings(sonnet)["thinking"] == {"type": "between_tools"}
     opus = settings(LLMConfig(model=ModelRegistry.CLAUDE_OPUS_5_5).as_structured_response_config())
     assert opus["thinking"] == {"type": "adaptive", "display": "summarized"}
-    assert opus["model_kwargs"] == {"output_config": {"effort": "low"}}
+    assert opus["output_config"] == {"effort": "low"}
     gpt = settings(LLMConfig(model=ModelRegistry.GPT_6_1_SOL).as_structured_response_config())
     assert gpt["reasoning"]["effort"] == "low"
 
@@ -74,9 +74,9 @@ def test_structured_reasoning_effort_is_configurable():
     configured = LLMConfig(model=ModelRegistry.CLAUDE_SONNET_5_5, structured_reasoning_effort="medium")
     built = settings(configured.as_structured_response_config())
     assert built["thinking"] == {"type": "adaptive", "display": "summarized"}
-    assert built["model_kwargs"] == {"output_config": {"effort": "medium"}}
+    assert built["output_config"] == {"effort": "medium"}
     per_call = settings(configured.as_structured_response_config(reasoning_effort="high"))
-    assert per_call["model_kwargs"] == {"output_config": {"effort": "high"}}
+    assert per_call["output_config"] == {"effort": "high"}
     gpt = LLMConfig(model=ModelRegistry.GPT_6_1_SOL).as_structured_response_config(reasoning_effort="high")
     assert settings(gpt)["reasoning"]["effort"] == "high"
 

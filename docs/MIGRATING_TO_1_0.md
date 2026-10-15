@@ -27,7 +27,7 @@ Spaik 1.0 requires Python 3.11 or later. Python 3.10 fails to propagate nested a
 
 `LLMConfig.temperature` now defaults to the provider's own default and is sent only when you set it; 0.x sent 0.1 to models without reasoning. Remove `temperature` for reasoning models, which reject it. `LLMConfig.tool_usage` is removed. `streaming=False` disables model streaming for every provider. Structured responses use each model's minimum reasoning by default; pass `reasoning_effort` to `get_structured_response()` or set `LLMConfig.structured_reasoning_effort` to raise it.
 
-Reasoning settings follow each family's current API: adaptive thinking for Claude and `thinking_level` for Gemini. `LLMConfig.reasoning_budget_tokens` is removed. Models from older generations, such as Claude 4.5 and earlier, run with `reasoning=False`, or pass their own settings, which override Spaik's: `provider_kwargs={"thinking": {"type": "enabled", "budget_tokens": 4096}, "model_kwargs": {}}`.
+Reasoning settings follow each family's current API: adaptive thinking for Claude and `thinking_level` for Gemini. `LLMConfig.reasoning_budget_tokens` is removed. Models from older generations, such as Claude 4.5 and earlier, run with `reasoning=False`, or pass their own settings, which override Spaik's: `provider_kwargs={"thinking": {"type": "enabled", "budget_tokens": 4096}, "output_config": None}`.
 
 Azure deployment names are the model ID; per-model deployment environment variables such as `AZURE_GPT_5_6_TERRA_DEPLOYMENT` are no longer read. To keep a preset's settings under a deployment name, use `dataclasses.replace(ModelRegistry.GPT_5_6_TERRA, name="your-deployment")`. Existing proxy authentication remains available.
 
