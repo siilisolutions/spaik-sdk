@@ -30,11 +30,11 @@ jobs:
       run:
         working-directory: packages/agent-sdk
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
 
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v7
         with:
           version: "latest"
 
