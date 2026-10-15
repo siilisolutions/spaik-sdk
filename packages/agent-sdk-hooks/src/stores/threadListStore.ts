@@ -5,7 +5,7 @@ import { useAgentContext, useAgentSdkClient } from '../client/AgentSdkClientProv
 export function useThreadList() {
     const client = useAgentSdkClient();
     const [threadSummaries, setThreads] = useState<ThreadSummary[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(() => Boolean(client.threadRepository));
     const [error, setError] = useState<string>();
     const refresh = useCallback(async () => {
         if (!client.threadRepository) return;
@@ -15,7 +15,15 @@ export function useThreadList() {
         finally { setLoading(false); }
     }, [client]);
     useEffect(() => client.subscribeThreadList(setThreads), [client]);
-    useEffect(() => { void refresh(); }, [refresh]);
+    useEffect(() => {
+        if (!client.threadRepository) return;
+        let active = true;
+        client.getThreads().then(
+            threads => { if (active) { setThreads(threads); setError(undefined); setLoading(false); } },
+            error => { if (active) { setError(String(error)); setLoading(false); } },
+        );
+        return () => { active = false; };
+    }, [client]);
     return { threadSummaries, loading, error, refresh };
 }
 export function useThreadSelection() {

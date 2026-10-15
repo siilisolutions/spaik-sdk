@@ -1,72 +1,73 @@
 {
-    "name": "spaik-sdk-react",
-    "version": "1.0.0-rc.1",
-    "description": "React library for Spaik SDK - state management and streaming for AI agent frontends",
-    "type": "module",
-    "main": "dist/index.js",
-    "module": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "license": "MIT",
-    "author": {
-        "name": "Siili Solutions Oyj",
-        "email": "info@siili.com",
-        "url": "https://siili.com"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/siilisolutions/spaik-sdk.git",
-        "directory": "packages/agent-sdk-hooks"
-    },
-    "homepage": "https://github.com/siilisolutions/spaik-sdk#readme",
-    "bugs": {
-        "url": "https://github.com/siilisolutions/spaik-sdk/issues"
-    },
-    "exports": {
-        ".": {
-            "import": "./dist/index.js",
-            "types": "./dist/index.d.ts"
-        }
-    },
-    "files": [
-        "dist"
-    ],
-    "scripts": {
-        "build": "bun run tsc",
-        "dev": "bun run tsc --watch",
-        "lint": "bun run eslint src --ext .ts,.tsx",
-        "lint:fix": "bun run eslint src --ext .ts,.tsx --fix",
-        "type-check": "bun run tsc --noEmit",
-        "test": "bun test tests"
-    },
-    "peerDependencies": {
-        "react": "^18.0.0 || ^19.0.0"
-    },
-    "dependencies": {
-        "@ag-ui/client": "1.0.2",
-        "@ag-ui/core": "1.0.2",
-        "axios": "^1.20.0",
-        "zod": "^4.6.6",
-        "zustand": "^5.0.15"
-    },
-    "devDependencies": {
-        "@types/react": "^19.2.0",
-        "@typescript-eslint/eslint-plugin": "^8.71.2",
-        "@typescript-eslint/parser": "^8.71.2",
-        "eslint": "^8.57.1",
-        "eslint-plugin-react": "^7.33.2",
-        "eslint-plugin-react-hooks": "^4.6.0",
-        "typescript": "^5.3.3"
-    },
-    "keywords": [
-        "react",
-        "hooks",
-        "agent",
-        "ai",
-        "llm",
-        "streaming",
-        "state-management",
-        "zustand",
-        "zod",
-        "spaik"
-    ]
+  "name": "spaik-sdk-react",
+  "version": "1.0.0-rc.1",
+  "description": "React library for Spaik SDK - state management and streaming for AI agent frontends",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "author": {
+    "name": "Siili Solutions Oyj",
+    "email": "info@siili.com",
+    "url": "https://siili.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/siilisolutions/spaik-sdk.git",
+    "directory": "packages/agent-sdk-hooks"
+  },
+  "homepage": "https://github.com/siilisolutions/spaik-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/siilisolutions/spaik-sdk/issues"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun run tsc",
+    "dev": "bun run tsc --watch",
+    "lint": "bun run eslint src",
+    "lint:fix": "bun run eslint src --fix",
+    "type-check": "bun run tsc --noEmit",
+    "test": "bun test tests"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@ag-ui/client": "1.0.2",
+    "@ag-ui/core": "1.0.2",
+    "axios": "^1.20.0",
+    "zod": "^4.6.6",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/react": "^19.2.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.71.2"
+  },
+  "keywords": [
+    "react",
+    "hooks",
+    "agent",
+    "ai",
+    "llm",
+    "streaming",
+    "state-management",
+    "zustand",
+    "zod",
+    "spaik"
+  ]
 }
