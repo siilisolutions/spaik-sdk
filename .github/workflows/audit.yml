@@ -41,7 +41,7 @@ jobs:
         working-directory: packages/agent-sdk
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v7
         with:
           version: "latest"
       - name: Set up Python
