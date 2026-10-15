@@ -13,8 +13,8 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^9.5.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "spaik-sdk-material": "^1.0.0-rc.1",
     "spaik-sdk-react": "^1.0.0-rc.1"
   },
