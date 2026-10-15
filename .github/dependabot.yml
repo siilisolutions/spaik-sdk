@@ -10,6 +10,10 @@ updates:
     groups:
       js-minor-patch:
         update-types: [minor, patch]
+    ignore:
+      # typescript-eslint supports TypeScript <6.1; lift when it supports newer versions
+      - dependency-name: typescript
+        versions: [">=6.1.0"]
 
   - package-ecosystem: uv
     directory: /packages/agent-sdk

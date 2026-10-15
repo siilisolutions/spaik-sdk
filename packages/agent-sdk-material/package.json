@@ -64,7 +64,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "spaik-sdk-react": "workspace:*",
-    "typescript": "^5.3.3",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.2"
   },
   "keywords": [
