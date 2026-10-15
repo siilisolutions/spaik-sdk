@@ -1,6 +1,17 @@
 name: Security Audit
 
 on:
+  schedule:
+    # Weekly, Monday 06:00 UTC: catches advisories published against unchanged lockfiles
+    - cron: '0 6 * * 1'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bun.lock'
+      - '**/package.json'
+      - 'packages/agent-sdk/uv.lock'
+      - 'packages/agent-sdk/pyproject.toml'
+      - '.github/workflows/audit.yml'
   workflow_dispatch:
     inputs:
       fail_on_severity:
@@ -14,8 +25,14 @@ on:
           - high
           - critical
 
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  # Python packages - run in parallel
   audit-agent-sdk:
     name: Audit agent-sdk (Python)
     runs-on: ubuntu-latest
@@ -28,19 +45,19 @@ jobs:
         with:
           version: "latest"
       - name: Set up Python
-        run: uv python install 3.10
+        run: uv python install 3.13
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --locked
       - name: Install pip-audit
         run: uv pip install pip-audit
       - name: Export requirements and audit
         run: |
-          # Export and filter out local/editable packages (lines starting with . or #)
-          uv export --no-dev --no-editable --no-hashes --format requirements-txt 2>/dev/null | grep -E "^[a-zA-Z]" > requirements-audit.txt
+          # Audit every shipped extra; filter out local/editable packages (lines starting with . or #)
+          uv export --locked --all-extras --no-extra dev --no-dev --no-editable --no-hashes --format requirements-txt 2>/dev/null | grep -E "^[a-zA-Z]" > requirements-audit.txt
           # --disable-pip and --no-deps avoid venv creation issues with uv-installed Python
           uv run python -m pip_audit -r requirements-audit.txt --strict --desc on --progress-spinner off --disable-pip --no-deps
 
-  # JavaScript/TypeScript packages - bun audit on entire monorepo lockfile
+  # bun audit checks the entire monorepo lockfile
   audit-js-packages:
     name: Audit JS packages (bun)
     runs-on: ubuntu-latest
@@ -52,53 +69,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Run security audit
+        env:
+          SEVERITY: ${{ inputs.fail_on_severity || 'high' }}
         run: |
-          # bun audit checks the entire lockfile
-          # Map severity input to bun audit exit behavior
-          SEVERITY="${{ inputs.fail_on_severity || 'high' }}"
-          
-          # Run audit and capture output
-          set +e
-          OUTPUT=$(bun audit 2>&1)
-          EXIT_CODE=$?
-          set -e
-          
-          echo "$OUTPUT"
-          
-          if [ $EXIT_CODE -eq 0 ]; then
-            echo "✅ No vulnerabilities found"
-            exit 0
-          fi
-          
-          # Check if we should fail based on severity
-          case "$SEVERITY" in
-            "critical")
-              if echo "$OUTPUT" | grep -q "critical"; then
-                echo "::error::Critical vulnerabilities found"
-                exit 1
-              fi
-              ;;
-            "high")
-              if echo "$OUTPUT" | grep -qE "(critical|high)"; then
-                echo "::error::High or critical vulnerabilities found"
-                exit 1
-              fi
-              ;;
-            "moderate")
-              if echo "$OUTPUT" | grep -qE "(critical|high|moderate)"; then
-                echo "::error::Moderate or higher vulnerabilities found"
-                exit 1
-              fi
-              ;;
-            "low")
-              # Any vulnerability fails
-              echo "::error::Vulnerabilities found"
-              exit 1
-              ;;
-          esac
-          
-          echo "⚠️ Vulnerabilities found but below threshold ($SEVERITY)"
-          exit 0
+          # Report everything, fail only at or above the threshold
+          bun audit || true
+          bun audit --audit-level="$SEVERITY" > /dev/null
 
   # Summary job that depends on all audit jobs
   audit-summary:
@@ -113,12 +89,12 @@ jobs:
         run: |
           echo "## Security Audit Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           # Check each job result
           declare -A results
           results["agent-sdk (Python)"]="${{ needs.audit-agent-sdk.result }}"
           results["JS packages (bun)"]="${{ needs.audit-js-packages.result }}"
-          
+
           failed=0
           for pkg in "${!results[@]}"; do
             status="${results[$pkg]}"
@@ -131,7 +107,7 @@ jobs:
               echo "⚠️ **$pkg**: $status" >> $GITHUB_STEP_SUMMARY
             fi
           done
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ $failed -eq 1 ]; then
             echo "### ⚠️ Action Required" >> $GITHUB_STEP_SUMMARY
