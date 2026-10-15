@@ -74,6 +74,8 @@ The conversation model is AG-UI `Message`. Use `AgentChat agent={new HttpAgent(.
 
 Both packages accept React 18 or 19. `spaik-sdk-material` no longer bundles MUI: `@mui/material` (5.15 or later, 6, 7 or 9), `@emotion/react` and `@emotion/styled` are peer dependencies, so add them to your application if you did not already have them. `@mui/icons-material` is no longer installed; add it yourself if your application imported it through Spaik.
 
+`spaik-sdk-react` now uses Zustand 5. A selector passed to `useFileUploadStore` or `useAudioStore` that returns a new object or array on each call causes an infinite render loop; wrap it in `useShallow` from `zustand/react/shallow`. Calls without a selector are unaffected.
+
 ## Threads in your own database
 
 Applications that store threads in SQL, Cosmos DB or similar keep their data where it is. Spaik 1.0 converts legacy threads when it reads them, so no batch job or downtime is needed:
