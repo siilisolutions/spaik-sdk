@@ -1,4 +1,4 @@
-import { createContext, useState, useMemo, useCallback, useEffect, ReactNode } from 'react';
+import { createContext, useState, useMemo, useCallback, useSyncExternalStore, ReactNode } from 'react';
 import { ThemeProvider, CssBaseline, Theme } from '@mui/material';
 import { lightTheme, darkTheme } from './defaultTheme.js';
 
@@ -12,6 +12,14 @@ export interface AgentThemeContextValue {
 }
 
 export const AgentThemeContext = createContext<AgentThemeContextValue | undefined>(undefined);
+
+const DARK_QUERY = '(prefers-color-scheme: dark)';
+
+function subscribeToColorScheme(onChange: () => void) {
+    const mediaQuery = window.matchMedia(DARK_QUERY);
+    mediaQuery.addEventListener('change', onChange);
+    return () => mediaQuery.removeEventListener('change', onChange);
+}
 
 interface Props {
     children: ReactNode;
@@ -27,16 +35,11 @@ export function AgentThemeProvider({
     darkTheme: customDarkTheme,
 }: Props) {
     const [mode, setMode] = useState<ThemeMode>(defaultMode);
-    const [systemPrefersDark, setSystemPrefersDark] = useState(false);
-
-    useEffect(() => {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        setSystemPrefersDark(mediaQuery.matches);
-
-        const handler = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
-        mediaQuery.addEventListener('change', handler);
-        return () => mediaQuery.removeEventListener('change', handler);
-    }, []);
+    const systemPrefersDark = useSyncExternalStore(
+        subscribeToColorScheme,
+        () => window.matchMedia(DARK_QUERY).matches,
+        () => false
+    );
 
     const isDark = mode === 'dark' || (mode === 'system' && systemPrefersDark);
 

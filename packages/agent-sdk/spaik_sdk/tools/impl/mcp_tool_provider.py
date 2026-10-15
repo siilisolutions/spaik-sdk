@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, TypedDict, Union
+from typing import Dict, List, Literal, Mapping, TypedDict, Union, cast
 
 from langchain_core.tools import BaseTool
 
@@ -24,7 +24,7 @@ McpServerConfig = Union[StdioServerConfig, HttpServerConfig]
 class McpToolProvider(ToolProvider):
     def __init__(
         self,
-        servers: Dict[str, McpServerConfig],
+        servers: Mapping[str, McpServerConfig],
         tools: List[BaseTool] | None = None,
     ):
         self._servers = servers
@@ -34,11 +34,11 @@ class McpToolProvider(ToolProvider):
         if self._tools is not None:
             return self._tools
 
-        from langchain_mcp_adapters.client import MultiServerMCPClient
-
-        client = MultiServerMCPClient(self._servers)  # type: ignore[arg-type]
-        self._tools = await client.get_tools()
-        return self._tools
+        tools: List[BaseTool] = []
+        for config in self._servers.values():
+            tools.extend(await _load_server_tools(config))
+        self._tools = tools
+        return tools
 
     def get_tools(self) -> List[BaseTool]:
         if self._tools is None:
@@ -48,7 +48,7 @@ class McpToolProvider(ToolProvider):
         return self._tools
 
     @classmethod
-    async def create(cls, servers: Dict[str, McpServerConfig]) -> "McpToolProvider":
+    async def create(cls, servers: Mapping[str, McpServerConfig]) -> "McpToolProvider":
         provider = cls(servers)
         await provider.load_tools()
         return provider
@@ -59,19 +59,25 @@ class McpToolProvider(ToolProvider):
         args: List[str] | None = None,
         env: Dict[str, str] | None = None,
     ) -> List[BaseTool]:
-        from langchain_mcp_adapters.tools import load_mcp_tools
-        from mcp import ClientSession, StdioServerParameters
-        from mcp.client.stdio import stdio_client
+        return await _load_server_tools(mcp_server_stdio(command, args, env))
 
-        server_params = StdioServerParameters(
-            command=command,
-            args=args or [],
-            env=env,
-        )
-        async with stdio_client(server_params) as (read, write):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
-                return await load_mcp_tools(session)
+
+async def _load_server_tools(config: McpServerConfig) -> List[BaseTool]:
+    from fastmcp.client.transports import ClientTransport, StdioTransport, StreamableHttpTransport
+    from langchain_core._api import suppress_langchain_beta_warning
+
+    with suppress_langchain_beta_warning():
+        from langchain.mcp import MCPAdapter
+
+    transport: ClientTransport
+    if config.get("transport") == "http":
+        http = cast(HttpServerConfig, config)
+        transport = StreamableHttpTransport(http["url"], headers=http.get("headers"))
+    else:
+        stdio = cast(StdioServerConfig, config)
+        transport = StdioTransport(stdio["command"], stdio.get("args", []), env=stdio.get("env"))
+    # One adapter per server keeps MCP tool names unprefixed
+    return await MCPAdapter(transport).list_tools()
 
 
 def mcp_server_stdio(
