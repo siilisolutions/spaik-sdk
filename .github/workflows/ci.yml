@@ -13,7 +13,7 @@ jobs:
       matrix:
         python: ['3.11', '3.13']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v4
       - uses: oven-sh/setup-bun@v2
       - run: uv python install ${{ matrix.python }}
