@@ -64,7 +64,7 @@ The built-in runner coordinates one server process: use one worker per repositor
 
 Spaik 1.0 stores threads as versioned JSON (`ThreadContainer.to_dict()`, with `schema_version`). 1.0 cannot read pickles. For threads in your own database, see [Threads in your own database](#threads-in-your-own-database); for the built-in local file store, see [Local file store](#local-file-store). Back up original data before switching applications.
 
-Tavily's bundled search helper, Azure Functions queue helpers and SignalR streaming negotiation have been removed. Supply application-owned tools through ToolProvider, and use AG-UI HTTP streaming. MCP, provider SDKs, server and audio are optional extras.
+Tavily's bundled search helper, Azure Functions queue helpers and SignalR streaming negotiation have been removed. Supply application-owned tools through ToolProvider, and use AG-UI HTTP streaming. MCP, provider SDKs, server and audio are optional extras. The `mcp` extra installs MCP SDK 2 through `langchain[mcp]` in place of `langchain-mcp-adapters`; `McpToolProvider` keeps its API and tool names, and tools from `load_from_stdio` stay callable after loading. MCP servers you run in the same environment must be written for MCP SDK 2.
 
 Coding-agent wrappers (`spaik-coding-agents`, final 0.2.3) and YAML workflows (`spaik-agent-workflows`, final 0.3.2) are deprecated and removed from 1.0. Both require `spaik-sdk==0.11.1` and cannot be installed in the same environment as Spaik 1.0; keep existing usage in a separate legacy environment. There is no 1.0 replacement package: orchestrate steps in application code with `BaseAgent` and `ToolProvider`. Published artifacts and the `spaik-coding-agents-v0.2.3` and `spaik-agent-workflows-v0.3.2` source tags remain available.
 
