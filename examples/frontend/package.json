@@ -13,8 +13,8 @@
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.0",
         "@mui/material": "^9.5.0",
-        "react": "^19.2.0",
-        "react-dom": "^19.2.0",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
         "spaik-sdk-material": "workspace:*",
         "spaik-sdk-react": "workspace:*"
     },
@@ -26,7 +26,7 @@
         "@vitejs/plugin-react": "^5.0.0",
         "eslint": "^8.57.1",
         "eslint-plugin-react-hooks": "^4.6.0",
-        "eslint-plugin-react-refresh": "^0.4.5",
+        "eslint-plugin-react-refresh": "^0.5.7",
         "typescript": "^5.3.3",
         "vite": "^6.4.3"
     }

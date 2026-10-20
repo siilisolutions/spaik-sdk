@@ -61,8 +61,8 @@
         "eslint": "^8.57.1",
         "eslint-plugin-react": "^7.33.2",
         "eslint-plugin-react-hooks": "^4.6.0",
-        "react": "^19.2.0",
-        "react-dom": "^19.2.0",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
         "spaik-sdk-react": "workspace:*",
         "typescript": "^5.3.3"
     },
