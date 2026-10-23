@@ -41,8 +41,8 @@ mistral = ["langchain-mistralai>=0.2.0"]
 cohere = ["langchain-cohere>=0.5.0"]
 xai = ["langchain-xai>=0.2.0"]
 audio = []
-mcp = ["mcp>=1.9.2,<2", "langchain-mcp-adapters>=0.2.1"]
-dev = ["ruff", "pytest>=7.4.0", "pytest-asyncio>=0.21.1", "pytest-cov>=4.1.0", "pytest-mock>=3.11.1", "pytest-timeout>=2.4.0", "ty==0.0.13"]
+mcp = ["langchain[mcp]>=1.4.6"]
+dev = ["ruff", "pytest>=7.4.0", "pytest-asyncio>=0.21.1", "pytest-cov>=4.1.0", "pytest-mock>=3.11.1", "pytest-timeout>=2.4.0", "ty==0.0.87"]
 
 [project.urls]
 Homepage = "https://github.com/siilisolutions/spaik-sdk"
@@ -104,6 +104,5 @@ asyncio_default_fixture_loop_scope = "function"
 dev = [
     "pytest-timeout>=2.4.0",
     "ruff>=0.13.1",
-    "ty==0.0.13",
-    "echo-mcp-server-for-testing>=0.1.5",
+    "ty==0.0.87",
 ]

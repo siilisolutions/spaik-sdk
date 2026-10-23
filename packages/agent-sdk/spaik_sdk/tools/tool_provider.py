@@ -120,7 +120,7 @@ class ToolProvider(ABC):
         args_schema = None
         if args:
             # Build field definitions for dynamic schema
-            fields = {}
+            fields: dict[str, Any] = {}
             for arg_name, arg_spec in args.items():
                 if isinstance(arg_spec, tuple):
                     arg_type, arg_desc = arg_spec

@@ -42,31 +42,31 @@ export abstract class BaseApiClient {
         );
     }
 
-    private parseResponse<T>(response: AxiosResponse<T>, responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>): T {
+    private parseResponse<T>(response: AxiosResponse<T>, responseSchema: z.ZodType<T, unknown>): T {
         return responseSchema.parse(response.data);
     }
 
-    protected async get<T>(url: string, responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>, config?: AxiosRequestConfig): Promise<T> {
+    protected async get<T>(url: string, responseSchema: z.ZodType<T, unknown>, config?: AxiosRequestConfig): Promise<T> {
         const response = await this.axiosInstance.get<T>(url, config);
         return this.parseResponse(response, responseSchema);
     }
 
-    protected async post<T>(url: string, responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    protected async post<T>(url: string, responseSchema: z.ZodType<T, unknown>, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
         const response = await this.axiosInstance.post<T>(url, data, config);
         return this.parseResponse(response, responseSchema);
     }
 
-    protected async put<T>(url: string, responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    protected async put<T>(url: string, responseSchema: z.ZodType<T, unknown>, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
         const response = await this.axiosInstance.put<T>(url, data, config);
         return this.parseResponse(response, responseSchema);
     }
 
-    protected async delete<T>(url: string, responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>, config?: AxiosRequestConfig): Promise<T> {
+    protected async delete<T>(url: string, responseSchema: z.ZodType<T, unknown>, config?: AxiosRequestConfig): Promise<T> {
         const response = await this.axiosInstance.delete<T>(url, config);
         return this.parseResponse(response, responseSchema);
     }
 
-    protected async postFormData<T>(url: string, responseSchema: z.ZodType<T, z.ZodTypeDef, unknown>, formData: FormData): Promise<T> {
+    protected async postFormData<T>(url: string, responseSchema: z.ZodType<T, unknown>, formData: FormData): Promise<T> {
         const response = await this.axiosInstance.post<T>(url, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });

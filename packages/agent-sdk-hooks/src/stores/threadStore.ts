@@ -32,16 +32,19 @@ export function useThread(threadId: string) {
     const observer = useMemo(() => agent ? observeAgent(agent) : undefined, [agent]);
     const empty = useMemo(() => ({ messages: [], state: {}, isGenerating: false, error: undefined }), []);
     const snapshot = useSyncExternalStore(observer?.subscribe ?? (() => () => {}), observer?.getSnapshot ?? (() => empty), observer?.getSnapshot ?? (() => empty));
-    const [loading, setLoading] = useState(false);
-    const [loadError, setLoadError] = useState<string>();
+    const [loaded, setLoaded] = useState<{ client: typeof client; threadId: string; error?: string }>();
     useEffect(() => {
-        let active = true;
-        setLoadError(undefined);
         if (!threadId || !client.threadRepository) return;
-        setLoading(true);
-        client.getThread(threadId).catch(error => { if (active) setLoadError(String(error)); }).finally(() => { if (active) setLoading(false); });
+        let active = true;
+        client.getThread(threadId).then(
+            () => { if (active) setLoaded({ client, threadId }); },
+            error => { if (active) setLoaded({ client, threadId, error: String(error) }); },
+        );
         return () => { active = false; };
     }, [client, threadId]);
+    const current = loaded?.client === client && loaded.threadId === threadId ? loaded : undefined;
+    const loading = Boolean(threadId && client.threadRepository) && !current;
+    const loadError = current?.error;
     return { thread: threadId ? { id: threadId, messages: snapshot.messages, message_metadata: client.getMessageMetadata(threadId) } : undefined,
         agent, state: snapshot.state, loading, error: loadError ?? snapshot.error, isGenerating: snapshot.isGenerating };
 }
