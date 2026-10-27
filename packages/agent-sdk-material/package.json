@@ -1,6 +1,6 @@
 {
   "name": "spaik-sdk-material",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0",
   "description": "Material UI components for Spaik SDK - themeable chat UI for AI agents",
   "type": "module",
   "main": "dist/index.js",
