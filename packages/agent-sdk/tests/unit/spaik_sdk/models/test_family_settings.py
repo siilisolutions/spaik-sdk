@@ -3,6 +3,7 @@ import pytest
 from spaik_sdk.models.family_settings import family_kwargs
 from spaik_sdk.models.llm_config import LLMConfig
 from spaik_sdk.models.llm_model import LLMModel
+from spaik_sdk.models.model_registry import ModelRegistry
 
 pytestmark = pytest.mark.unit
 
@@ -19,6 +20,10 @@ def test_gemini_3_minimum_follows_model_setting():
     pro = LLMModel(family="google", name="gemini-3.9-pro", reasoning_min_effort="low")
     assert kwargs_for(pro, reasoning=False) == {"thinking_level": "low"}
     assert kwargs_for(pro) == {"thinking_level": "high"}
+
+
+def test_gemini_4_argon_preset_has_no_minimal_thinking():
+    assert kwargs_for(ModelRegistry.GEMINI_4_ARGON, reasoning=False) == {"thinking_level": "low"}
 
 
 def test_new_claude_generation_gets_adaptive_thinking_with_visible_summary():
