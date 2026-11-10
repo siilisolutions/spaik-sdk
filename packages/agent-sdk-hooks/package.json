@@ -42,11 +42,11 @@
     "react": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@ag-ui/client": "1.0.3",
-    "@ag-ui/core": "1.0.3",
+    "@ag-ui/client": "1.0.4",
+    "@ag-ui/core": "1.0.4",
     "axios": "^1.21.0",
     "zod": "^4.6.6",
-    "zustand": "^5.0.15"
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
     "@eslint-react/eslint-plugin": "^5.28.8",
@@ -54,7 +54,7 @@
     "@types/react": "^19.2.0",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "globals": "^17.13.0",
+    "globals": "^17.14.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1"
   },
