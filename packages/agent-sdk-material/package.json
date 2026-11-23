@@ -60,7 +60,7 @@
     "@types/react-dom": "^19.2.0",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "globals": "^17.13.0",
+    "globals": "^17.14.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "spaik-sdk-react": "workspace:*",

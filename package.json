@@ -14,7 +14,7 @@
         "install:all": "bun install"
     },
     "devDependencies": {
-        "@playwright/test": "^1.64.1",
+        "@playwright/test": "^1.65.0",
         "typescript": "^6.0.3"
     },
     "overrides": {
